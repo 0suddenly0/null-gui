@@ -61,6 +61,18 @@ namespace null_render {
 			device->SetTexture(0, nullptr);
 			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &verts, 20);
 		}
+		
+		void draw_rect_multicolor(IDirect3DDevice9* device, vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right) {
+			null_render::vertice verts[4] = {
+				{ start.x, start.y, 0.01f, 0.01f, left.at(1).get_d3d() },
+				{ end.x, start.y, 0.01f, 0.01f, right.at(1).get_d3d() },
+				{ start.x, end.y, 0.01f, 0.01f, left.at(0).get_d3d() },
+				{ end.x, end.y, 0.01f, 0.01f, right.at(0).get_d3d() }
+			};
+
+			device->SetTexture(0, nullptr);
+			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &verts, 20);
+		}
 
 		void clip(IDirect3DDevice9* device, vec2 start, vec2 end) {
 			RECT clip_space{ start.x, start.y, end.x, end.y };
@@ -95,6 +107,11 @@ namespace null_render {
 	void draw_calls::call_rect::draw(IDirect3DDevice9* device) {
 		filled ? primitive_render::draw_rect_filled(device, start, end, clr) : primitive_render::draw_rect(device, start, end, clr);
 	}
+
+	void draw_calls::call_rect_multicolor::draw(IDirect3DDevice9* device) {
+		primitive_render::draw_rect_multicolor(device, start, end, left, right);
+	}
+
 
 	void null_draw_list::add_text(std::string text, vec2 pos, color clr, null_font::font font, bool outline, std::array<bool, 2> centered) {
 		draw_call call;
@@ -135,12 +152,20 @@ namespace null_render {
 		calls.push_back(call);
 	}
 
+	void null_draw_list::add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right) {
+		draw_call call;
+		call.call_type = draw_call_type::rect_multicolor;
+		call.call_rect_multicolor = draw_calls::call_rect_multicolor{ start, end, left, right };
+		calls.push_back(call);
+	}
+
 	void null_draw_list::draw() {
 		for (draw_call& call : calls) {
 			switch (call.call_type) {
 			case draw_call_type::text: call.call_text.draw(clips); break;
 			case draw_call_type::clip: call.call_clip.clip(device); break;
 			case draw_call_type::rect: call.call_rect.draw(device); break;
+			case draw_call_type::rect_multicolor: call.call_rect_multicolor.draw(device); break;
 			}
 		}
 	}

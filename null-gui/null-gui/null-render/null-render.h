@@ -40,6 +40,7 @@ namespace null_render {
 	namespace primitive_render {
 		void draw_rect(IDirect3DDevice9* device, vec2 start, vec2 end, color clr);
 		void draw_rect_filled(IDirect3DDevice9* device, vec2 start, vec2 end, color clr);
+		void draw_rect_multicolor(IDirect3DDevice9* device, vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right);
 		void clip(IDirect3DDevice9* device, vec2 start, vec2 end);
 		void draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, vec2 clip_space, null_font::font font);
 	}
@@ -95,12 +96,10 @@ namespace null_render {
 		public:
 			void draw(IDirect3DDevice9* device);
 
-			vec2 pos;
-			vec2 size;
-
-			/* 1 - upper color : 2 - bottom color */
-			std::array<color, 2> left;
-			std::array<color, 2> right;
+			vec2 start;
+			vec2 end;
+			std::array<color, 2> left; /* 1 - upper color : 2 - bottom color */
+			std::array<color, 2> right; /* 1 - upper color : 2 - bottom color */
 		};
 
 		class call_line {
@@ -178,6 +177,12 @@ namespace null_render {
 			add_rect(vec2(x, y), vec2(x1, y1), clr, filled);
 		}
 		void add_rect(vec2 start, vec2 end, color clr, bool filled = true);
+
+		template<typename T>
+		void add_rect_multicolor(T x, T y, T x1, T y1, std::array<color, 2> left, std::array<color, 2> right) {
+			add_rect_multicolor(vec2(x, y), vec2(x1, y1), left, right);
+		}
+		void add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right);
 
 		void draw();
 		void clear();

@@ -2,15 +2,15 @@
 
 namespace null_gui {
 	vec2 window::get_draw_pos() {
-		return vec2(std::clamp(draw_item_pos.x, pos.x, pos.x + size.x), std::clamp(draw_item_pos.y, pos.y + settings::window_title_size, pos.y + size.y));
+		return vec2(std::clamp(draw_item_pos.x, pos.x, pos.x + size.x), std::clamp(draw_item_pos.y, pos.y, pos.y + size.y));
 	}
 
 	namespace deeps {
-		window* find_window(std::string name, int* back_idx) {
+		window* find_window(std::string name) {
 			for (int i = 0; i < windows.size(); i++) {
 				window* wnd = windows[i];
+				wnd->idx = i;
 				if (wnd->name == name) {
-					if (back_idx != nullptr) *back_idx = i;
 					return wnd;
 				}
 			}
@@ -38,7 +38,7 @@ namespace null_gui {
 				if(!null_input::get_mouse_key_state(0).down()) _hovered = true;
 				else if (active_name == name) _pressed = true;
 				if (null_input::get_mouse_key_state(0).clicked()) active_name = name;
-				if (null_input::get_mouse_key_state(0).pressed()) _active = true;
+				if (null_input::mouse_in_region(wnd->get_draw_pos(), size.max) && deeps::mouse_in_current_windows() && null_input::get_mouse_key_state(0).pressed()) _active = true;
 			}
 
 			if (!null_input::get_mouse_key_state(0).down() && active_name == name) {
@@ -52,7 +52,7 @@ namespace null_gui {
 
 		void add_item(vec2 size) {
 			window* wnd = get_current_window();
-			wnd->draw_item_pos.y += size.y + settings::item_spacing;
+			wnd->draw_item_pos.y += size.y + gui_settings::item_spacing;
 		}
 
 		bool mouse_in_current_windows() {
@@ -69,6 +69,22 @@ namespace null_gui {
 
 		vec2 get_display_size() {
 			return display_size;
+		}
+
+		std::string format_item(std::string text) {
+			std::string ret;
+
+			for (int i = 0; i < text.length(); i++) {
+				if (text[i] == '#' && i + 1 < text.length() && text[i + 1] == '#') break;
+				else ret.push_back(text[i]);
+			}
+
+			return ret;
+		}
+
+		void focus_current_window() {
+			auto it = deeps::windows.begin() + get_current_window()->idx;
+			std::rotate(it, it + 1, deeps::windows.end());
 		}
 	}
 
