@@ -2,6 +2,7 @@
 #include <stack>
 #include "null-render/null-render.h"
 #include "null-input/null-input.h"
+#include "../utils/utils.h"
 
 namespace null_gui {
 	enum window_flags {
@@ -120,6 +121,7 @@ namespace null_gui {
 		window* get_current_window();
 
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
+		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void add_item(vec2 size); 
 		bool mouse_in_current_windows();
 		void set_display_size(vec2 size);
@@ -140,16 +142,27 @@ namespace null_gui {
 
 		float window_title_size = 20.f;
 		float item_spacing = 5.f;
-		float text_checkbox_spacing = 4.f;
+		float text_spacing = 4.f;
 		float checkbox_size = 16.f;
+		float slider_size = 5.f;
 
 		vec2 button_padding = vec2(5, 1);
 		vec2 window_padding = vec2(10, 10);
 
+		bool items_size_full_window = true;
 		bool checkbox_hovered_with_text = false;
 		bool clamp_window_on_screen = true;
 		bool spacing_checkbox_size = true;
 		bool move_window_on_title_bar = true;
+	}
+
+	namespace null_math {
+		template <typename T>
+		T clamp(T a, T min, T max) {
+			if (a < min) return min;
+			else if (a > max) return max;
+			return a;
+		}
 	}
 
 	void pre_begin_gui(HWND hwnd);
@@ -161,6 +174,7 @@ namespace null_gui {
 	void text(std::string text);
 	bool button(std::string text, vec2 size_arg = vec2(0, 0));
 	void checkbox(std::string text, bool* var);
+	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d");
 
 	void same_line();
 }

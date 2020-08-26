@@ -2,8 +2,8 @@
 
 namespace null_gui {
 	rect window::get_draw_pos(rect value) {
-		vec2 clamped_draw_pos(std::clamp(draw_item_pos.x, pos.x, pos.x + size.x), std::clamp(draw_item_pos.y, pos.y, pos.y + size.y));
-		return rect(vec2(std::clamp(value.min.x, clamped_draw_pos.x, value.max.x), std::clamp(value.min.y, clamped_draw_pos.y, value.max.y)), value.max);
+		vec2 clamped_draw_pos(null_math::clamp(draw_item_pos.x, pos.x, pos.x + size.x), null_math::clamp(draw_item_pos.y, pos.y, pos.y + size.y));
+		return rect(vec2(null_math::clamp(value.min.x, clamped_draw_pos.x, value.max.x), null_math::clamp(value.min.y, clamped_draw_pos.y, value.max.y)), value.max);
 	}
 
 	namespace deeps {
@@ -51,6 +51,27 @@ namespace null_gui {
 			if (hovered) *hovered = _hovered;
 			if (pressed) *pressed = _pressed;
 			return _active;
+		}
+
+		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
+			window* wnd = deeps::get_current_window();
+			bool _hovered = false;
+			bool _pressed = false;
+
+			if ((null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) || active_name == name) {
+				if (!null_input::get_mouse_key_state(0).down()) _hovered = true;
+				if (null_input::get_mouse_key_state(0).clicked()) active_name = name;
+				if (active_name == name) {
+					if (null_input::get_mouse_key_state(0).down()) _pressed = true;
+				}
+			}
+
+			if (!null_input::get_mouse_key_state(0).down() && active_name == name) {
+				active_name = "";
+			}
+
+			if (hovered) *hovered = _hovered;
+			if (pressed) *pressed = _pressed;
 		}
 
 		void add_item(vec2 size) {

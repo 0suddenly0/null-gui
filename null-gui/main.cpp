@@ -185,14 +185,17 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300)); {
 						null_gui::text(utils::format("%d", test_int));
 						null_gui::same_line();
-						if (null_gui::button("-")) {
-							test_int--;
-						}
-						null_gui::same_line();
-						if (null_gui::button("+")) {
-							test_int++;
-						}
-						null_gui::checkbox("AASDASshow debug window", &debug_window);
+						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {
+							if (null_gui::button("-")) {
+								test_int--;
+							}
+							null_gui::same_line();
+							if (null_gui::button("+")) {
+								test_int++;
+							}
+						} null_gui::deeps::pop_var();
+						null_gui::slider_int("slider", &test_int, 0, 100, "%d%%");
+						null_gui::checkbox("show debug window", &debug_window);
 					}
 					null_gui::end_window();
 				}

@@ -22,6 +22,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="null-gui\controls\button.cpp" />
     <ClCompile Include="null-gui\controls\checkbox.cpp" />
+    <ClCompile Include="null-gui\controls\sliders.cpp" />
     <ClCompile Include="null-gui\controls\text.cpp" />
     <ClCompile Include="null-gui\controls\window.cpp" />
     <ClCompile Include="null-gui\null-gui.cpp" />
