@@ -119,6 +119,11 @@ namespace null_input {
         return mouse_pos() < min && mouse_pos() > max;
     }
 
+    bool mouse_in_region(rect region) {
+        return mouse_pos() < region.min && mouse_pos() > region.max;
+    }
+
+
     key_state get_mouse_key_state(int key) {
         return vars::mouse_buttons[key];
     }

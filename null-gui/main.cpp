@@ -165,9 +165,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_gui::begin_gui();
 				null_render::init(d3d_device);
 
-				static bool debug_1 = true;
-				static bool debug_2 = true;
-				static bool null = true;
+				static bool debug_window = true;
 
 				null_font::create_font("Tahoma", 14, &main_font, true);
 
@@ -179,23 +177,22 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_render::begin(); {
 					static int test_int = 0;
 
-					null_gui::begin_window("debug window---------------------------------------------------------------------------------------"/*"debug window      [ window with debug information ]"*/, vec2(200, 200), vec2(300, 300), &debug_1); {
-						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
-					}
-					null_gui::end_window();
-					null_gui::begin_window("debug window----2-----------------------------------------------------------------------------------"/*"debug window      [ window with debug information ]"*/, vec2(100, 100), vec2(300, 300), &debug_2); {
+					null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window); {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
 					}
 					null_gui::end_window();
 
-					null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300), &null); {
+					null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300)); {
 						null_gui::text(utils::format("%d", test_int));
-						null_gui::button("test button");
-						if (null_gui::button(utils::format("%d", test_int))) {
-							test_int++;
-							debug_2 = true;
-							debug_1 = true;
+						null_gui::same_line();
+						if (null_gui::button("-")) {
+							test_int--;
 						}
+						null_gui::same_line();
+						if (null_gui::button("+")) {
+							test_int++;
+						}
+						null_gui::checkbox("AASDASshow debug window", &debug_window);
 					}
 					null_gui::end_window();
 				}

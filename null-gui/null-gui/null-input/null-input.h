@@ -33,6 +33,7 @@ namespace null_input {
 	vec2 mouse_pos() { return vars::mouse_pos; }
 	bool last_click_in_region(vec2 min, vec2 max);
 	bool mouse_in_region(vec2 min, vec2 max);
+	bool mouse_in_region(rect region);
 	key_state get_mouse_key_state(int key);
 	key_state get_key_state(int key);
 }
