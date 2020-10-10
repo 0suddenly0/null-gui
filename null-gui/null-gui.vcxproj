@@ -22,6 +22,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="null-gui\controls\button.cpp" />
     <ClCompile Include="null-gui\controls\checkbox.cpp" />
+    <ClCompile Include="null-gui\controls\combo.cpp" />
+    <ClCompile Include="null-gui\controls\multicombo.cpp" />
+    <ClCompile Include="null-gui\controls\selectable.cpp" />
     <ClCompile Include="null-gui\controls\sliders.cpp" />
     <ClCompile Include="null-gui\controls\text.cpp" />
     <ClCompile Include="null-gui\controls\window.cpp" />

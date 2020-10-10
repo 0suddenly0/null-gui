@@ -1,9 +1,8 @@
 #include "../null-gui.h"
-//#include "../../utils/utils.h"
 
 namespace null_gui {
-	void checkbox(std::string text, bool* var) {
-		window* wnd = deeps::get_current_window();
+	void checkbox(std::string text, bool* value) {
+		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
@@ -15,11 +14,12 @@ namespace null_gui {
 		bool hovered, pressed;
 		bool active = null_gui::deeps::get_button_behavior(gui_settings::checkbox_hovered_with_text ? rect(size.min, size.max + text_spacing) : size, &hovered, &pressed, name);
 
-		if (active) *var = !*var;
+		if (active) *value = !*value;
 
 		wnd->draw_list.add_rect(size.min, size.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
-		if(*var) wnd->draw_list.add_rect(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
-		wnd->draw_list.add_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), color(255, 255, 255, 255), false, { false , true });
-		deeps::add_item(size.max + text_spacing);
+		if(*value) wnd->draw_list.add_rect(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
+		wnd->draw_list.add_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), gui_settings::text, false, { false , true });
+
+		deeps::add_item((size.max - size.min) + text_spacing);
 	}
 }

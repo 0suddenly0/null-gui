@@ -166,6 +166,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_render::init(d3d_device);
 
 				static bool debug_window = true;
+				static bool settings_window = true;
 
 				null_font::create_font("Tahoma", 14, &main_font, true);
 
@@ -177,14 +178,39 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_render::begin(); {
 					static int test_int = 0;
 
-					null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window); {
+					if(null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
+						null_gui::text(utils::format("active window name - '%s'", null_gui::deeps::active_window_name.c_str()));
+						null_gui::end_window();
 					}
-					null_gui::end_window();
 
-					null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300)); {
+					if(null_gui::begin_window("settings window", vec2(100, 100), vec2(300, 500), &settings_window)) {
+						null_gui::text("floats --------------------------------------------------------------------------------");
+						null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f");
+						null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f");
+						null_gui::slider_float("text_spacing", &null_gui::gui_settings::text_spacing, 1, 20, "%.0f");
+						null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f");
+						null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f");
+						null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f");
+						null_gui::text("floats --------------------------------------------------------------------------------");
+						null_gui::text("bools ---------------------------------------------------------------------------------");
+						null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
+						null_gui::checkbox("checkbox_hovered_with_text", &null_gui::gui_settings::checkbox_hovered_with_text);
+						null_gui::checkbox("clamp_window_on_screen", &null_gui::gui_settings::clamp_window_on_screen);
+						null_gui::checkbox("spacing_checkbox_size", &null_gui::gui_settings::spacing_checkbox_size);
+						null_gui::checkbox("move_window_on_title_bar", &null_gui::gui_settings::move_window_on_title_bar);
+						null_gui::text("bools ---------------------------------------------------------------------------------");
+						null_gui::text("vectors --------------------------------------------------------------------------------");
+						null_gui::slider_float("button_padding_x", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f");
+						null_gui::slider_float("button_padding_y", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f");
+						null_gui::slider_float("window_padding_x", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f");
+						null_gui::slider_float("window_padding_y", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f");
+						null_gui::text("vectors --------------------------------------------------------------------------------");
+						null_gui::end_window();
+					}
+
+					if(null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300), nullptr)) {
 						null_gui::text(utils::format("%d", test_int));
-						null_gui::same_line();
 						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {
 							if (null_gui::button("-")) {
 								test_int--;
@@ -195,9 +221,11 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 							}
 						} null_gui::deeps::pop_var();
 						null_gui::slider_int("slider", &test_int, 0, 100, "%d%%");
+						null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 						null_gui::checkbox("show debug window", &debug_window);
+						null_gui::checkbox("show settings window", &settings_window);
+						null_gui::end_window();
 					}
-					null_gui::end_window();
 				}
 				null_render::end();
 

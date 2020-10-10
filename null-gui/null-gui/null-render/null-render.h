@@ -43,6 +43,7 @@ namespace null_render {
 		void draw_rect_multicolor(IDirect3DDevice9* device, vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right);
 		void clip(IDirect3DDevice9* device, vec2 start, vec2 end);
 		void draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, vec2 clip_space, null_font::font font);
+		void draw_line(IDirect3DDevice9* device, vec2 start, vec2 end, color clr);
 	}
 
 	struct vertice {
@@ -107,9 +108,8 @@ namespace null_render {
 			void draw(IDirect3DDevice9* device);
 
 			vec2 start;
-			vec2 ent;
+			vec2 end;
 			color clr;
-			float thickness;
 		};
 
 		class call_circle {
@@ -183,6 +183,12 @@ namespace null_render {
 			add_rect_multicolor(vec2(x, y), vec2(x1, y1), left, right);
 		}
 		void add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right);
+
+		template<typename T>
+		void add_line(T x, T y, T x1, T y1, color clr) {
+			add_line(vec2(x, y), vec2(x1, y1), clr);
+		}
+		void add_line(vec2 start, vec2 end, color clr);
 
 		void draw();
 		void clear();

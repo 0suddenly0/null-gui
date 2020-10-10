@@ -94,6 +94,16 @@ namespace null_render {
 
 			font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, clr.get_d3d());
 		}
+
+		void draw_line(IDirect3DDevice9* device, vec2 start, vec2 end, color clr) {
+			null_render::vertice verts[2] = {
+				{ start.x, start.y, 0.01f, 0.01f, clr.get_d3d() },
+				{ end.x, end.y, 0.01f, 0.01f, clr.get_d3d() }
+			};
+
+			device->SetTexture(0, nullptr);
+			device->DrawPrimitiveUP(D3DPT_LINELIST, 1, &verts, 20);
+		}
 	}
 
 	void draw_calls::call_clip::clip(IDirect3DDevice9* device) {
@@ -112,6 +122,9 @@ namespace null_render {
 		primitive_render::draw_rect_multicolor(device, start, end, left, right);
 	}
 
+	void draw_calls::call_line::draw(IDirect3DDevice9* device) {
+		primitive_render::draw_line(device, start, end, clr);
+	}
 
 	void null_draw_list::add_text(std::string text, vec2 pos, color clr, null_font::font font, bool outline, std::array<bool, 2> centered) {
 		draw_call call;
@@ -159,12 +172,20 @@ namespace null_render {
 		calls.push_back(call);
 	}
 
+	void null_draw_list::add_line(vec2 start, vec2 end, color clr) {
+		draw_call call;
+		call.call_type = draw_call_type::line;
+		call.call_line = draw_calls::call_line{ start, end, clr };
+		calls.push_back(call);
+	}
+
 	void null_draw_list::draw() {
 		for (draw_call& call : calls) {
 			switch (call.call_type) {
 			case draw_call_type::text: call.call_text.draw(clips); break;
 			case draw_call_type::clip: call.call_clip.clip(device); break;
 			case draw_call_type::rect: call.call_rect.draw(device); break;
+			case draw_call_type::line: call.call_line.draw(device); break;
 			case draw_call_type::rect_multicolor: call.call_rect_multicolor.draw(device); break;
 			}
 		}

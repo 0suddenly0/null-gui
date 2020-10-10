@@ -112,15 +112,15 @@ namespace null_input {
     }
 
     bool last_click_in_region(vec2 min, vec2 max) {
-        return last_click_pos() < min && last_click_pos() > max;
+        return last_click_pos() <= min && last_click_pos() >= max;
     }
 
     bool mouse_in_region(vec2 min, vec2 max) {
-        return mouse_pos() < min && mouse_pos() > max;
+        return mouse_pos() <= min && mouse_pos() >= max;
     }
 
     bool mouse_in_region(rect region) {
-        return mouse_pos() < region.min && mouse_pos() > region.max;
+        return mouse_pos() <= region.min && mouse_pos() >= region.max;
     }
 
 
