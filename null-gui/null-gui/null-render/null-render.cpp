@@ -62,12 +62,12 @@ namespace null_render {
 			device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &verts, 20);
 		}
 		
-		void draw_rect_multicolor(IDirect3DDevice9* device, vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right) {
+		void draw_rect_multicolor(IDirect3DDevice9* device, vec2 start, vec2 end, std::array<color, 2> top, std::array<color, 2> down) {
 			null_render::vertice verts[4] = {
-				{ start.x, start.y, 0.01f, 0.01f, left.at(1).get_d3d() },
-				{ end.x, start.y, 0.01f, 0.01f, right.at(1).get_d3d() },
-				{ start.x, end.y, 0.01f, 0.01f, left.at(0).get_d3d() },
-				{ end.x, end.y, 0.01f, 0.01f, right.at(0).get_d3d() }
+				{ start.x, start.y, 0.01f, 0.01f, top.at(0).get_d3d() },
+				{ end.x, start.y, 0.01f, 0.01f, top.at(1).get_d3d() },
+				{ start.x, end.y, 0.01f, 0.01f, down.at(0).get_d3d() },
+				{ end.x, end.y, 0.01f, 0.01f, down.at(1).get_d3d() }
 			};
 
 			device->SetTexture(0, nullptr);
@@ -86,10 +86,10 @@ namespace null_render {
 			if (centered.at(1)) draw_pos.y -= font.text_size(text).y / 2;
 
 			if (outline) {
-				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x + 1, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0, 0, 0, clr.a()).get_d3d());
-				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x - 1, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0, 0, 0, clr.a()).get_d3d());
-				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y + 1, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0, 0, 0, clr.a()).get_d3d());
-				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y - 1, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0, 0, 0, clr.a()).get_d3d());
+				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x + 1, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0.f, 0.f, 0.f, clr.a()).get_d3d());
+				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x - 1, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0.f, 0.f, 0.f, clr.a()).get_d3d());
+				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y + 1, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0.f, 0.f, 0.f, clr.a()).get_d3d());
+				font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y - 1, (LONG)clip_space.x, (LONG)clip_space.y }, 0, color(0.f, 0.f, 0.f, clr.a()).get_d3d());
 			}
 
 			font.data->DrawTextA(NULL, text.c_str(), -1, new RECT{ (LONG)draw_pos.x, (LONG)draw_pos.y, (LONG)clip_space.x, (LONG)clip_space.y }, 0, clr.get_d3d());
@@ -119,7 +119,7 @@ namespace null_render {
 	}
 
 	void draw_calls::call_rect_multicolor::draw(IDirect3DDevice9* device) {
-		primitive_render::draw_rect_multicolor(device, start, end, left, right);
+		primitive_render::draw_rect_multicolor(device, start, end, top, down);
 	}
 
 	void draw_calls::call_line::draw(IDirect3DDevice9* device) {
@@ -165,10 +165,10 @@ namespace null_render {
 		calls.push_back(call);
 	}
 
-	void null_draw_list::add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right) {
+	void null_draw_list::add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> top, std::array<color, 2> down) {
 		draw_call call;
 		call.call_type = draw_call_type::rect_multicolor;
-		call.call_rect_multicolor = draw_calls::call_rect_multicolor{ start, end, left, right };
+		call.call_rect_multicolor = draw_calls::call_rect_multicolor{ start, end, top, down };
 		calls.push_back(call);
 	}
 

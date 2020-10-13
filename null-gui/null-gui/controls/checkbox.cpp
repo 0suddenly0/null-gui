@@ -20,6 +20,6 @@ namespace null_gui {
 		if(*value) wnd->draw_list.add_rect(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
 		wnd->draw_list.add_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), gui_settings::text, false, { false , true });
 
-		deeps::add_item((size.max - size.min) + text_spacing);
+		deeps::add_item((size.size()) + text_spacing);
 	}
 }

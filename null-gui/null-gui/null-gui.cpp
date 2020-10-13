@@ -46,15 +46,13 @@ namespace null_gui {
 
 			if (hovered_name == "" || hovered_name == name) {
 				if ((null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) || active_name == name) {
-					if (!null_input::get_mouse_key_state(0).down()) {
-						_hovered = true;
-						hovered_name = name;
-					}
+					hovered_name = name;
+
+					if (!null_input::get_mouse_key_state(0).down()) _hovered = true;
 					if (null_input::get_mouse_key_state(0).clicked()) active_name = name;
 					if (active_name == name) {
 						if (null_input::get_mouse_key_state(0).down()) _pressed = true;
 						if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::get_mouse_key_state(0).pressed()) _active = true;
-						hovered_name = name;
 					}
 				}
 			}
@@ -75,10 +73,9 @@ namespace null_gui {
 
 			if (hovered_name == "" || hovered_name == name) {
 				if ((null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) || active_name == name) {
-					if (!null_input::get_mouse_key_state(0).down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
-						_hovered = true;
-						hovered_name = name;
-					}
+					hovered_name = name;
+
+					if (!null_input::get_mouse_key_state(0).down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) _hovered = true;
 					if (null_input::get_mouse_key_state(0).clicked()) active_name = name;
 					if (active_name == name) {
 						if (null_input::get_mouse_key_state(0).down()) _pressed = true;
@@ -103,14 +100,11 @@ namespace null_gui {
 
 			if (hovered_name == "" || hovered_name == name) {
 				if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) {
-					if (!null_input::get_mouse_key_state(0).down()) {
-						_hovered = true;
-						hovered_name = name;
-					}
-					if (null_input::get_mouse_key_state(0).pressed()) {
-						deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
-						hovered_name = name;
-					}
+					hovered_name = name;
+
+					if (!null_input::get_mouse_key_state(0).down())	_hovered = true;
+					else _pressed = true;
+					if (null_input::get_mouse_key_state(0).pressed()) deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
 				}
 			}
 
@@ -119,11 +113,47 @@ namespace null_gui {
 			return _active;
 		}
 
+		void get_colorpicker_behavior(rect size, std::string name, std::vector<window_flags> flags) {
+			window* wnd = deeps::current_window;
+
+			if (hovered_name == "" || hovered_name == name) {
+				if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) {
+					hovered_name = name;
+
+					if (null_input::get_mouse_key_state(0).pressed()) deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+				}
+			}
+		}
+
+		bool get_colorpicker_sliders_behavior(rect size, std::string name) {
+			window* wnd = deeps::current_window;
+			bool _pressed = false;
+
+			if (hovered_name == "" || hovered_name == name) {
+				if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) {
+					hovered_name = name;
+
+					if (null_input::get_mouse_key_state(0).down() && active_name == "") active_name = name;
+				}
+			}
+
+			if (active_name == name) _pressed = true;
+
+			if (!null_input::get_mouse_key_state(0).down() && active_name == name) {
+				active_name = "";
+			}
+
+			return _pressed;
+		}
+
 		void add_item(vec2 size) {
 			window* wnd = current_window;
 			wnd->draw_item_pos_prev = wnd->draw_item_pos + vec2(size.x, 0.f);
 			wnd->draw_item_pos.x = wnd->pos.x + gui_settings::window_padding.x;
 			wnd->draw_item_pos.y += size.y + gui_settings::item_spacing;
+
+			if (wnd->max_size.x < wnd->draw_item_pos_prev.x - deeps::current_window->pos.x + gui_settings::item_spacing) wnd->max_size.x = wnd->draw_item_pos_prev.x - deeps::current_window->pos.x + gui_settings::item_spacing;
+			if (wnd->max_size.y < wnd->draw_item_pos.y - deeps::current_window->pos.y) wnd->max_size.y = wnd->draw_item_pos.y - deeps::current_window->pos.y;
 		}
 
 		bool mouse_in_current_windows() {

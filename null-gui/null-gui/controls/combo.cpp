@@ -16,19 +16,21 @@ namespace null_gui {
 		std::vector<window_flags> flags = { window_flags::popup, window_flags::set_pos, window_flags::set_size, window_flags::auto_size };
 
 		bool hovered, pressed;
-		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s comboname", text.c_str()), flags);
+		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s combo popup", text.c_str()), flags);
 
 		wnd->draw_list.add_text(draw_text, size.min, gui_settings::text, false);
 		wnd->draw_list.add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
 		wnd->draw_list.add_rect(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
-		wnd->draw_list.add_text(items[clamped_value], vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
+		wnd->draw_list.push_clip(size_draw.min, size_draw.max - vec2(size_draw.max.y - size_draw.min.y, 0.f)); {
+			wnd->draw_list.add_text(items[clamped_value], vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
+		} wnd->draw_list.pop_clip();
 
-		deeps::add_item(size.max - size.min);
+		deeps::add_item(size.size());
 
-		if (deeps::find_window(utils::format("##%s comboname", text.c_str()))) {
+		if (deeps::find_window(utils::format("##%s combo popup", text.c_str()))) {
 			deeps::push_var(gui_var(&gui_settings::window_padding, vec2(0.f, 0.f))); {
 				deeps::push_var(gui_var(&gui_settings::item_spacing, 0.f)); {
-					if (begin_window(utils::format("##%s comboname", text.c_str()), vec2(size_draw.min.x, size_draw.max.y), vec2(size_draw.max.x - size_draw.min.x, 0.f), flags, nullptr)) {
+					if (begin_window(utils::format("##%s combo popup", text.c_str()), vec2(size_draw.min.x, size_draw.max.y), vec2(size_draw.max.x - size_draw.min.x, 0.f), flags, nullptr)) {
 						for (int i = 0; i < items.size(); i++) {
 							if (selectable(items[i], *value == i)) *value = i;
 						}

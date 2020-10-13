@@ -207,6 +207,10 @@ public:
         max.y = _max.y;
     }
 
+    vec2 size() {
+        return max - min;
+    }
+
     float& operator[](int i) {
         return ((float*)this)[i];
     }

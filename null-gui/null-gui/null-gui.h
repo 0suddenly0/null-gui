@@ -56,6 +56,7 @@ namespace null_gui {
 		vec2 pos;
 		vec2 size = vec2(0, 0);
 		vec2 arg_size;
+		vec2 max_size;
 
 		std::vector<window_flags> flags;
 		vec2 drag_offset;
@@ -167,6 +168,8 @@ namespace null_gui {
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
+		void get_colorpicker_behavior(rect size, std::string name, std::vector<window_flags> flags);
+		bool get_colorpicker_sliders_behavior(rect size, std::string name);
 		void add_item(vec2 size); 
 		bool mouse_in_current_windows();
 		void set_display_size(vec2 size);
@@ -198,6 +201,8 @@ namespace null_gui {
 		float slider_size = 5.f;
 		float selectable_offset = 4.f;
 		float selectable_active_offset = 10.f;
+		float colorpicker_size = 100.f;
+		float colorpicker_thickness = 9.f;
 
 		vec2 button_padding = vec2(5, 1);
 		vec2 window_padding = vec2(10, 10);
@@ -231,7 +236,13 @@ namespace null_gui {
 	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d");
 	void slider_float(std::string text, float* value, float min, float max, std::string format = "%.2f");
 	void combo(std::string text, int* value, std::vector<std::string> items);
+	void multicombo(std::string text, std::vector<bool>* values, std::vector<std::string> items);
+	void multicombo(std::string text, std::vector<bool*> values, std::vector<std::string> items);
 	bool selectable(std::string text, bool selected);
+	color colorpicker_sv(color clr, std::string name);
+	float colorpicker_slider_h(color clr, std::string name);
+	float colorpicker_slider_alpha(color clr, std::string name);
+	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
 
 	void same_line();
 }

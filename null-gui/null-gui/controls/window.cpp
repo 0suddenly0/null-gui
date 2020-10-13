@@ -28,13 +28,13 @@ namespace null_gui {
 			if (size.y > 1.f) this_window->size.y = size.y;
 		}
 
-		if (gui_settings::clamp_window_on_screen) {
+		if (gui_settings::clamp_window_on_screen) { //pohui, potom fixanu
 			this_window->pos.x = std::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
 			this_window->pos.y = std::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 		}
 
 		if (this_window->have_flag(window_flags::popup)) { //logic for popups
-			if (null_input::get_mouse_key_state(0).down() && !this_window->in_child_region()) {
+			if (null_input::get_mouse_key_state(0).clicked() && !this_window->in_child_region()) {
 				deeps::windows.erase(deeps::windows.begin() + this_window->idx);
 				if(deeps::active_window_name == this_window->name) deeps::active_window_name = "";
 				return false;
@@ -50,6 +50,11 @@ namespace null_gui {
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
 			} else {
 				this_window->pos = null_input::mouse_pos() - this_window->drag_offset;
+
+				if (gui_settings::clamp_window_on_screen) { //pohui, potom fixanu
+					this_window->pos.x = std::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
+					this_window->pos.y = std::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
+				}
 			}
 		}
 
@@ -68,7 +73,7 @@ namespace null_gui {
 
 				deeps::push_var({ &this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size + 1, 0.f) }); {
 					deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
-						if (open && button("x", vec2(gui_settings::window_title_size, gui_settings::window_title_size))) {
+						if (open && button("x", vec2(gui_settings::window_title_size, gui_settings::window_title_size))) { //pohui, potom fixanu
 							if (deeps::active_window_name == name) deeps::active_window_name = "";
 							*open = false;
 						}
@@ -91,8 +96,8 @@ namespace null_gui {
 		deeps::current_window->draw_list.pop_clip();
 
 		if (deeps::current_window->have_flag(window_flags::auto_size)) { //auto-size logic
-			if (deeps::current_window->arg_size.x < 1.f) deeps::current_window->size.x = deeps::current_window->draw_item_pos.x - deeps::current_window->pos.x + gui_settings::window_padding.x - gui_settings::item_spacing;
-			if (deeps::current_window->arg_size.y < 1.f) deeps::current_window->size.y = deeps::current_window->draw_item_pos.y - deeps::current_window->pos.y + gui_settings::window_padding.y;
+			if (deeps::current_window->arg_size.x < 1.f) deeps::current_window->size.x = deeps::current_window->max_size.x + gui_settings::window_padding.x - gui_settings::item_spacing;
+			if (deeps::current_window->arg_size.y < 1.f) deeps::current_window->size.y = deeps::current_window->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing;
 		}
 
 		if (deeps::current_window->have_flag(window_flags::popup)) deeps::current_window = deeps::current_window->parent_window;

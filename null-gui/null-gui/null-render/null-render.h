@@ -99,8 +99,8 @@ namespace null_render {
 
 			vec2 start;
 			vec2 end;
-			std::array<color, 2> left; /* 1 - upper color : 2 - bottom color */
-			std::array<color, 2> right; /* 1 - upper color : 2 - bottom color */
+			std::array<color, 2> top; /* 1 - left color : 2 - right color */
+			std::array<color, 2> down; /* 1 - left color : 2 - right color */
 		};
 
 		class call_line {
@@ -179,10 +179,10 @@ namespace null_render {
 		void add_rect(vec2 start, vec2 end, color clr, bool filled = true);
 
 		template<typename T>
-		void add_rect_multicolor(T x, T y, T x1, T y1, std::array<color, 2> left, std::array<color, 2> right) {
-			add_rect_multicolor(vec2(x, y), vec2(x1, y1), left, right);
+		void add_rect_multicolor(T x, T y, T x1, T y1, std::array<color, 2> top, std::array<color, 2> down) {
+			add_rect_multicolor(vec2(x, y), vec2(x1, y1), top, down);
 		}
-		void add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> left, std::array<color, 2> right);
+		void add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> top, std::array<color, 2> down);
 
 		template<typename T>
 		void add_line(T x, T y, T x1, T y1, color clr) {

@@ -177,6 +177,9 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 				null_render::begin(); {
 					static int test_int = 0;
+					static color clr(255, 255, 255, 255);
+					static float size_window = 150.f;
+					static std::vector<bool> test_bools = {false, false, false, false};
 
 					if(null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
@@ -192,6 +195,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f");
 						null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f");
 						null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f");
+						null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f");
+						null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f");
 						null_gui::text("floats --------------------------------------------------------------------------------");
 						null_gui::text("bools ---------------------------------------------------------------------------------");
 						null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
@@ -208,11 +213,15 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::text("vectors --------------------------------------------------------------------------------");
 						null_gui::end_window();
 					}
-
-					if(null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300, 300), nullptr)) {
+					static float temp = 300;
+					if (null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(size_window, 0.f), {null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 						null_gui::text(utils::format("%d", test_int));
+						null_gui::same_line();
+						static color temp_clr = color(200, 100, 100, 0);//null_gui::gui_settings::main_color.rgb_to_hsv();//color(255, 255, 255);
 						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {
 							if (null_gui::button("-")) {
+								size_window = 300;//temp;
+								null_gui::gui_settings::main_color = temp_clr;
 								test_int--;
 							}
 							null_gui::same_line();
@@ -220,10 +229,19 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 								test_int++;
 							}
 						} null_gui::deeps::pop_var();
-						null_gui::slider_int("slider", &test_int, 0, 100, "%d%%");
+						null_gui::slider_float("slider", &temp, 0.f, 1.f);
 						null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
+						null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 						null_gui::checkbox("show debug window", &debug_window);
 						null_gui::checkbox("show settings window", &settings_window);
+						static int colors[4] = {0, 0, 0, 255};
+						null_gui::slider_float("r##color", &temp_clr.r(), 0.f, 1.f);
+						null_gui::slider_float("g##color", &temp_clr.g(), 0.f, 1.f);
+						null_gui::slider_float("b##color", &temp_clr.b(), 0.f, 1.f);
+						null_gui::slider_float("a##color", &temp_clr.a(), 0.f, 1.f);
+						null_gui::text(utils::format("%.2f", null_gui::gui_settings::main_color.a()));
+						//null_gui::gui_settings::main_color = colors;
+						null_gui::colorpicker("color", &temp_clr);
 						null_gui::end_window();
 					}
 				}
