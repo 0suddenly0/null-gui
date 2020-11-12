@@ -23,6 +23,7 @@
     <ClCompile Include="null-gui\controls\button.cpp" />
     <ClCompile Include="null-gui\controls\checkbox.cpp" />
     <ClCompile Include="null-gui\controls\colorpicker.cpp" />
+    <ClCompile Include="null-gui\controls\column.cpp" />
     <ClCompile Include="null-gui\controls\combo.cpp" />
     <ClCompile Include="null-gui\controls\multicombo.cpp" />
     <ClCompile Include="null-gui\controls\selectable.cpp" />

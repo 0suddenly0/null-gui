@@ -23,7 +23,8 @@ void cleanup_device_d3d() {
 }
 
 BOOL create_device_d3d(HWND hwnd) {
-	if ((d3d = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) return FALSE;
+	if ((d3d = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
+		return FALSE;
 
 	ZeroMemory(&d3dp, sizeof(d3dp));
 	d3dp.Windowed = TRUE;
@@ -32,7 +33,8 @@ BOOL create_device_d3d(HWND hwnd) {
 	d3dp.EnableAutoDepthStencil = TRUE;
 	d3dp.AutoDepthStencilFormat = D3DFMT_D16;
 	d3dp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dp, &d3d_device) < 0) return FALSE;
+	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dp, &d3d_device) < 0)
+		return FALSE;
 	return TRUE;
 }
 
@@ -73,7 +75,7 @@ void setup_render_states(std::function< void() > func) {
 	vp.MaxZ = 1.0f;
 	d3d_device->SetViewport(&vp);
 
-	const float L = 0.5f, R = display_size.x + 0.5f, T = 0.5f, B = display_size.y + 0.5f;
+	float L = 0.5f, R = display_size.x + 0.5f, T = 0.5f, B = display_size.y + 0.5f;
 	D3DMATRIX mat_identity = { { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f } };
 	D3DMATRIX mat_projection =
 	{
@@ -91,6 +93,7 @@ void setup_render_states(std::function< void() > func) {
 	d3d9_state_block->Apply();
 	d3d9_state_block->Release();
 }
+
 
 LRESULT CALLBACK wnd_proc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param) {
 	null_input::null_wnd_proc(message, w_param, l_param);
@@ -121,7 +124,7 @@ BOOL init_window(HINSTANCE instance, LPCTSTR class_name, LPCTSTR title) {
 	RECT screen_rect;
 	GetWindowRect(GetDesktopWindow(), &screen_rect);
 
-	window = CreateWindowEx(WS_EX_APPWINDOW, class_name, title, WS_POPUP, screen_rect.left, screen_rect.top, screen_rect.right, screen_rect.bottom, NULL, NULL, instance, NULL);
+	window = CreateWindowEx(WS_EX_APPWINDOW, class_name, title, WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800/*screen_rect.left, screen_rect.top*/ /*screen_rect.right, screen_rect.bottom*/, NULL, NULL, instance, NULL);
 
 	if (!window) return FALSE;
 	return TRUE;
@@ -130,7 +133,7 @@ BOOL init_window(HINSTANCE instance, LPCTSTR class_name, LPCTSTR title) {
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
-	LPCTSTR lpzClass = L"null-gui";
+	LPCTSTR lpzClass = L"nullgui";
 	if (!my_register_class(hInstance, lpzClass)) return 0;
 	if (!init_window(hInstance, lpzClass, L"null-gui")) return 0;
 
@@ -213,15 +216,11 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::text("vectors --------------------------------------------------------------------------------");
 						null_gui::end_window();
 					}
-					static float temp = 300;
-					if (null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(size_window, 0.f), {null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
+					if (null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300.f, 0.f), {null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 						null_gui::text(utils::format("%d", test_int));
 						null_gui::same_line();
-						static color temp_clr = color(200, 100, 100, 0);//null_gui::gui_settings::main_color.rgb_to_hsv();//color(255, 255, 255);
 						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {
 							if (null_gui::button("-")) {
-								size_window = 300;//temp;
-								null_gui::gui_settings::main_color = temp_clr;
 								test_int--;
 							}
 							null_gui::same_line();
@@ -229,19 +228,26 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 								test_int++;
 							}
 						} null_gui::deeps::pop_var();
-						null_gui::slider_float("slider", &temp, 0.f, 1.f);
+						null_gui::slider_int("slider", &test_int, 0, 100);
 						null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 						null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 						null_gui::checkbox("show debug window", &debug_window);
+						null_gui::tooltip([]() {null_gui::text("test tooltip"); });
 						null_gui::checkbox("show settings window", &settings_window);
-						static int colors[4] = {0, 0, 0, 255};
-						null_gui::slider_float("r##color", &temp_clr.r(), 0.f, 1.f);
-						null_gui::slider_float("g##color", &temp_clr.g(), 0.f, 1.f);
-						null_gui::slider_float("b##color", &temp_clr.b(), 0.f, 1.f);
-						null_gui::slider_float("a##color", &temp_clr.a(), 0.f, 1.f);
-						null_gui::text(utils::format("%.2f", null_gui::gui_settings::main_color.a()));
-						//null_gui::gui_settings::main_color = colors;
-						null_gui::colorpicker("color", &temp_clr);
+						null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
+						null_gui::end_window();
+					}
+
+					null_gui::begin_window("test columns window", vec2(10, 10), vec2(400, 300), nullptr); {
+						null_gui::begin_columns(3); {
+							null_gui::button("test button##1");
+							null_gui::next_column();
+							null_gui::button("test button##2");
+							null_gui::button("test button##3");
+							null_gui::button("test button##4");
+							null_gui::next_column();
+							null_gui::button("test button##5");
+						} null_gui::end_columns();
 						null_gui::end_window();
 					}
 				}

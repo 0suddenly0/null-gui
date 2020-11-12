@@ -67,6 +67,9 @@
     <ClCompile Include="null-gui\controls\colorpicker.cpp">
       <Filter>source\null-gui\controls</Filter>
     </ClCompile>
+    <ClCompile Include="null-gui\controls\column.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="null-gui\null-gui.h">

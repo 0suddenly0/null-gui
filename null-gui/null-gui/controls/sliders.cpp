@@ -8,11 +8,11 @@ namespace null_gui {
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		std::string formated_value = utils::format(format.c_str(), *value);
-		vec2 draw_pos = wnd->draw_item_pos;
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->scroll_offset);
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 left_spacing = vec2(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
-		rect size(draw_pos + left_spacing, vec2(wnd->pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2), draw_pos.y + text_size.y + gui_settings::slider_size + gui_settings::text_spacing) + left_spacing);
+		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2 + gui_settings::window_padding.x), draw_pos.y + text_size.y + gui_settings::slider_size + gui_settings::text_spacing) + left_spacing);
 		rect size_body(vec2(size.min.x, size.max.y - gui_settings::slider_size), size.max);
 		int new_value = null_math::clamp(min + (max - min) * (null_input::mouse_pos().x - size.min.x) / size.size().x, (float)min, (float)max);
 		int clamped = null_math::clamp(*value, min, max);
@@ -39,7 +39,7 @@ namespace null_gui {
 		float slider_size = ((float)(clamped - min) / (float)(max - min)) * size.size().x;
 		wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
 
-		deeps::add_item(size.size());
+		deeps::add_item(size.size(), name);
 	}
 
 	void slider_float(std::string text, float* value, float min, float max, std::string format) {
@@ -49,11 +49,11 @@ namespace null_gui {
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		std::string formated_value = utils::format(format.c_str(), *value);
-		vec2 draw_pos = wnd->draw_item_pos;
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->scroll_offset);
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 left_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
-		rect size(draw_pos + left_spacing, vec2(wnd->pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2), draw_pos.y + text_size.y + gui_settings::slider_size + gui_settings::text_spacing) + left_spacing);
+		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2 + gui_settings::window_padding.x), draw_pos.y + text_size.y + gui_settings::slider_size + gui_settings::text_spacing) + left_spacing);
 		rect size_body(vec2(size.min.x, size.max.y - gui_settings::slider_size), size.max);
 		float new_value = null_math::clamp(min + (max - min) * (null_input::mouse_pos().x - size.min.x) / size.size().x, min, max);
 		float clamped = null_math::clamp(*value, min, max);
@@ -80,6 +80,6 @@ namespace null_gui {
 		float slider_size = ((clamped - min) / (max - min)) * size.size().x;
 		wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
 
-		deeps::add_item(size.size());
+		deeps::add_item(size.size(), name);
 	}
 }

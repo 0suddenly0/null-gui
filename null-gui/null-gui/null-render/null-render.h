@@ -44,6 +44,7 @@ namespace null_render {
 		void clip(IDirect3DDevice9* device, vec2 start, vec2 end);
 		void draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, vec2 clip_space, null_font::font font);
 		void draw_line(IDirect3DDevice9* device, vec2 start, vec2 end, color clr);
+		void draw_circle(IDirect3DDevice9* device, vec2 pos, color clr, bool filled);
 	}
 
 	struct vertice {
@@ -119,7 +120,6 @@ namespace null_render {
 			vec2 pos;
 			color clr;
 			float radius;
-			int segments;
 			bool filled = true;
 		};
 
@@ -189,6 +189,12 @@ namespace null_render {
 			add_line(vec2(x, y), vec2(x1, y1), clr);
 		}
 		void add_line(vec2 start, vec2 end, color clr);
+
+		template<typename T>
+		void add_circle(T x, T y, color clr, float radius, bool filled) {
+			add_circle(vec2(x, y), clr, radius, filled);
+		}
+		void add_circle(vec2 pos, color clr, float radius, bool filled);
 
 		void draw();
 		void clear();

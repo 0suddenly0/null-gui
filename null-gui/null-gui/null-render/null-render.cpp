@@ -1,5 +1,6 @@
 #include "null-render.h"
 #include "../null-gui.h"
+#define pi 3.14159265359f
 
 std::shared_mutex mutex;
 
@@ -104,6 +105,43 @@ namespace null_render {
 			device->SetTexture(0, nullptr);
 			device->DrawPrimitiveUP(D3DPT_LINELIST, 1, &verts, 20);
 		}
+
+		void draw_circle(IDirect3DDevice9* device, vec2 pos, color clr, float radius, bool filled) {
+			std::vector<null_render::vertice> verticles = {
+				{ pos.x, pos.y + radius, 0.01f, 0.01f, (int)clr.get_d3d() },
+				{ pos.x, pos.y - radius, 0.01f, 0.01f, (int)clr.get_d3d() },
+				{ pos.x + radius, pos.y, 0.01f, 0.01f, (int)clr.get_d3d() },
+				{ pos.x - radius, pos.y, 0.01f, 0.01f, (int)clr.get_d3d() },
+			};
+
+			int f = 1 - radius;
+			int ddF_x = 0;
+			int ddF_y = -2 * radius;
+			int x = 0;
+			int y = radius;
+
+			while (x < y) {
+				if (f >= 0) {
+					y--;
+					ddF_y += 2;
+					f += ddF_y;
+				}
+				x++;
+				ddF_x += 2;
+				f += ddF_x + 1;
+
+				verticles.push_back({ pos.x + x, pos.y + y, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x - x, pos.y + y, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x + x, pos.y - y, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x - x, pos.y - y, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x + y, pos.y + x, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x - y, pos.y + x, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x + y, pos.y - x, 0.01f, 0.01f, (int)clr.get_d3d() });
+				verticles.push_back({ pos.x - y, pos.y - x, 0.01f, 0.01f, (int)clr.get_d3d() });
+			}
+
+			device->DrawPrimitiveUP(filled ? D3DPT_LINESTRIP : D3DPT_POINTLIST, verticles.size() - 1, &verticles[0], sizeof(null_render::vertice));
+		}
 	}
 
 	void draw_calls::call_clip::clip(IDirect3DDevice9* device) {
@@ -124,6 +162,10 @@ namespace null_render {
 
 	void draw_calls::call_line::draw(IDirect3DDevice9* device) {
 		primitive_render::draw_line(device, start, end, clr);
+	}
+
+	void draw_calls::call_circle::draw(IDirect3DDevice9* device) {
+		primitive_render::draw_circle(device, pos, clr, radius, filled);
 	}
 
 	void null_draw_list::add_text(std::string text, vec2 pos, color clr, null_font::font font, bool outline, std::array<bool, 2> centered) {
@@ -179,6 +221,13 @@ namespace null_render {
 		calls.push_back(call);
 	}
 
+	void null_draw_list::add_circle(vec2 pos, color clr, float radius, bool filled) {
+		draw_call call;
+		call.call_type = draw_call_type::circle;
+		call.call_circle = draw_calls::call_circle{ pos, clr, radius, filled };
+		calls.push_back(call);
+	}
+
 	void null_draw_list::draw() {
 		for (draw_call& call : calls) {
 			switch (call.call_type) {
@@ -186,6 +235,7 @@ namespace null_render {
 			case draw_call_type::clip: call.call_clip.clip(device); break;
 			case draw_call_type::rect: call.call_rect.draw(device); break;
 			case draw_call_type::line: call.call_line.draw(device); break;
+			case draw_call_type::circle: call.call_circle.draw(device); break;
 			case draw_call_type::rect_multicolor: call.call_rect_multicolor.draw(device); break;
 			}
 		}

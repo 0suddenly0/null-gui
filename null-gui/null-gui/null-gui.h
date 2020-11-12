@@ -63,6 +63,8 @@ namespace null_gui {
 		bool dragging;
 		vec2 draw_item_pos_prev;
 		vec2 draw_item_pos;
+		float scroll_offset = 0.f;
+		float column_offset = 0.f;
 		int idx;
 		bool visible = true;
 		window* parent_window = nullptr;
@@ -156,9 +158,11 @@ namespace null_gui {
 		INT64 ticks_per_second;
 		INT64 time;
 		window* current_window = nullptr;
+		window* hovered_window = nullptr;
 		std::string active_name;
 		std::string hovered_name;
 		std::string active_window_name;
+		std::string last_item_name;
 		std::vector<window*> windows;
 		std::vector<gui_var> pushed_vars;
 
@@ -168,12 +172,10 @@ namespace null_gui {
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
-		void get_colorpicker_behavior(rect size, std::string name, std::vector<window_flags> flags);
+		void get_colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
 		bool get_colorpicker_sliders_behavior(rect size, std::string name);
-		void add_item(vec2 size); 
+		void add_item(vec2 size, std::string name); 
 		bool mouse_in_current_windows();
-		void set_display_size(vec2 size);
-		vec2 get_display_size();
 		std::string format_item(std::string text);
 		void focus_current_window();
 		void push_var(gui_var var);
@@ -243,6 +245,11 @@ namespace null_gui {
 	float colorpicker_slider_h(color clr, std::string name);
 	float colorpicker_slider_alpha(color clr, std::string name);
 	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
+	
+	void begin_columns(int count);
+	void next_column();
+	void end_columns();
 
 	void same_line();
+	void tooltip(std::function<void()> func, std::string need_name = "");
 }

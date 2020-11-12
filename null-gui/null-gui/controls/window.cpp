@@ -15,12 +15,12 @@ namespace null_gui {
 		bool have_title_bar = !this_window->have_flag(window_flags::popup) && !this_window->have_flag(window_flags::no_title_bar);
 		color bg_color = this_window->have_flag(window_flags::popup) ? gui_settings::popup_bg : gui_settings::window_bg;
 
-		if (open) {
-			this_window->visible = *open;
-			if (!*open) {
-				return false;
-			}
+		if (this_window->have_flag(window_flags::popup) && deeps::current_window != this_window && this_window->parent_window != deeps::current_window) {
+			this_window->parent_window = deeps::current_window;
 		}
+
+		if (open) this_window->visible = *open;
+		if (!this_window->visible) return false;
 
 		if (this_window->have_flag(window_flags::set_pos)) this_window->pos = pos;
 		if (this_window->have_flag(window_flags::set_size)) {
@@ -29,36 +29,37 @@ namespace null_gui {
 		}
 
 		if (gui_settings::clamp_window_on_screen) { //pohui, potom fixanu
-			this_window->pos.x = std::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-			this_window->pos.y = std::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
+			this_window->pos.x = null_math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
+			this_window->pos.y = null_math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 		}
 
 		if (this_window->have_flag(window_flags::popup)) { //logic for popups
-			if (null_input::get_mouse_key_state(0).clicked() && !this_window->in_child_region()) {
+			if ((null_input::get_mouse_key_state(0).clicked() || null_input::get_mouse_key_state(1).clicked()) && !this_window->in_child_region()) {
 				deeps::windows.erase(deeps::windows.begin() + this_window->idx);
-				if(deeps::active_window_name == this_window->name) deeps::active_window_name = "";
+				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
 				return false;
 			}
 		}
 
 		deeps::current_window = this_window;
-		
+
 		if (this_window->dragging && deeps::active_name == "") {
 			if (!null_input::get_mouse_key_state(0).down() || deeps::active_window_name != this_window->name) {
 				this_window->drag_offset = vec2(0.f, 0.f);
 				this_window->dragging = false;
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
-			} else {
+			}
+			else {
 				this_window->pos = null_input::mouse_pos() - this_window->drag_offset;
 
 				if (gui_settings::clamp_window_on_screen) { //pohui, potom fixanu
-					this_window->pos.x = std::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-					this_window->pos.y = std::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
+					this_window->pos.x = null_math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
+					this_window->pos.y = null_math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 				}
 			}
 		}
 
-		if (deeps::active_window_name == this_window->name || (null_input::get_mouse_key_state(0).clicked() && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
+		if (deeps::active_window_name == this_window->name || ((null_input::get_mouse_key_state(0).clicked() || null_input::get_mouse_key_state(1).clicked()) && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
 			deeps::focus_current_window();
 		}
 
@@ -69,11 +70,11 @@ namespace null_gui {
 
 			this_window->draw_list.push_clip(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size)); {
 				this_window->draw_list.add_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
-				this_window->draw_list.add_rect_multicolor(this_window->pos + vec2(this_window->size.x - 45 - (open ? gui_settings::window_title_size - 1 : 0), 0.f), this_window->pos + vec2(this_window->size.x - (open ? gui_settings::window_title_size - 1 : 0), gui_settings::window_title_size - 1), { color(gui_settings::window_title_bg, 0), color(gui_settings::window_title_bg, 0) }, { gui_settings::window_title_bg, gui_settings::window_title_bg });
+				this_window->draw_list.add_rect_multicolor(this_window->pos + vec2(this_window->size.x - 45 - (open ? gui_settings::window_title_size - 1 : 0), 0.f), this_window->pos + vec2(this_window->size.x - (open ? gui_settings::window_title_size - 1 : 0), gui_settings::window_title_size - 1), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
 
-				deeps::push_var({ &this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size + 1, 0.f) }); {
+				deeps::push_var({ &this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size + 1, 1.f) }); {
 					deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
-						if (open && button("x", vec2(gui_settings::window_title_size, gui_settings::window_title_size))) { //pohui, potom fixanu
+						if (open && button("x", vec2(gui_settings::window_title_size, gui_settings::window_title_size))) {
 							if (deeps::active_window_name == name) deeps::active_window_name = "";
 							*open = false;
 						}
@@ -82,10 +83,15 @@ namespace null_gui {
 			} this_window->draw_list.pop_clip();
 		}
 
-		if(!this_window->have_flag(window_flags::popup)) this_window->draw_list.add_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, 1.f), gui_settings::main_color);
+		if (!this_window->have_flag(window_flags::popup)) this_window->draw_list.add_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, 1.f), gui_settings::main_color);
 
 		this_window->draw_item_pos = this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f) + gui_settings::window_padding;
 		this_window->draw_list.push_clip(this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f), this_window->pos + this_window->size);
+
+		/*if (null_input::vars::mouse_wheel != 0 && deeps::hovered_window == this_window) {
+			this_window->scroll_offset += null_input::vars::mouse_wheel * 10;
+			null_input::vars::mouse_wheel = 0;
+		}*/
 
 		return true;
 	}
@@ -98,6 +104,7 @@ namespace null_gui {
 		if (deeps::current_window->have_flag(window_flags::auto_size)) { //auto-size logic
 			if (deeps::current_window->arg_size.x < 1.f) deeps::current_window->size.x = deeps::current_window->max_size.x + gui_settings::window_padding.x - gui_settings::item_spacing;
 			if (deeps::current_window->arg_size.y < 1.f) deeps::current_window->size.y = deeps::current_window->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing;
+			deeps::current_window->max_size = vec2(0.f, 0.f);
 		}
 
 		if (deeps::current_window->have_flag(window_flags::popup)) deeps::current_window = deeps::current_window->parent_window;
