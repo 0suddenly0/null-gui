@@ -11,7 +11,7 @@ null_render::null_draw_list upper_draw_list_safe;
 namespace null_font {
 	vec2 font::text_size(std::string text) {
 		RECT rect = RECT();
-		data->DrawTextA(nullptr, text.data(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
+		data->DrawTextA(nullptr, text.c_str(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
 		return vec2( rect.right - rect.left, rect.bottom - rect.top );
 	}
 
@@ -23,7 +23,10 @@ namespace null_font {
 
 	vec2 text_size(std::string text, font* fnt) {
 		font _fnt = !fnt ? pushed_fonts.size() <= 0 ? main_font : pushed_fonts.back() : *fnt;
-		return _fnt.text_size(text);
+
+		vec2 formated_size = _fnt.text_size("_" + text + "_");
+		formated_size.x -= _fnt.text_size("_").x * 2;
+		return formated_size;
 	}
 
 	void create_font(std::string name, int size, font* fnt, bool set_main) {
@@ -142,30 +145,6 @@ namespace null_render {
 
 			device->DrawPrimitiveUP(filled ? D3DPT_LINESTRIP : D3DPT_POINTLIST, verticles.size() - 1, &verticles[0], sizeof(null_render::vertice));
 		}
-	}
-
-	void draw_calls::call_clip::clip(IDirect3DDevice9* device) {
-		primitive_render::clip(device, start, end);
-	}
-
-	void draw_calls::call_text::draw(std::vector<call_clip> clips) {
-		primitive_render::draw_text(text, pos, clr, outline, centered, clips.size() == 0 ? vec2(9999, 9999) : clips[clips.size() - 1].end, font);
-	}
-
-	void draw_calls::call_rect::draw(IDirect3DDevice9* device) {
-		filled ? primitive_render::draw_rect_filled(device, start, end, clr) : primitive_render::draw_rect(device, start, end, clr);
-	}
-
-	void draw_calls::call_rect_multicolor::draw(IDirect3DDevice9* device) {
-		primitive_render::draw_rect_multicolor(device, start, end, top, down);
-	}
-
-	void draw_calls::call_line::draw(IDirect3DDevice9* device) {
-		primitive_render::draw_line(device, start, end, clr);
-	}
-
-	void draw_calls::call_circle::draw(IDirect3DDevice9* device) {
-		primitive_render::draw_circle(device, pos, clr, radius, filled);
 	}
 
 	void null_draw_list::add_text(std::string text, vec2 pos, color clr, null_font::font font, bool outline, std::array<bool, 2> centered) {

@@ -4,6 +4,15 @@
 #include "null-input/null-input.h"
 #include "../utils/utils.h"
 
+namespace null_math {
+	template <typename T>
+	T clamp(T a, T min, T max) {
+		if (a < min) return min;
+		else if (a > max) return max;
+		return a;
+	}
+}
+
 namespace null_gui {
 	enum class window_flags {
 		standart = 0,
@@ -151,12 +160,55 @@ namespace null_gui {
 		vec2 var_vec2_old;
 	};
 
+	enum class select_type {
+		none = 0,
+		down,
+		all
+	};
+
 	namespace deeps {
+		class text_input_info {
+		public:
+			static text_input_info* add(text_input_info* input);
+			static text_input_info* get_input(std::string name);
+			static void win_poc(int id);
+			static void control();
+
+			void get_pos_on_cursor();
+			void select_text();
+			void clamp(int start = 0) {
+				pos_in_text = null_math::clamp(pos_in_text, start, (int)value->size());
+				select_max = null_math::clamp(select_max, start, (int)value->size());
+				select_min = null_math::clamp(select_min, start, (int)value->size());
+			}
+			void reset_select() { selecting = select_type::none; select_max = 0; select_min = 0; };
+
+			int get_id_under_cursor();
+			float get_text_offset(int offset);
+			float get_size_select();
+
+			std::string name;
+			std::string* value;
+			std::string visible_text;
+			rect work_rect;
+			int pos_in_text;
+			
+			bool show_pos;
+			float show_time;
+
+			bool is_selecting() { return selecting != select_type::none && select_min != select_max; }
+			select_type selecting;
+			int select_min;
+			int select_max;
+		};
+
+		std::vector<text_input_info*> text_inputs;
 		HWND hwnd;
 		vec2 display_size;
 		float delta_time;
 		INT64 ticks_per_second;
 		INT64 time;
+		float real_time;
 		window* current_window = nullptr;
 		window* hovered_window = nullptr;
 		std::string active_name;
@@ -169,17 +221,18 @@ namespace null_gui {
 		window* find_window(std::string name);
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags);
 
+		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
 		void get_colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
 		bool get_colorpicker_sliders_behavior(rect size, std::string name);
 		void add_item(vec2 size, std::string name); 
-		bool mouse_in_current_windows();
+		bool mouse_in_current_windows() { return deeps::hovered_window == deeps::current_window; }
 		std::string format_item(std::string text);
 		void focus_current_window();
-		void push_var(gui_var var);
-		void pop_var();
+		void push_var(gui_var var) { pushed_vars.push_back(var); }
+		void pop_var() { pushed_vars.back().pop(); pushed_vars.pop_back(); }
 		void window_moving();
 		void popups_control();
 	}
@@ -194,6 +247,7 @@ namespace null_gui {
 		color popup_bg = color(50, 50, 50, 255);
 		color text = color(255, 255, 255, 255);
 		color text_hovered = color(130, 130, 130, 255);
+		color select_text = color(100, 100, 255, 100);
 
 		float window_title_size = 20.f;
 		float item_spacing = 5.f;
@@ -206,6 +260,10 @@ namespace null_gui {
 		float colorpicker_size = 100.f;
 		float colorpicker_thickness = 9.f;
 
+		float double_click_time = 0.30f;
+		float double_click_max_dist = 6.f;
+		float show_pos_in_text_cooldown = 0.7f;
+
 		vec2 button_padding = vec2(5, 1);
 		vec2 window_padding = vec2(10, 10);
 
@@ -214,15 +272,6 @@ namespace null_gui {
 		bool clamp_window_on_screen = true;
 		bool spacing_checkbox_size = true;
 		bool move_window_on_title_bar = true;
-	}
-
-	namespace null_math {
-		template <typename T>
-		T clamp(T a, T min, T max) {
-			if (a < min) return min;
-			else if (a > max) return max;
-			return a;
-		}
 	}
 
 	void pre_begin_gui(HWND hwnd);
@@ -245,6 +294,7 @@ namespace null_gui {
 	float colorpicker_slider_h(color clr, std::string name);
 	float colorpicker_slider_alpha(color clr, std::string name);
 	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
+	void text_input(std::string text, std::string* value, bool password = false);
 	
 	void begin_columns(int count);
 	void next_column();

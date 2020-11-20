@@ -29,6 +29,7 @@
     <ClCompile Include="null-gui\controls\selectable.cpp" />
     <ClCompile Include="null-gui\controls\sliders.cpp" />
     <ClCompile Include="null-gui\controls\text.cpp" />
+    <ClCompile Include="null-gui\controls\text_input.cpp" />
     <ClCompile Include="null-gui\controls\window.cpp" />
     <ClCompile Include="null-gui\null-gui.cpp" />
     <ClCompile Include="null-gui\null-input\null-input.cpp" />

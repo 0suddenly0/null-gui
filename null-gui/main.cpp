@@ -3,6 +3,8 @@
 #include "null-gui/null-gui.h"
 #include "utils/utils.h"
 
+#define VAR_TO_STRING(VAR) #VAR
+
 null_font::font main_font;
 
 static LPDIRECT3D9 d3d = NULL;
@@ -180,17 +182,18 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 				null_render::begin(); {
 					static int test_int = 0;
-					static color clr(255, 255, 255, 255);
+					static color test_color(255, 255, 255, 255);
 					static float size_window = 150.f;
-					static std::vector<bool> test_bools = {false, false, false, false};
+					static std::vector<bool> test_bools = { false, false, false, false };
+					static std::string test_string = "https://github.com/0suddenly0/null-gui";
 
-					if(null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window)) {
+					if (null_gui::begin_window("debug window [ window with debug information ]", vec2(100, 100), vec2(300, 300), &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
 						null_gui::text(utils::format("active window name - '%s'", null_gui::deeps::active_window_name.c_str()));
 						null_gui::end_window();
 					}
 
-					if(null_gui::begin_window("settings window", vec2(100, 100), vec2(300, 500), &settings_window)) {
+					if (null_gui::begin_window("settings window", vec2(100, 100), vec2(300, 500), &settings_window)) {
 						null_gui::text("floats --------------------------------------------------------------------------------");
 						null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f");
 						null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f");
@@ -216,7 +219,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::text("vectors --------------------------------------------------------------------------------");
 						null_gui::end_window();
 					}
-					if (null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300.f, 0.f), {null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
+					if (null_gui::begin_window("nullptr 1", vec2(300, 300), vec2(300.f, 0.f), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 						null_gui::text(utils::format("%d", test_int));
 						null_gui::same_line();
 						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {
@@ -232,8 +235,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 						null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 						null_gui::checkbox("show debug window", &debug_window);
-						null_gui::tooltip([]() {null_gui::text("test tooltip"); });
+						null_gui::tooltip([]() { null_gui::text("test tooltip"); });
 						null_gui::checkbox("show settings window", &settings_window);
+						null_gui::text_input("text input", &test_string);
+						null_gui::text(utils::format("%d", null_input::vars::last_press_key));
+						null_gui::text(null_input::key_names::get_name(null_input::vars::last_press_key, true));
+						null_gui::text(GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), NULL)) == (HKL)67699721 ? "rus" : "us");
+
 						null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
 						null_gui::end_window();
 					}

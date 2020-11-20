@@ -44,7 +44,7 @@ namespace null_render {
 		void clip(IDirect3DDevice9* device, vec2 start, vec2 end);
 		void draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, vec2 clip_space, null_font::font font);
 		void draw_line(IDirect3DDevice9* device, vec2 start, vec2 end, color clr);
-		void draw_circle(IDirect3DDevice9* device, vec2 pos, color clr, bool filled);
+		void draw_circle(IDirect3DDevice9* device, vec2 pos, color clr, float radius, bool filled);
 	}
 
 	struct vertice {
@@ -66,7 +66,9 @@ namespace null_render {
 	namespace draw_calls {
 		class call_clip {
 		public:
-			void clip(IDirect3DDevice9* device);
+			void clip(IDirect3DDevice9* device) {
+				primitive_render::clip(device, start, end);
+			}
 
 			vec2 start;
 			vec2 end;
@@ -74,7 +76,7 @@ namespace null_render {
 
 		class call_text {
 		public:
-			void draw(std::vector<call_clip> clips);
+			void draw(std::vector<call_clip> clips) { primitive_render::draw_text(text, pos, clr, outline, centered, clips.size() == 0 ? vec2(9999, 9999) : clips[clips.size() - 1].end, font); }
 
 			vec2 pos;
 			color clr;
@@ -86,7 +88,7 @@ namespace null_render {
 
 		class call_rect {
 		public:
-			void draw(IDirect3DDevice9* device);
+			void draw(IDirect3DDevice9* device) { filled ? primitive_render::draw_rect_filled(device, start, end, clr) : primitive_render::draw_rect(device, start, end, clr); }
 
 			vec2 start;
 			vec2 end;
@@ -96,7 +98,7 @@ namespace null_render {
 
 		class call_rect_multicolor {
 		public:
-			void draw(IDirect3DDevice9* device);
+			void draw(IDirect3DDevice9* device) { primitive_render::draw_rect_multicolor(device, start, end, top, down); }
 
 			vec2 start;
 			vec2 end;
@@ -106,7 +108,7 @@ namespace null_render {
 
 		class call_line {
 		public:
-			void draw(IDirect3DDevice9* device);
+			void draw(IDirect3DDevice9* device) { primitive_render::draw_line(device, start, end, clr); }
 
 			vec2 start;
 			vec2 end;
@@ -115,7 +117,7 @@ namespace null_render {
 
 		class call_circle {
 		public:
-			void draw(IDirect3DDevice9* device);
+			void draw(IDirect3DDevice9* device) { primitive_render::draw_circle(device, pos, clr, radius, filled); }
 
 			vec2 pos;
 			color clr;
@@ -135,8 +137,6 @@ namespace null_render {
 
 	class draw_call {
 	public:
-		draw_call() {}
-
 		draw_call_type call_type = draw_call_type::none;
 
 		draw_calls::call_text            call_text;
@@ -154,46 +154,32 @@ namespace null_render {
 		std::vector<draw_call> calls;
 
 		template<typename T>
-		void add_text(std::string text, T x, T y, color clr, null_font::font font, bool outline = true, std::array<bool, 2> centered = { false, false }) {
-			add_text(text, vec2(x, y), clr, font, outline, centered);
-		}
+		void add_text(std::string text, T x, T y, color clr, null_font::font font, bool outline = true, std::array<bool, 2> centered = { false, false }) { add_text(text, vec2(x, y), clr, font, outline, centered); }
 		void add_text(std::string text, vec2 pos, color clr, null_font::font font, bool outline = true, std::array<bool, 2> centered = { false, false });
 
 		template<typename T>
-		void add_text(std::string text, T x, T y, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }) {
-			add_text(text, vec2(x, y), clr, outline, centered);
-		}
+		void add_text(std::string text, T x, T y, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }) { add_text(text, vec2(x, y), clr, outline, centered); }
 		void add_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false });
 
 		template<typename T>
-		void push_clip(T x, T y, T x1, T y1) {
-			push_clip(vec2(x, y), vec2(x1, y1));
-		}
+		void push_clip(T x, T y, T x1, T y1) { push_clip(vec2(x, y), vec2(x1, y1)); }
 		void push_clip(vec2 start, vec2 end);
 		void pop_clip();
 
 		template<typename T>
-		void add_rect(T x, T y, T x1, T y1, color clr, bool filled = true) {
-			add_rect(vec2(x, y), vec2(x1, y1), clr, filled);
-		}
+		void add_rect(T x, T y, T x1, T y1, color clr, bool filled = true) { add_rect(vec2(x, y), vec2(x1, y1), clr, filled); }
 		void add_rect(vec2 start, vec2 end, color clr, bool filled = true);
 
 		template<typename T>
-		void add_rect_multicolor(T x, T y, T x1, T y1, std::array<color, 2> top, std::array<color, 2> down) {
-			add_rect_multicolor(vec2(x, y), vec2(x1, y1), top, down);
-		}
+		void add_rect_multicolor(T x, T y, T x1, T y1, std::array<color, 2> top, std::array<color, 2> down) { add_rect_multicolor(vec2(x, y), vec2(x1, y1), top, down); }
 		void add_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> top, std::array<color, 2> down);
 
 		template<typename T>
-		void add_line(T x, T y, T x1, T y1, color clr) {
-			add_line(vec2(x, y), vec2(x1, y1), clr);
-		}
+		void add_line(T x, T y, T x1, T y1, color clr) { add_line(vec2(x, y), vec2(x1, y1), clr); }
 		void add_line(vec2 start, vec2 end, color clr);
 
 		template<typename T>
-		void add_circle(T x, T y, color clr, float radius, bool filled) {
-			add_circle(vec2(x, y), clr, radius, filled);
-		}
+		void add_circle(T x, T y, color clr, float radius, bool filled) { add_circle(vec2(x, y), clr, radius, filled); }
 		void add_circle(vec2 pos, color clr, float radius, bool filled);
 
 		void draw();
