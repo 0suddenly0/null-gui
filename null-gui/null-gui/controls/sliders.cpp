@@ -8,7 +8,7 @@ namespace null_gui {
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		std::string formated_value = utils::format(format.c_str(), *value);
-		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->scroll_offset);
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 left_spacing = vec2(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
@@ -25,19 +25,39 @@ namespace null_gui {
 			value_size = null_font::text_size(formated_value);
 		}
 
-		wnd->draw_list.add_rect(size_body.min, size_body.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
-		wnd->draw_list.add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list.add_text(formated_value, vec2(size.max.x - value_size.x, size.min.y), hovered ? color(100, 100, 100, 255) : gui_settings::text, false);
+		wnd->draw_list->add_rect(size_body.min, size_body.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
+		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->add_text(formated_value, vec2(size.max.x - value_size.x, size.min.y), hovered ? color(100, 100, 100, 255) : gui_settings::text, false);
+
+		vec2 minus_size = null_font::text_size("- ");
+		vec2 plus_size = null_font::text_size("+ ");
+
+		deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
+			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x, size.min.y - wnd->get_scroll()) }); {
+				if (clickable_text(utils::format("+##%s", name.c_str()))) {
+					if (null_input::get_key_state("ctrl").down()) *value += 10;
+					else *value += 1;
+				}
+			} deeps::pop_var();
+
+			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x - minus_size.x, size.min.y - wnd->get_scroll()) }); {
+				if (clickable_text(utils::format("-##%s", name.c_str()))) {
+					if (null_input::get_key_state("ctrl").down()) *value -= 10;
+					else *value -= 1;
+				}
+			} deeps::pop_var();
+			*value = null_math::clamp(*value, min, max);
+		} deeps::pop_var();
 
 		if (pressed) *value = new_value;
 
 		if (hovered) {
 			float slider_size_hovered = ((float)(new_value - min) / (float)(max - min)) * size.size().x;
-			wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size_hovered, size_body.max.y), color(gui_settings::main_color, 100));
+			wnd->draw_list->add_rect(size_body.min, vec2(size_body.min.x + slider_size_hovered, size_body.max.y), color(gui_settings::main_color, 100));
 		}
 
 		float slider_size = ((float)(clamped - min) / (float)(max - min)) * size.size().x;
-		wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
+		wnd->draw_list->add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
 
 		deeps::add_item(size.size(), name);
 	}
@@ -49,7 +69,7 @@ namespace null_gui {
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		std::string formated_value = utils::format(format.c_str(), *value);
-		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->scroll_offset);
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 left_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
@@ -66,19 +86,39 @@ namespace null_gui {
 			value_size = null_font::text_size(formated_value);
 		}
 
-		wnd->draw_list.add_rect(size_body.min, size_body.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
-		wnd->draw_list.add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list.add_text(formated_value, vec2(size.max.x - value_size.x, size.min.y), hovered ? color(100, 100, 100, 255) : gui_settings::text, false);
+		wnd->draw_list->add_rect(size_body.min, size_body.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
+		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->add_text(formated_value, vec2(size.max.x - value_size.x, size.min.y), hovered ? color(100, 100, 100, 255) : gui_settings::text, false);
+
+		vec2 minus_size = null_font::text_size("- ");
+		vec2 plus_size = null_font::text_size("+ ");
+
+		deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
+			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x, size.min.y - wnd->get_scroll()) }); {
+				if (clickable_text(utils::format("+##%s", name.c_str()))) {
+					if (null_input::get_key_state("ctrl").down()) *value += 0.1;
+					else *value += 0.01;
+				}
+			} deeps::pop_var();
+
+			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x - minus_size.x, size.min.y - wnd->get_scroll()) }); {
+				if (clickable_text(utils::format("-##%s", name.c_str()))) {
+					if (null_input::get_key_state("ctrl").down()) *value -= 0.1;
+					else *value -= 0.01;
+				}
+			} deeps::pop_var();
+			*value = null_math::clamp(*value, min, max);
+		} deeps::pop_var();
 
 		if (pressed) *value = new_value;
 
 		if (hovered) {
 			float slider_size_hovered = ((new_value - min) / (max - min)) * size.size().x;
-			wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size_hovered, size_body.max.y), color(gui_settings::main_color, 100));
+			wnd->draw_list->add_rect(size_body.min, vec2(size_body.min.x + slider_size_hovered, size_body.max.y), color(gui_settings::main_color, 100));
 		}
 
 		float slider_size = ((clamped - min) / (max - min)) * size.size().x;
-		wnd->draw_list.add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
+		wnd->draw_list->add_rect(size_body.min, vec2(size_body.min.x + slider_size, size_body.max.y), gui_settings::main_color);
 
 		deeps::add_item(size.size(), name);
 	}

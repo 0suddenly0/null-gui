@@ -16,6 +16,7 @@ namespace null_math {
 namespace null_gui {
 	enum class window_flags {
 		standart = 0,
+		group,
 		no_title_bar,
 		popup,
 		no_move,
@@ -26,32 +27,63 @@ namespace null_gui {
 
 	class window {
 	public:
-		window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, std::vector<window_flags> wnd_flags) {
-			name = wnd_name;
-			pos = wnd_pos;
-			size = arg_size = wnd_size;
-			flags = wnd_flags;
-		}
+		window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, std::vector<window_flags> wnd_flags);
 
 		bool have_flag(window_flags flag) {
 			return std::count(flags.begin(), flags.end(), flag) > 0;
 		}
 
-		bool in_child_region() {
-			window* last_child = have_flag(window_flags::popup) ? this : child_window;
+		bool in_popup_region() {
+			window* last_child = have_flag(window_flags::popup) ? this : child_popup_window;
 
 			while (last_child != nullptr) {
 				if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
-				last_child = last_child->child_window;
+				last_child = last_child->child_popup_window;
 			}
 
 			return false;
 		}
 
+		bool in_group_region() {
+			/*window* last_child = have_flag(window_flags::group) ? this : child_group_window;
+
+			while (last_child != nullptr) {
+				if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
+				last_child = last_child->child_group_window;
+			}*/
+
+			return false;
+		}
+
+		window* get_hovered_group() {
+			if (child_group_window.size() <= 0) return nullptr;
+			for (window* group : child_group_window) {
+				if (null_input::mouse_in_region(group->pos, group->pos + group->size)) return group;
+			}
+			return nullptr;
+			/*for (window* child_gorup : child_group_window) {
+				if (!child_gorup) return nullptr;
+				window* last_child = child_gorup;
+
+				while (last_child->child_gorup != nullptr)
+					last_child = last_child->child_gorup;
+
+				window* last_parrent = last_child;
+				while (last_parrent != nullptr) {
+					if (null_input::mouse_in_region(last_parrent->pos, last_parrent->pos + last_parrent->size) && last_parrent != this) return last_parrent;
+					last_parrent = last_parrent->parent_window;
+				}
+			}
+
+			return nullptr;*/
+		}
+
 		window* get_main_window() {
 			window* last = this;
 
-			while (last->have_flag(window_flags::popup)) {
+			if (!last->parent_window) return nullptr;
+
+			while (last->have_flag(window_flags::popup) || last->have_flag(window_flags::group)) {
 				if (!last->parent_window) break;
 				last = last->parent_window;
 			}
@@ -59,6 +91,11 @@ namespace null_gui {
 			return last;
 		}
 
+		float get_scroll() {
+			return ignore_scroll ? 0.f : scroll_offset;
+		}
+
+		void focus_window();
 		rect get_draw_pos(rect value);
 
 		std::string name;
@@ -72,13 +109,16 @@ namespace null_gui {
 		bool dragging;
 		vec2 draw_item_pos_prev;
 		vec2 draw_item_pos;
-		float scroll_offset = 0.f;
-		float column_offset = 0.f;
+		bool ignore_scroll;
+		float scroll_offset;
+		float column_offset;
 		int idx;
 		bool visible = true;
 		window* parent_window = nullptr;
-		window* child_window = nullptr;
-		null_render::null_draw_list draw_list;
+		window* child_popup_window = nullptr;
+		std::vector<window*> child_group_window;
+		window* hovered_group = nullptr;
+		null_render::null_draw_list* draw_list;
 	};
 
 	enum class gui_var_t {
@@ -228,7 +268,7 @@ namespace null_gui {
 		void get_colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
 		bool get_colorpicker_sliders_behavior(rect size, std::string name);
 		void add_item(vec2 size, std::string name); 
-		bool mouse_in_current_windows() { return deeps::hovered_window == deeps::current_window; }
+		bool mouse_in_current_windows();
 		std::string format_item(std::string text);
 		void focus_current_window();
 		void push_var(gui_var var) { pushed_vars.push_back(var); }
@@ -239,12 +279,13 @@ namespace null_gui {
 
 	namespace gui_settings {
 		color main_color = color(83, 100, 255, 255);
-		color window_bg = color(45, 45, 45, 255);
-		color window_title_bg = color(30, 30, 30, 255);
-		color button_bg = color(56, 56, 56, 255);
-		color button_bg_hovered = color(66, 66, 66, 255);
-		color button_bg_active = color(76, 76, 76, 255);
-		color popup_bg = color(50, 50, 50, 255);
+		color window_bg = color(26, 26, 26, 255);
+		color window_title_bg = color(40, 40, 40, 255);
+		color group_bg = color(31, 31, 31, 255);
+		color button_bg = color(44, 44, 44, 255);
+		color button_bg_hovered = color(46, 46, 46, 255);
+		color button_bg_active = color(48, 48, 48, 255);
+		color popup_bg = color(33, 33, 33, 255);
 		color text = color(255, 255, 255, 255);
 		color text_hovered = color(130, 130, 130, 255);
 		color select_text = color(100, 100, 255, 100);
@@ -281,8 +322,11 @@ namespace null_gui {
 	bool begin_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags = { window_flags::standart }, bool* open = nullptr);
 	void end_window();
 
+	void begin_scroll();
+
 	void text(std::string text);
 	bool button(std::string text, vec2 size_arg = vec2(0, 0));
+	bool clickable_text(std::string text);
 	void checkbox(std::string text, bool* value);
 	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d");
 	void slider_float(std::string text, float* value, float min, float max, std::string format = "%.2f");
@@ -294,8 +338,11 @@ namespace null_gui {
 	float colorpicker_slider_h(color clr, std::string name);
 	float colorpicker_slider_alpha(color clr, std::string name);
 	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
-	void text_input(std::string text, std::string* value, bool password = false);
+	bool text_input(std::string text, std::string* value, bool password = false);
 	
+	bool begin_group(std::string name, vec2 arg_size = vec2(0, 0));
+	void end_group();
+
 	void begin_columns(int count);
 	void next_column();
 	void end_columns();

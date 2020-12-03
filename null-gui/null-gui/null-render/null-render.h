@@ -164,6 +164,7 @@ namespace null_render {
 		template<typename T>
 		void push_clip(T x, T y, T x1, T y1) { push_clip(vec2(x, y), vec2(x1, y1)); }
 		void push_clip(vec2 start, vec2 end);
+		rect get_clip();
 		void pop_clip();
 
 		template<typename T>
@@ -184,14 +185,14 @@ namespace null_render {
 
 		void draw();
 		void clear();
-		void swap(null_draw_list draw_list);
+		void swap(null_draw_list* draw_list);
 	};
 
 	IDirect3DDevice9* device;
 
-	null_draw_list lower_draw_list;
+	null_draw_list* lower_draw_list = new null_draw_list;
 	std::vector<null_draw_list*> draw_lists;
-	null_draw_list upper_draw_list;
+	null_draw_list* upper_draw_list = new null_draw_list;
 
 	void init(IDirect3DDevice9* _device);
 

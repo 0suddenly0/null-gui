@@ -7,7 +7,7 @@ namespace null_gui {
 
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
-		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->scroll_offset);
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 left_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
 		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2 + gui_settings::window_padding.x), draw_pos.y + gui_settings::combo_size + text_size.y + gui_settings::text_spacing) + left_spacing);
@@ -18,12 +18,13 @@ namespace null_gui {
 		bool hovered, pressed;
 		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s combo popup", text.c_str()), flags);
 
-		wnd->draw_list.add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list.add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
-		wnd->draw_list.add_rect(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
-		wnd->draw_list.push_clip(size_draw.min, size_draw.max - vec2(size_draw.max.y - size_draw.min.y, 0.f)); {
-			wnd->draw_list.add_text(items[clamped_value], vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
-		} wnd->draw_list.pop_clip();
+		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
+		wnd->draw_list->add_rect(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
+		wnd->draw_list->push_clip(size_draw.min, size_draw.max - vec2(size_draw.max.y - size_draw.min.y, 0.f)); {
+			wnd->draw_list->add_text(items[clamped_value], vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
+
+		} wnd->draw_list->pop_clip();
 
 		deeps::add_item(size.size(), name);
 

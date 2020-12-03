@@ -8,7 +8,6 @@
 namespace null_input {
 	namespace key_names {
 		bool for_input(int id);
-
 		int get_id(std::string name);
 		std::string get_name(int id, bool language_and_shift = false);
 	}

@@ -318,8 +318,7 @@ namespace null_input {
 					vec2 delta = vars::mouse_pos - vars::mouse_click_pos;
 					if (delta.length_sqr() < pow(null_gui::gui_settings::double_click_max_dist, 2)) key.state_double_clicked = true;
 					key.clicked_time = -FLT_MAX;
-				}
-				else {
+				} else {
 					key.clicked_time = null_gui::deeps::real_time;
 				}
 				vars::mouse_click_pos = vars::mouse_pos;

@@ -4,9 +4,9 @@
 
 std::shared_mutex mutex;
 
-null_render::null_draw_list lower_draw_list_safe;
+null_render::null_draw_list* lower_draw_list_safe = new null_render::null_draw_list;
 std::vector<null_render::null_draw_list*> draw_lists_safe;
-null_render::null_draw_list upper_draw_list_safe;
+null_render::null_draw_list* upper_draw_list_safe = new null_render::null_draw_list;
 
 namespace null_font {
 	vec2 font::text_size(std::string text) {
@@ -162,12 +162,26 @@ namespace null_render {
 	}
 
 	void null_draw_list::push_clip(vec2 start, vec2 end) {
+		if (clips.size() > 0) {
+			draw_calls::call_clip last_clip = clips[clips.size() - 1];
+			start.x = null_math::clamp(start.x, last_clip.start.x, last_clip.end.x);
+			start.y = null_math::clamp(start.y, last_clip.start.y, last_clip.end.y);
+
+			end.x = null_math::clamp(end.x, last_clip.start.x, last_clip.end.x);
+			end.y = null_math::clamp(end.y, last_clip.start.y, last_clip.end.y);
+		}
+
 		clips.push_back({ start, end });
 
 		draw_call call;
 		call.call_type = draw_call_type::clip;
 		call.call_clip = draw_calls::call_clip{ start, end };
 		calls.push_back(call);
+	}
+
+	rect null_draw_list::get_clip() {
+		if (clips.size() <= 0) return rect(vec2(-9999, -9999), vec2(9999, 9999));
+		return rect(clips[clips.size() - 1].start, clips[clips.size() - 1].end);
 	}
 
 	void null_draw_list::pop_clip() {
@@ -225,9 +239,9 @@ namespace null_render {
 		clips.clear();
 	}
 
-	void null_draw_list::swap(null_draw_list draw_list) {
-		calls.swap(draw_list.calls);
-		clips.swap(draw_list.clips);
+	void null_draw_list::swap(null_draw_list* draw_list) {
+		calls.swap(draw_list->calls);
+		clips.swap(draw_list->clips);
 	}
 
 	void init(IDirect3DDevice9* _device) {
@@ -273,30 +287,30 @@ namespace null_render {
 
 	void begin() {
 		null_font::pushed_fonts.clear();
-		lower_draw_list.clear();
+		lower_draw_list->clear();
 		for (null_draw_list* list : draw_lists) { list->clear(); }
 		draw_lists.clear();
-		upper_draw_list.clear();
+		upper_draw_list->clear();
 	}
 
 	void end() {
 		std::unique_lock<std::shared_mutex> lock(mutex);
 
 		for (null_gui::window* wnd : null_gui::deeps::windows) {
-			add_draw_list(&wnd->draw_list);
+			if(!wnd->have_flag(null_gui::window_flags::group)) add_draw_list(wnd->draw_list);
 		}
 
-		lower_draw_list_safe.swap(lower_draw_list);
+		lower_draw_list_safe->swap(lower_draw_list);
 		draw_lists_safe.swap(draw_lists);
-		upper_draw_list_safe.swap(upper_draw_list);
+		upper_draw_list_safe->swap(upper_draw_list);
 	}
 
 	void render() {
 		std::unique_lock<std::shared_mutex> lock(mutex);
 
-		lower_draw_list_safe.draw();
+		lower_draw_list_safe->draw();
 		for (null_draw_list* list : draw_lists_safe) { list->draw(); }
-		upper_draw_list_safe.draw();
+		upper_draw_list_safe->draw();
 	}
 
 	void add_draw_list(null_draw_list* list) {
