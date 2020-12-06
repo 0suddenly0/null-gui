@@ -188,27 +188,28 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					static std::vector<bool> test_bools = { false, false, false, false };
 					static std::string test_string = "https://github.com/0suddenly0/null-gui";
 
-					if (null_gui::begin_window("debug window [ window with debug information ]", vec2(20, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
+					if (null_gui::begin_window("debug window [ window with debug information ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
 						null_gui::text(utils::format("active window name - '%s'", null_gui::deeps::active_window_name.c_str()));
 						if (null_gui::deeps::hovered_window) null_gui::text(utils::format("hovered window name - '%s'", null_gui::deeps::hovered_window->name.c_str()));
 						null_gui::end_window();
 					}
 
-					if (null_gui::begin_window("settings window", vec2(325, 20), vec2(500, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, &settings_window)) {
+					if (null_gui::begin_window("settings window", vec2(600, 20), vec2(500, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, &settings_window)) {
 						null_gui::begin_columns(2); {
 							null_gui::begin_group("floats", vec2(0.f, 200.f)); {
-								null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f");
-								null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f");
-								null_gui::slider_float("text_spacing", &null_gui::gui_settings::text_spacing, 1, 20, "%.0f");
-								null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f");
-								null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f");
-								null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f");
-								null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f");
-								null_gui::slider_float("selectable_offset", &null_gui::gui_settings::selectable_offset, 3, 20, "%.0f");
-								null_gui::slider_float("selectable_active_offset", &null_gui::gui_settings::selectable_offset, 3, 20, "%.0f");
-								null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f");
-								null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f");
+								null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f", 1, 5);
+								null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f", 1, 5);
+								null_gui::slider_float("text_spacing", &null_gui::gui_settings::text_spacing, 1, 20, "%.0f", 1, 5);
+								null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f", 1, 5);
+								null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f", 1, 5);
+								null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1, 5);
+								null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1, 5);
+								null_gui::slider_float("selectable_offset", &null_gui::gui_settings::selectable_offset, 3, 20, "%.0f", 1, 5);
+								null_gui::slider_float("selectable_active_offset", &null_gui::gui_settings::selectable_offset, 3, 20, "%.0f", 1, 5);
+								null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f", 1, 5);
+								null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f", 1, 5);
+								null_gui::slider_float("scrollbar_thickness", &null_gui::gui_settings::scrollbar_thickness, 1, 10, "%.0f", 1, 5);
 							} null_gui::end_group();
 							null_gui::begin_group("bools", vec2(0.f, 200.f)); {
 								null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
@@ -219,10 +220,12 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 							} null_gui::end_group();
 							null_gui::next_column();
 							null_gui::begin_group("vectors", vec2(0.f, 200.f)); {
-								null_gui::slider_float("button_padding_x", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f");
-								null_gui::slider_float("button_padding_y", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f");
-								null_gui::slider_float("window_padding_x", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f");
-								null_gui::slider_float("window_padding_y", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f");
+								null_gui::slider_float("button_padding_x", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f", 1, 5);
+								null_gui::slider_float("button_padding_y", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f", 1, 5);
+								null_gui::slider_float("window_padding_x", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f", 1, 5);
+								null_gui::slider_float("window_padding_y", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f", 1, 5);
+								null_gui::slider_float("scrollbar_padding_x", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1, 5);
+								null_gui::slider_float("scrollbar_padding_y", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1, 5);
 							} null_gui::end_group();
 							null_gui::begin_group("colors", vec2(0.f, 200.f)); {
 								null_gui::colorpicker("main_color", &null_gui::gui_settings::main_color);
@@ -240,7 +243,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						} null_gui::end_columns();
 						null_gui::end_window();
 					}
-					if (null_gui::begin_window("nullptr 1", vec2(830, 325), vec2(300.f, 0.f), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
+					if (null_gui::begin_window("nullptr", vec2(290, 330), vec2(300.f, 0.f), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 						null_gui::text(utils::format("%d", test_int));
 						null_gui::same_line();
 						null_gui::deeps::push_var({ &null_gui::gui_settings::items_size_full_window, false }); {

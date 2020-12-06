@@ -14,6 +14,44 @@ namespace null_gui {
 		draw_list = have_flag(window_flags::group) && parent_window ? get_main_window()->draw_list : new null_render::null_draw_list;
 	}
 
+	bool window::in_popup_region() {
+		window* last_child = have_flag(window_flags::popup) ? this : child_popup_window;
+
+		while (last_child != nullptr) {
+			if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
+			last_child = last_child->child_popup_window;
+		}
+
+		return false;
+	}
+
+	window* window::get_hovered_group() {
+		if (child_group_window.size() <= 0) return nullptr;
+		for (window* group : child_group_window) {
+			if (null_input::mouse_in_region(group->pos, group->pos + group->size)) return group;
+		}
+		return nullptr;
+	}
+
+	window* window::get_main_window() {
+		window* last = this;
+
+		if (!last->parent_window) return nullptr;
+
+		while (last->have_flag(window_flags::popup) || last->have_flag(window_flags::group)) {
+			if (!last->parent_window) break;
+			last = last->parent_window;
+		}
+
+		return last;
+	}
+
+	float window::get_scroll_offset() {
+		if (!can_scroll()) return 0.f;
+
+		return gui_settings::scrollbar_padding.x + gui_settings::scrollbar_thickness;
+	}
+
 	rect window::get_draw_pos(rect value) {
 		vec2 clamped_draw_pos(null_math::clamp(draw_item_pos.x, pos.x, pos.x + size.x), null_math::clamp(draw_item_pos.y + get_scroll(), pos.y, pos.y + size.y));
 		return rect(vec2(null_math::clamp(value.min.x, clamped_draw_pos.x, value.max.x), null_math::clamp(value.min.y, clamped_draw_pos.y, value.max.y)), value.max);
@@ -277,6 +315,33 @@ namespace null_gui {
 			return active_name == name;
 		}
 
+		void get_scroll_behavior(rect size, bool* hovered, bool* pressed) {
+			window* wnd = deeps::current_window;
+			bool _hovered = false;
+			bool _pressed = false;
+			std::string name = utils::format("scrollbar##%s", wnd->name.c_str());
+
+			if ((hovered_name == "" || hovered_name == name)) {
+				if ((null_input::mouse_in_region(size) && deeps::mouse_in_current_windows()) || active_name == name) {
+					hovered_name = name;
+
+					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
+						if (!null_input::get_key_state("mouse left").down()) _hovered = true;
+						if (null_input::get_key_state("mouse left").clicked()) active_name = name;
+					}
+
+					if (active_name == name && null_input::get_key_state("mouse left").down()) _pressed = true;
+				}
+			}
+
+			if (!null_input::get_key_state("mouse left").down() && active_name == name) {
+				active_name = "";
+			}
+
+			if (hovered) *hovered = _hovered;
+			if (pressed) *pressed = _pressed;
+		}
+
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
 			window* wnd = deeps::current_window;
 			bool _active = false;
@@ -491,31 +556,6 @@ namespace null_gui {
 		deeps::window_control();
 		deeps::popups_control();
 		deeps::text_input_info::control();
-	}
-
-	void begin_scroll() {
-		window* wnd = deeps::current_window;
-		if (!wnd) return;
-
-		bool can_scroll = wnd->max_size.y > wnd->size.y && wnd->have_flag(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : deeps::hovered_window == wnd && wnd->hovered_group == nullptr;
-		if (!deeps::hovered_window) {
-			null_input::vars::mouse_wheel = 0;
-			return;
-		}
-
-		if (null_input::vars::mouse_wheel != 0 && can_scroll) {
-			if (wnd->have_flag(window_flags::auto_size)) {
-				null_input::vars::mouse_wheel = 0;
-				return;
-			}
-			wnd->scroll_offset += null_input::vars::mouse_wheel * 10.f;
-			null_input::vars::mouse_wheel = 0;
-		}
-
-		if (can_scroll && !wnd->have_flag(null_gui::window_flags::auto_size)) {
-			float max_scroll = -((wnd->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing) - wnd->size.y);
-			wnd->scroll_offset = null_math::clamp(wnd->scroll_offset, max_scroll, 0.f);
-		}
 	}
 
 	void same_line() {

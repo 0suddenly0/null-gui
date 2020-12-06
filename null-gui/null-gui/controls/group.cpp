@@ -6,7 +6,6 @@ namespace null_gui {
 		if (!wnd) return false;
 
 		vec2 size = vec2(arg_size.x == 0.f ? wnd->size.x - (gui_settings::window_padding.x * 2) : arg_size.x, arg_size.y == 0.f ? wnd->size.y - (gui_settings::window_padding.y * 2) - gui_settings::window_title_size : arg_size.y);
-
 		bool result = begin_window(name, wnd->draw_item_pos + vec2(0.f, wnd->get_scroll()), size, { window_flags::set_pos, window_flags::set_size, window_flags::no_move, window_flags::group }, nullptr);
 		return result;
 	}

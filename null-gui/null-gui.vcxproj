@@ -28,6 +28,7 @@
     <ClCompile Include="null-gui\controls\combo.cpp" />
     <ClCompile Include="null-gui\controls\group.cpp" />
     <ClCompile Include="null-gui\controls\multicombo.cpp" />
+    <ClCompile Include="null-gui\controls\scroll.cpp" />
     <ClCompile Include="null-gui\controls\selectable.cpp" />
     <ClCompile Include="null-gui\controls\sliders.cpp" />
     <ClCompile Include="null-gui\controls\text.cpp" />

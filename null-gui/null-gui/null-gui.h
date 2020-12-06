@@ -28,73 +28,13 @@ namespace null_gui {
 	class window {
 	public:
 		window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, std::vector<window_flags> wnd_flags);
-
-		bool have_flag(window_flags flag) {
-			return std::count(flags.begin(), flags.end(), flag) > 0;
-		}
-
-		bool in_popup_region() {
-			window* last_child = have_flag(window_flags::popup) ? this : child_popup_window;
-
-			while (last_child != nullptr) {
-				if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
-				last_child = last_child->child_popup_window;
-			}
-
-			return false;
-		}
-
-		bool in_group_region() {
-			/*window* last_child = have_flag(window_flags::group) ? this : child_group_window;
-
-			while (last_child != nullptr) {
-				if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
-				last_child = last_child->child_group_window;
-			}*/
-
-			return false;
-		}
-
-		window* get_hovered_group() {
-			if (child_group_window.size() <= 0) return nullptr;
-			for (window* group : child_group_window) {
-				if (null_input::mouse_in_region(group->pos, group->pos + group->size)) return group;
-			}
-			return nullptr;
-			/*for (window* child_gorup : child_group_window) {
-				if (!child_gorup) return nullptr;
-				window* last_child = child_gorup;
-
-				while (last_child->child_gorup != nullptr)
-					last_child = last_child->child_gorup;
-
-				window* last_parrent = last_child;
-				while (last_parrent != nullptr) {
-					if (null_input::mouse_in_region(last_parrent->pos, last_parrent->pos + last_parrent->size) && last_parrent != this) return last_parrent;
-					last_parrent = last_parrent->parent_window;
-				}
-			}
-
-			return nullptr;*/
-		}
-
-		window* get_main_window() {
-			window* last = this;
-
-			if (!last->parent_window) return nullptr;
-
-			while (last->have_flag(window_flags::popup) || last->have_flag(window_flags::group)) {
-				if (!last->parent_window) break;
-				last = last->parent_window;
-			}
-
-			return last;
-		}
-
-		float get_scroll() {
-			return ignore_scroll ? 0.f : scroll_offset;
-		}
-
+		bool have_flag(window_flags flag) { return std::count(flags.begin(), flags.end(), flag) > 0; }
+		bool in_popup_region();
+		window* get_hovered_group();
+		window* get_main_window();
+		float get_scroll() { return ignore_scroll ? 0.f : scroll_offset; }
+		bool can_scroll() { return max_scroll != 0; }
+		float get_scroll_offset();
 		void focus_window();
 		rect get_draw_pos(rect value);
 
@@ -105,19 +45,29 @@ namespace null_gui {
 		vec2 max_size;
 
 		std::vector<window_flags> flags;
+
 		vec2 drag_offset;
 		bool dragging;
+
 		vec2 draw_item_pos_prev;
 		vec2 draw_item_pos;
+
 		bool ignore_scroll;
 		float scroll_offset;
+		float max_scroll;
+		float scroll_mouse_offset;
+
 		float column_offset;
+
 		int idx;
 		bool visible = true;
+
 		window* parent_window = nullptr;
 		window* child_popup_window = nullptr;
 		std::vector<window*> child_group_window;
+
 		window* hovered_group = nullptr;
+
 		null_render::null_draw_list* draw_list;
 	};
 
@@ -262,6 +212,7 @@ namespace null_gui {
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags);
 
 		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name);
+		void get_scroll_behavior(rect size, bool* hovered, bool* pressed);
 		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
@@ -300,6 +251,7 @@ namespace null_gui {
 		float selectable_active_offset = 10.f;
 		float colorpicker_size = 100.f;
 		float colorpicker_thickness = 9.f;
+		float scrollbar_thickness = 2.f;
 
 		float double_click_time = 0.30f;
 		float double_click_max_dist = 6.f;
@@ -307,6 +259,7 @@ namespace null_gui {
 
 		vec2 button_padding = vec2(5, 1);
 		vec2 window_padding = vec2(10, 10);
+		vec2 scrollbar_padding = vec2(2, 2);
 
 		bool items_size_full_window = true;
 		bool checkbox_hovered_with_text = false;
@@ -323,13 +276,14 @@ namespace null_gui {
 	void end_window();
 
 	void begin_scroll();
+	void end_scroll();
 
 	void text(std::string text);
 	bool button(std::string text, vec2 size_arg = vec2(0, 0));
 	bool clickable_text(std::string text);
 	void checkbox(std::string text, bool* value);
-	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d");
-	void slider_float(std::string text, float* value, float min, float max, std::string format = "%.2f");
+	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d", int step = 1, int ctrl_step = 5);
+	void slider_float(std::string text, float* value, float min, float max, std::string format = "%.2f", float step = 0.1f, float ctrl_step = 0.5f);
 	void combo(std::string text, int* value, std::vector<std::string> items);
 	void multicombo(std::string text, std::vector<bool>* values, std::vector<std::string> items);
 	void multicombo(std::string text, std::vector<bool*> values, std::vector<std::string> items);

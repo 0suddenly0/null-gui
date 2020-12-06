@@ -80,7 +80,8 @@ namespace null_gui {
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 left_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
-		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x + gui_settings::window_padding.x), draw_pos.y + text_size.y + gui_settings::text_spacing));
+		vec2 right_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : wnd->get_scroll_offset(), 0.f);
+		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (right_spacing.x + gui_settings::window_padding.x), draw_pos.y + text_size.y + gui_settings::text_spacing));
 		rect size_open(size.max - (size.max.y - size.min.y), size.max);
 		std::vector<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
 		

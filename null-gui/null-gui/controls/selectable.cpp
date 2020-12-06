@@ -9,7 +9,7 @@ namespace null_gui {
 		std::string draw_text = deeps::format_item(name);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
 		vec2 text_size = null_font::text_size(draw_text);
-		rect size(draw_pos, draw_pos + vec2(wnd->size.x, text_size.y));
+		rect size(draw_pos, draw_pos + vec2(wnd->size.x - wnd->get_scroll_offset(), text_size.y));
 		bool hovered, pressed;
 		bool active = null_gui::deeps::get_button_behavior(size, &hovered, &pressed, name);
 

@@ -12,8 +12,6 @@ namespace null_gui {
 		vec2 text_spacing(gui_settings::text_spacing + text_size.x, 0.f);
 		rect size(draw_pos, vec2(draw_pos.x + gui_settings::checkbox_size, draw_pos.y + gui_settings::checkbox_size));
 
-		
-
 		bool hovered, pressed;
 		bool active = null_gui::deeps::get_button_behavior(gui_settings::checkbox_hovered_with_text ? rect(size.min, size.max + text_spacing) : size, &hovered, &pressed, name);
 

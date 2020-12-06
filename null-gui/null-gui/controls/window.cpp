@@ -69,7 +69,8 @@ namespace null_gui {
 			this_window->draw_list->add_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), gui_settings::window_title_bg);
 
 			this_window->draw_list->push_clip(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size)); {
-				this_window->draw_list->add_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
+				this_window->draw_list->add_text(utils::format("%s ( %.0f , %.0f )", formated_name.c_str(), this_window->pos.x, this_window->pos.y), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
+				//this_window->draw_list->add_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
 				this_window->draw_list->add_rect_multicolor(this_window->pos + vec2(this_window->size.x - 45 - (open ? gui_settings::window_title_size - 1 : 0), 0.f), this_window->pos + vec2(this_window->size.x - (open ? gui_settings::window_title_size - 1 : 0), gui_settings::window_title_size - 1), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
 
 				deeps::push_var({ &this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size + 1, 1.f) }); {
@@ -90,6 +91,10 @@ namespace null_gui {
 		this_window->draw_item_pos = this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f) + gui_settings::window_padding;
 		this_window->draw_list->push_clip(this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f), this_window->pos + this_window->size);
 
+		begin_scroll();
+
+		this_window->max_size = vec2(0.f, 0.f);
+
 		return true;
 	}
 
@@ -97,7 +102,7 @@ namespace null_gui {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		begin_scroll();
+		end_scroll();
 
 		wnd->draw_list->pop_clip();
 
@@ -105,8 +110,6 @@ namespace null_gui {
 			if (wnd->arg_size.x < 1.f) wnd->size.x = deeps::current_window->max_size.x + gui_settings::window_padding.x - gui_settings::item_spacing;
 			if (wnd->arg_size.y < 1.f)wnd->size.y = deeps::current_window->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing;
 		}
-
-		wnd->max_size = vec2(0.f, 0.f);
 
 		if (wnd->have_flag(window_flags::popup) || wnd->have_flag(window_flags::group)) deeps::current_window = wnd->parent_window;
 		else deeps::current_window = nullptr;
