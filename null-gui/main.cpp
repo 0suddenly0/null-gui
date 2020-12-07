@@ -5,8 +5,6 @@
 
 #define VAR_TO_STRING(VAR) #VAR
 
-null_font::font main_font;
-
 static LPDIRECT3D9 d3d = NULL;
 static LPDIRECT3DDEVICE9 d3d_device = NULL;
 static D3DPRESENT_PARAMETERS d3dp = {};
@@ -38,62 +36,6 @@ BOOL create_device_d3d(HWND hwnd) {
 	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dp, &d3d_device) < 0)
 		return FALSE;
 	return TRUE;
-}
-
-void setup_render_states(std::function< void() > func) {
-	IDirect3DStateBlock9* d3d9_state_block = NULL;
-	if (d3d_device->CreateStateBlock(D3DSBT_ALL, &d3d9_state_block) < 0)
-		return;
-
-	RECT rect;
-	GetClientRect(window, &rect);
-	vec2 display_size = vec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));
-
-	d3d_device->SetPixelShader(NULL);
-	d3d_device->SetVertexShader(NULL);
-	d3d_device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-	d3d_device->SetRenderState(D3DRS_LIGHTING, false);
-	d3d_device->SetRenderState(D3DRS_ZENABLE, false);
-	d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	d3d_device->SetRenderState(D3DRS_ALPHATESTENABLE, false);
-	d3d_device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	d3d_device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	d3d_device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, true);
-	d3d_device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	d3d_device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	d3d_device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-	d3d_device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-	d3d_device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	d3d_device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
-	d3d_device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	d3d_device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-
-	D3DVIEWPORT9 vp;
-	vp.X = vp.Y = 0;
-	vp.Width = (DWORD)display_size.x;
-	vp.Height = (DWORD)display_size.y;
-	vp.MinZ = 0.0f;
-	vp.MaxZ = 1.0f;
-	d3d_device->SetViewport(&vp);
-
-	float L = 0.5f, R = display_size.x + 0.5f, T = 0.5f, B = display_size.y + 0.5f;
-	D3DMATRIX mat_identity = { { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f } };
-	D3DMATRIX mat_projection =
-	{
-		2.0f / (R - L),   0.0f,         0.0f,  0.0f,
-		0.0f,         2.0f / (T - B),   0.0f,  0.0f,
-		0.0f,         0.0f,         0.5f,  0.0f,
-		(L + R) / (L - R),  (T + B) / (B - T),  0.5f,  1.0f,
-	};
-	d3d_device->SetTransform(D3DTS_WORLD, &mat_identity);
-	d3d_device->SetTransform(D3DTS_VIEW, &mat_identity);
-	d3d_device->SetTransform(D3DTS_PROJECTION, &mat_projection);
-
-	func();
-
-	d3d9_state_block->Apply();
-	d3d9_state_block->Release();
 }
 
 
@@ -151,6 +93,9 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	MSG msg;
 	ZeroMemory(&msg, sizeof(msg));
 
+	null_render::init(d3d_device, &d3dp);
+	null_font::create_font("Tahoma", 14, &null_font::main_font);
+
 	null_gui::pre_begin_gui(window);
 
 	while (msg.message != WM_QUIT) {
@@ -166,17 +111,11 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		d3d_device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_RGBA(100, 100, 100, 0), 1.0f, 0);
 
 		if (d3d_device->BeginScene() >= 0) {
-			setup_render_states([=]() {
+			null_render::begin_render_states(); {
 				null_gui::begin_gui();
-				null_render::init(d3d_device);
 
 				static bool debug_window = true;
 				static bool settings_window = true;
-
-				null_font::create_font("Tahoma", 14, &main_font, true);
-
-				static null_render::null_draw_list first;
-				static null_render::null_draw_list two;
 
 				null_render::render();
 
@@ -187,6 +126,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					static float size_window = 150.f;
 					static std::vector<bool> test_bools = { false, false, false, false };
 					static std::string test_string = "https://github.com/0suddenly0/null-gui";
+
+					null_render::draw_text(null_font::first_font.name, vec2(10, 10), color(255, 255, 255), null_font::first_font);
 
 					if (null_gui::begin_window("debug window [ window with debug information ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
@@ -270,8 +211,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					}
 				}
 				null_render::end();
-
-				});
+			}
+			null_render::end_render_states();
 
 			if (GetAsyncKeyState(VK_END)) {
 				ExitProcess(-1);
@@ -279,7 +220,12 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 			d3d_device->EndScene();
 		}
-		d3d_device->Present(NULL, NULL, NULL, NULL);
+
+		HRESULT result = d3d_device->Present(NULL, NULL, NULL, NULL);
+		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
+			null_render::reset_device_d3d();
+			printf("aue\n");
+		}
 	}
 	cleanup_device_d3d();
 

@@ -9,15 +9,19 @@ std::vector<null_render::null_draw_list*> draw_lists_safe;
 null_render::null_draw_list* upper_draw_list_safe = new null_render::null_draw_list;
 
 namespace null_font {
+	font::font(std::string _name, int _size) {
+		create_font(_name, _size, this);
+	}
+
 	vec2 font::text_size(std::string text) {
 		RECT rect = RECT();
-		data->DrawTextA(nullptr, text.c_str(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
+		data->DrawTextA(nullptr , text.c_str(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
 		return vec2( rect.right - rect.left, rect.bottom - rect.top );
 	}
 
 	void font::resize(int new_size) {
 		if (size == new_size) return;
-		D3DXCreateFont(null_render::device, new_size, 0, 100, 4, FALSE, DEFAULT_CHARSET, 1, DEFAULT_QUALITY, DEFAULT_PITCH, (LPCWSTR)name.data(), &data);
+		D3DXCreateFontA(null_render::device, new_size, 0, 100, 4, FALSE, DEFAULT_CHARSET, 1, DEFAULT_QUALITY, DEFAULT_PITCH, name.data(), &data);
 		size = new_size;
 	}
 
@@ -30,12 +34,33 @@ namespace null_font {
 	}
 
 	void create_font(std::string name, int size, font* fnt, bool set_main) {
-		if (!fnt->created) D3DXCreateFontA(null_render::device, size, 0, 100, 4, FALSE, DEFAULT_CHARSET, 1, DEFAULT_QUALITY, DEFAULT_PITCH, name.data(), &fnt->data);
-		fnt->created = true;
 		fnt->size = size;
 		fnt->name = name;
 
+		if (!null_render::device) {
+			auto result = std::find(external_create_fonts.begin(), external_create_fonts.end(), fnt);
+			if (result == external_create_fonts.end() || external_create_fonts.size() <= 0)
+				external_create_fonts.push_back(fnt);
+			return;
+		}
+
+		if (!fnt->created) {
+			if (D3DXCreateFontA(null_render::device, size, 0, 100, 4, FALSE, DEFAULT_CHARSET, 1, DEFAULT_QUALITY, DEFAULT_PITCH, name.data(), &fnt->data) >= 0)
+				fnt->created = true;
+		}
+
 		if (set_main) main_font = *fnt;
+
+		auto result = std::find(all_fonts.begin(), all_fonts.end(), fnt);
+		if (result == all_fonts.end())
+			all_fonts.push_back(fnt);
+	}
+
+	void create_font(std::string name, int size) {
+		if (!main_font.created) D3DXCreateFontA(null_render::device, size, 0, 100, 4, FALSE, DEFAULT_CHARSET, 1, DEFAULT_QUALITY, DEFAULT_PITCH, name.data(), &main_font.data);
+		main_font.created = true;
+		main_font.size = size;
+		main_font.name = name;
 	}
 }
 
@@ -244,48 +269,89 @@ namespace null_render {
 		clips.swap(draw_list->clips);
 	}
 
-	void init(IDirect3DDevice9* _device) {
+	void init(IDirect3DDevice9* _device, D3DPRESENT_PARAMETERS* _d3dp) {
 		device = _device;
+		d3dp = _d3dp;
+	}
 
-		device->SetVertexShader(nullptr);
-		device->SetPixelShader(nullptr);
+	void begin_render_states() {
+		if (device->CreateStateBlock(D3DSBT_ALL, &d3d9_state_block) < 0)
+			return;
+
+		vec2 display_size = null_gui::deeps::display_size;
+
+		device->SetPixelShader(NULL);
+		device->SetVertexShader(NULL);
 		device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
-		device->SetRenderState(D3DRS_LIGHTING, false);
-		device->SetRenderState(D3DRS_FOGENABLE, false);
 		device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 		device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-		device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-		device->SetRenderState(D3DRS_SCISSORTESTENABLE, true);
-		device->SetRenderState(D3DRS_ZWRITEENABLE, false);
-		device->SetRenderState(D3DRS_STENCILENABLE, false);
-
-		device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, true);
-		device->SetRenderState(D3DRS_ANTIALIASEDLINEENABLE, true);
-
+		device->SetRenderState(D3DRS_LIGHTING, false);
+		device->SetRenderState(D3DRS_FOGENABLE, false);
+		device->SetRenderState(D3DRS_ZENABLE, false);
 		device->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
 		device->SetRenderState(D3DRS_ALPHATESTENABLE, false);
-		device->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, true);
+		device->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 		device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-		device->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_INVDESTALPHA);
 		device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-		device->SetRenderState(D3DRS_DESTBLENDALPHA, D3DBLEND_ONE);
-
-		device->SetRenderState(D3DRS_SRGBWRITEENABLE, false);
-		device->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-
+		device->SetRenderState(D3DRS_SCISSORTESTENABLE, true);
 		device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 		device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 		device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 		device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 		device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 		device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
-
 		device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 		device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+
+		D3DVIEWPORT9 vp;
+		vp.X = vp.Y = 0;
+		vp.Width = (DWORD)display_size.x;
+		vp.Height = (DWORD)display_size.y;
+		vp.MinZ = 0.0f;
+		vp.MaxZ = 1.0f;
+		device->SetViewport(&vp);
+
+		float L = 0.5f, R = display_size.x + 0.5f, T = 0.5f, B = display_size.y + 0.5f;
+		D3DMATRIX mat_identity = { { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f } };
+		D3DMATRIX mat_projection = {
+			2.0f / (R - L),   0.0f,         0.0f,  0.0f,
+			0.0f,         2.0f / (T - B),   0.0f,  0.0f,
+			0.0f,         0.0f,         0.5f,  0.0f,
+			(L + R) / (L - R),  (T + B) / (B - T),  0.5f,  1.0f,
+		};
+		device->SetTransform(D3DTS_WORLD, &mat_identity);
+		device->SetTransform(D3DTS_VIEW, &mat_identity);
+		device->SetTransform(D3DTS_PROJECTION, &mat_projection);
+	}
+
+	void end_render_states() {
+		d3d9_state_block->Apply();
+		d3d9_state_block->Release();
+	}
+
+	void reset_device_d3d() {
+		clear_device_objects();
+
+		HRESULT hr = device->Reset(d3dp);
+		if (hr != D3DERR_INVALIDCALL)
+			create_device_objects();
+	}
+
+	void clear_device_objects() {
+		for (null_font::font* fnt : null_font::all_fonts) fnt->data->OnLostDevice();
+	}
+
+	void create_device_objects() {
+		for (null_font::font* fnt : null_font::all_fonts) fnt->data->OnResetDevice();
 	}
 
 	void begin() {
+		for (int i = 0; i < null_font::external_create_fonts.size(); i++) {
+			null_font::font* fnt = null_font::external_create_fonts[i];
+			null_font::create_font(fnt->name, fnt->size, fnt);
+			null_font::external_create_fonts.erase(null_font::external_create_fonts.begin() + i);
+		}
+
 		null_font::pushed_fonts.clear();
 		lower_draw_list->clear();
 		for (null_draw_list* list : draw_lists) { list->clear(); }
@@ -296,9 +362,8 @@ namespace null_render {
 	void end() {
 		std::unique_lock<std::shared_mutex> lock(mutex);
 
-		for (null_gui::window* wnd : null_gui::deeps::windows) {
+		for (null_gui::window* wnd : null_gui::deeps::windows)
 			if(!wnd->have_flag(null_gui::window_flags::group)) add_draw_list(wnd->draw_list);
-		}
 
 		lower_draw_list_safe->swap(lower_draw_list);
 		draw_lists_safe.swap(draw_lists);
@@ -311,9 +376,5 @@ namespace null_render {
 		lower_draw_list_safe->draw();
 		for (null_draw_list* list : draw_lists_safe) { list->draw(); }
 		upper_draw_list_safe->draw();
-	}
-
-	void add_draw_list(null_draw_list* list) {
-		draw_lists.push_back(list);
 	}
 }

@@ -303,6 +303,13 @@ namespace null_input {
         case WM_MOUSEMOVE:
             vars::mouse_pos = vec2((signed short)(l_param), (signed short)(l_param >> 16));
             return true;
+		case WM_SIZE:
+			if (null_render::device != NULL && w_param != SIZE_MINIMIZED) {
+				null_render::d3dp->BackBufferWidth = LOWORD(l_param);
+				null_render::d3dp->BackBufferHeight = HIWORD(l_param);
+				null_render::reset_device_d3d();
+			}
+			return 0;
         }
         return 0;
     }

@@ -18,7 +18,8 @@ namespace null_font {
 
 	class font {
 	public:
-		font() { created = false; }	
+		font(std::string name, int size);
+		font() { created = false; }
 		vec2 text_size(std::string text);
 		void resize(int new_size);
 		std::string name;
@@ -27,13 +28,20 @@ namespace null_font {
 		null_font_data data;
 	};
 
-	font main_font;
 	std::vector<font> pushed_fonts;
+	std::vector<font*> external_create_fonts;
+
+	//your fonts
+	font main_font;
+	font first_font("Verdana", 50);
+
+	std::vector<font*> all_fonts = { &main_font };
 
 	vec2 text_size(std::string text, font* fnt = nullptr);
 	void push_font(font _font) { pushed_fonts.push_back(_font); }
 	void pop_font() { pushed_fonts.pop_back(); }
 	void create_font(std::string name, int size, font* fnt, bool set_main = false);
+	void create_font(std::string name, int size);
 }
 
 namespace null_render {
@@ -189,17 +197,32 @@ namespace null_render {
 	};
 
 	IDirect3DDevice9* device;
+	D3DPRESENT_PARAMETERS* d3dp;
+	IDirect3DStateBlock9* d3d9_state_block;
 
 	null_draw_list* lower_draw_list = new null_draw_list;
 	std::vector<null_draw_list*> draw_lists;
 	null_draw_list* upper_draw_list = new null_draw_list;
 
-	void init(IDirect3DDevice9* _device);
+	void init(IDirect3DDevice9* _device, D3DPRESENT_PARAMETERS* _d3dp);
+	void begin_render_states();
+	void end_render_states();
+
+	void reset_device_d3d();
+
+	void clear_device_objects();
+	void create_device_objects();
 
 	void begin();
 	void end();
 
 	void render();
 
-	void add_draw_list(null_draw_list* list);
+	void add_draw_list(null_draw_list* list) { draw_lists.push_back(list); }
+
+	void draw_text(std::string text, vec2 pos, color clr, null_font::font font = null_font::main_font, bool outline = true, std::array<bool, 2> centered = { false, false }, null_draw_list* draw_lsit = lower_draw_list) { draw_lsit->add_text(text, pos, clr, font, outline, centered); }
+	void draw_rect(vec2 start, vec2 end, color clr, bool filled = true, null_draw_list* draw_lsit = lower_draw_list) { draw_lsit->add_rect(start, end, clr, filled); }
+	void draw_rect_multicolor(vec2 start, vec2 end, std::array<color, 2> top, std::array<color, 2> down, null_draw_list* draw_lsit = lower_draw_list) { draw_lsit->add_rect_multicolor(start, end, top, down); }
+	void draw_line(vec2 start, vec2 end, color clr, null_draw_list* draw_lsit = lower_draw_list) { draw_lsit->add_line(start, end, clr); }
+	void draw_circle(vec2 pos, color clr, float radius, bool filled, null_draw_list* draw_lsit = lower_draw_list) { draw_lsit->add_circle(pos, clr, radius, filled); }
 }
