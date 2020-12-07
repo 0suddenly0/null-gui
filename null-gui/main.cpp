@@ -224,7 +224,6 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		HRESULT result = d3d_device->Present(NULL, NULL, NULL, NULL);
 		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
 			null_render::reset_device_d3d();
-			printf("aue\n");
 		}
 	}
 	cleanup_device_d3d();

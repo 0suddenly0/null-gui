@@ -15,7 +15,7 @@ namespace null_font {
 
 	vec2 font::text_size(std::string text) {
 		RECT rect = RECT();
-		data->DrawTextA(nullptr , text.c_str(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
+		data->DrawTextA(nullptr, text.c_str(), text.length(), &rect, DT_CALCRECT, D3DCOLOR_RGBA(0, 0, 0, 0));
 		return vec2( rect.right - rect.left, rect.bottom - rect.top );
 	}
 
@@ -278,8 +278,6 @@ namespace null_render {
 		if (device->CreateStateBlock(D3DSBT_ALL, &d3d9_state_block) < 0)
 			return;
 
-		vec2 display_size = null_gui::deeps::display_size;
-
 		device->SetPixelShader(NULL);
 		device->SetVertexShader(NULL);
 		device->SetFVF(D3DFVF_XYZRHW | D3DFVF_DIFFUSE);
@@ -305,13 +303,13 @@ namespace null_render {
 
 		D3DVIEWPORT9 vp;
 		vp.X = vp.Y = 0;
-		vp.Width = (DWORD)display_size.x;
-		vp.Height = (DWORD)display_size.y;
+		vp.Width = (DWORD)null_gui::deeps::display_size.x;
+		vp.Height = (DWORD)null_gui::deeps::display_size.y;
 		vp.MinZ = 0.0f;
 		vp.MaxZ = 1.0f;
 		device->SetViewport(&vp);
 
-		float L = 0.5f, R = display_size.x + 0.5f, T = 0.5f, B = display_size.y + 0.5f;
+		float L = 0.5f, R = null_gui::deeps::display_size.x + 0.5f, T = 0.5f, B = null_gui::deeps::display_size.y + 0.5f;
 		D3DMATRIX mat_identity = { { 1.0f, 0.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 0.0f,  0.0f, 0.0f, 0.0f, 1.0f } };
 		D3DMATRIX mat_projection = {
 			2.0f / (R - L),   0.0f,         0.0f,  0.0f,
