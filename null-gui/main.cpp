@@ -92,6 +92,12 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(msg));
+	static int test_int = 0;
+
+	null_input::get_key("insert")->set_callback(null_input::key_state::double_clicked, []() {
+		printf("aue\n");
+		test_int = 100;
+		});
 
 	null_render::init(d3d_device, &d3dp);
 	null_font::create_font("Tahoma", 14, &null_font::main_font);
@@ -115,12 +121,15 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_gui::begin_gui();
 
 				static bool debug_window = true;
+				static null_input::bind_key bind("auebind", "7", &debug_window, null_input::bind_type::hold);
+
+				null_input::create_bind(true, &bind);
+
 				static bool settings_window = true;
 
 				null_render::render();
 
 				null_render::begin(); {
-					static int test_int = 0;
 					static float test_float = 0.f;
 					static color test_color(255, 255, 255, 255);
 					static float size_window = 150.f;

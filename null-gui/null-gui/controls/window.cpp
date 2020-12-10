@@ -34,7 +34,7 @@ namespace null_gui {
 		}
 
 		if (this_window->have_flag(window_flags::popup)) { //logic for popups
-			if ((null_input::get_key_state("mouse left").clicked() || null_input::get_key_state("mouse right").clicked()) && (!this_window->in_popup_region() && !this_window->get_hovered_group())) {
+			if ((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && (!this_window->in_popup_region() && !this_window->get_hovered_group())) {
 				deeps::windows.erase(deeps::windows.begin() + this_window->idx);
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
 				return false;
@@ -44,7 +44,7 @@ namespace null_gui {
 		deeps::current_window = this_window;
 
 		if (this_window->dragging && deeps::active_name == "") {
-			if (!null_input::get_key_state("mouse left").down() || deeps::active_window_name != this_window->name) {
+			if (!null_input::get_key("mouse left")->down() || deeps::active_window_name != this_window->name) {
 				this_window->drag_offset = vec2(0.f, 0.f);
 				this_window->dragging = false;
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
@@ -59,7 +59,7 @@ namespace null_gui {
 			}
 		}
 
-		if (deeps::active_window_name == this_window->name || ((null_input::get_key_state("mouse left").clicked() || null_input::get_key_state("mouse right").clicked()) && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
+		if (deeps::active_window_name == this_window->name || ((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
 			deeps::focus_current_window();
 		}
 

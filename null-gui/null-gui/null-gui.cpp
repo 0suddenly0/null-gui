@@ -87,7 +87,7 @@ namespace null_gui {
 			text_input_info* active = get_input(active_name);
 			if (!active) return;
 
-			bool ctrl = null_input::get_key_state("ctrl").down();
+			bool ctrl = null_input::get_key("ctrl")->down();
 			
 			if (null_input::key_names::for_input(id) && !ctrl) {
 				if (!active->is_selecting()) {
@@ -103,7 +103,7 @@ namespace null_gui {
 				active->clamp();
 			}
 
-			if (null_input::get_key_state("backspace").down()) {
+			if (null_input::get_key("backspace")->down()) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text > 0) {
 						active->value->erase(active->value->begin() + active->pos_in_text - 1, active->value->begin() + active->pos_in_text);
@@ -117,7 +117,7 @@ namespace null_gui {
 				}
 			}
 			
-			if (null_input::get_key_state("del").down()) {
+			if (null_input::get_key("del")->down()) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text < active->value->size()) {
 						active->value->erase(active->value->begin() + active->pos_in_text, active->value->begin() + active->pos_in_text + 1);
@@ -130,16 +130,16 @@ namespace null_gui {
 			}
 
 			if (ctrl) {
-				if (null_input::get_key_state("left").down() || null_input::get_key_state("right").down()) {
-					active->pos_in_text = null_input::get_key_state("left").down() ? 0 : null_input::get_key_state("right").down() ? active->value->size() : 0;
+				if (null_input::get_key("left")->down() || null_input::get_key("right")->down()) {
+					active->pos_in_text = null_input::get_key("left")->down() ? 0 : null_input::get_key("right")->down() ? active->value->size() : 0;
 				}
 
-				if (null_input::get_key_state("c").down()) {
+				if (null_input::get_key("c")->down()) {
 					null_input::write_clipboard(std::string(active->value->begin() + active->select_min, active->value->begin() + active->select_max));
 					active->reset_select();
 				}
 
-				if (null_input::get_key_state("v").down()) {
+				if (null_input::get_key("v")->down()) {
 					if (active->is_selecting()) {
 						active->value->erase(active->value->begin() + active->select_min, active->value->begin() + active->select_max);
 						active->pos_in_text = active->select_min;
@@ -151,9 +151,9 @@ namespace null_gui {
 				}
 			} else {
 				if (!active->is_selecting()) {
-					active->pos_in_text += null_input::get_key_state("left").down() ? -1 : null_input::get_key_state("right").down() ? 1 : 0;
+					active->pos_in_text += null_input::get_key("left")->down() ? -1 : null_input::get_key("right")->down() ? 1 : 0;
 				} else {
-					active->pos_in_text = null_input::get_key_state("left").down() ? active->select_min : null_input::get_key_state("right").down() ? active->select_max : active->pos_in_text;
+					active->pos_in_text = null_input::get_key("left")->down() ? active->select_min : null_input::get_key("right")->down() ? active->select_max : active->pos_in_text;
 					active->reset_select();
 				}
 			}
@@ -183,7 +183,7 @@ namespace null_gui {
 		}
 
 		void text_input_info::get_pos_on_cursor() {
-			if (null_input::get_key_state("mouse left").clicked()) {
+			if (null_input::get_key("mouse left")->clicked()) {
 				vec2 size = null_font::text_size(visible_text);
 				if (!null_input::mouse_in_region(work_rect.min, work_rect.min + size)) {
 					if (null_input::mouse_in_region(work_rect)) pos_in_text = visible_text.size();
@@ -200,22 +200,22 @@ namespace null_gui {
 
 		void text_input_info::select_text() {
 			vec2 text_size = null_font::text_size(visible_text);
-			if (null_input::get_key_state("mouse left").down() && !null_input::mouse_in_region(work_rect.min, work_rect.max)) {
+			if (null_input::get_key("mouse left")->down() && !null_input::mouse_in_region(work_rect.min, work_rect.max)) {
 				reset_select();
 				return;
 			}
 
-			if (null_input::get_key_state("mouse left").clicked() && null_input::mouse_in_region(work_rect.min, work_rect.max)) {
+			if (null_input::get_key("mouse left")->clicked() && null_input::mouse_in_region(work_rect.min, work_rect.max)) {
 				reset_select();
 			}
 
-			if (null_input::get_key_state("mouse left").double_clicked() || (null_input::get_key_state("ctrl").down() && null_input::get_key_state("a").down())) {
+			if (null_input::get_key("mouse left")->double_clicked() || (null_input::get_key("ctrl")->down() && null_input::get_key("a")->down())) {
 				select_min = 0;
 				select_max = visible_text.size();
 				selecting = select_type::all;
 			}
 
-			if (null_input::get_key_state("mouse left").down() && null_input::mouse_in_region(work_rect.min, work_rect.min + text_size) && selecting != select_type::all) {
+			if (null_input::get_key("mouse left")->down() && null_input::mouse_in_region(work_rect.min, work_rect.min + text_size) && selecting != select_type::all) {
 				std::string a_t = ""; a_t += visible_text[get_id_under_cursor()];
 				float last_size = null_font::text_size(a_t).x;
 				float centre_pos = work_rect.min.x + get_text_offset(get_id_under_cursor()) + (last_size / 2.f);
@@ -297,16 +297,16 @@ namespace null_gui {
 					hovered_name = name;
 
 					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
-						if (!null_input::get_key_state("mouse left").down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) _hovered = true;
-						if (null_input::get_key_state("mouse left").clicked()) active_name = name;
+						if (!null_input::get_key("mouse left")->down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked()) active_name = name;
 					}
 					if (active_name == name) {
-						if (null_input::get_key_state("mouse left").down()) _pressed = true;
+						if (null_input::get_key("mouse left")->down()) _pressed = true;
 					}
 				}
 			}
 
-			if ((null_input::get_key_state("mouse left").down() && (!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && active_name == name) || (null_input::get_key_state("enter").down() && active_name == name)) {
+			if ((null_input::get_key("mouse left")->down() && (!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && active_name == name) || (null_input::get_key("enter")->down() && active_name == name)) {
 				active_name = "";
 			}
 
@@ -326,15 +326,15 @@ namespace null_gui {
 					hovered_name = name;
 
 					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
-						if (!null_input::get_key_state("mouse left").down()) _hovered = true;
-						if (null_input::get_key_state("mouse left").clicked()) active_name = name;
+						if (!null_input::get_key("mouse left")->down()) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked()) active_name = name;
 					}
 
-					if (active_name == name && null_input::get_key_state("mouse left").down()) _pressed = true;
+					if (active_name == name && null_input::get_key("mouse left")->down()) _pressed = true;
 				}
 			}
 
-			if (!null_input::get_key_state("mouse left").down() && active_name == name) {
+			if (!null_input::get_key("mouse left")->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -353,17 +353,17 @@ namespace null_gui {
 					hovered_name = name;
 
 					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
-						if (!null_input::get_key_state("mouse left").down()) _hovered = true;
-						if (null_input::get_key_state("mouse left").clicked()) active_name = name;
+						if (!null_input::get_key("mouse left")->down()) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked()) active_name = name;
 					}
 					if (active_name == name) {
-						if (null_input::get_key_state("mouse left").down()) _pressed = true;
-						if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::get_key_state("mouse left").pressed()) _active = true;
+						if (null_input::get_key("mouse left")->down()) _pressed = true;
+						if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::get_key("mouse left")->pressed()) _active = true;
 					}
 				}
 			}
 
-			if (!null_input::get_key_state("mouse left").down() && active_name == name) {
+			if (!null_input::get_key("mouse left")->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -382,16 +382,16 @@ namespace null_gui {
 					hovered_name = name;
 
 					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
-						if (!null_input::get_key_state("mouse left").down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) _hovered = true;
-						if (null_input::get_key_state("mouse left").clicked()) active_name = name;
+						if (!null_input::get_key("mouse left")->down() && null_input::mouse_in_region(wnd->get_draw_pos(size))) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked()) active_name = name;
 					}
 					if (active_name == name) {
-						if (null_input::get_key_state("mouse left").down()) _pressed = true;
+						if (null_input::get_key("mouse left")->down()) _pressed = true;
 					}
 				}
 			}
 
-			if (!null_input::get_key_state("mouse left").down() && active_name == name) {
+			if (!null_input::get_key("mouse left")->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -410,9 +410,9 @@ namespace null_gui {
 				if (null_input::mouse_in_region(wnd->draw_list->get_clip()) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name;
 
-					if (!null_input::get_key_state("mouse left").down()) _hovered = true;
+					if (!null_input::get_key("mouse left")->down()) _hovered = true;
 					else _pressed = true;
-					if (null_input::get_key_state("mouse left").pressed()) deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
+					if (null_input::get_key("mouse left")->pressed()) deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
 				}
 			}
 
@@ -427,8 +427,8 @@ namespace null_gui {
 			if (hovered_name == "" || hovered_name == name_item) {
 				if (null_input::mouse_in_region(wnd->draw_list->get_clip()) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name_item;
-					if (null_input::get_key_state("mouse left").pressed()) deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
-					if (null_input::get_key_state("mouse right").pressed()) deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+					if (null_input::get_key("mouse left")->pressed()) deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+					if (null_input::get_key("mouse right")->pressed()) deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
 				}
 			}
 		}
@@ -441,13 +441,13 @@ namespace null_gui {
 				if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name;
 
-					if (null_input::get_key_state("mouse left").down() && active_name == "") active_name = name;
+					if (null_input::get_key("mouse left")->down() && active_name == "") active_name = name;
 				}
 			}
 
 			if (active_name == name) _pressed = true;
 
-			if (!null_input::get_key_state("mouse left").down() && active_name == name) {
+			if (!null_input::get_key("mouse left")->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -501,7 +501,7 @@ namespace null_gui {
 				}
 			}
 
-			if (null_input::get_key_state("mouse left").clicked() && (active_name.empty() && active_window_name.empty())) { //window moving
+			if (null_input::get_key("mouse left")->clicked() && (active_name.empty() && active_window_name.empty())) { //window moving
 				for (int i = windows.size() - 1; i >= 0; --i) {
 					window* wnd = windows[i];
 
@@ -552,6 +552,7 @@ namespace null_gui {
 			deeps::hovered_window = nullptr;
 		deeps::hovered_name = "";
 		deeps::last_item_name = "";
+		null_input::bind_control();
 		null_input::update_keys_state();
 		deeps::window_control();
 		deeps::popups_control();

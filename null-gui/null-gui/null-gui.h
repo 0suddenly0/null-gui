@@ -118,21 +118,11 @@ namespace null_gui {
 
 		void pop() {
 			switch (type) {
-			case gui_var_t::_int: {
-				*var_int = var_int_old;
-			} break;
-			case gui_var_t::_float: {
-				*var_float = var_float_old;
-			} break;
-			case gui_var_t::_bool: {
-				*var_bool = var_bool_old;
-			} break;
-			case gui_var_t::_color: {
-				*var_color = var_color_old;
-			} break;
-			case gui_var_t::_vec2: {
-				*var_vec2 = var_vec2_old;
-			} break;
+			case gui_var_t::_int:   *var_int = var_int_old;     break;
+			case gui_var_t::_float: *var_float = var_float_old; break;
+			case gui_var_t::_bool:  *var_bool = var_bool_old;   break;
+			case gui_var_t::_color: *var_color = var_color_old; break;
+			case gui_var_t::_vec2:  *var_vec2 = var_vec2_old;   break;
 			}
 		}
 

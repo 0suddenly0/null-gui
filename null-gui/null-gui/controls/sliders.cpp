@@ -36,14 +36,14 @@ namespace null_gui {
 		deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
 			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x, size.min.y - wnd->get_scroll()) }); {
 				if (clickable_text(utils::format("+##%s", name.c_str()))) {
-					if (null_input::get_key_state("ctrl").down()) *value += ctrl_step;
+					if (null_input::get_key("ctrl")->down()) *value += ctrl_step;
 					else *value += step;
 				}
 			} deeps::pop_var();
 
 			deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x - minus_size.x, size.min.y - wnd->get_scroll()) }); {
 				if (clickable_text(utils::format("-##%s", name.c_str()))) {
-					if (null_input::get_key_state("ctrl").down()) *value -= ctrl_step;
+					if (null_input::get_key("ctrl")->down()) *value -= ctrl_step;
 					else *value -= step;
 				}
 			} deeps::pop_var();
@@ -99,14 +99,14 @@ namespace null_gui {
 			deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
 				deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x, size.min.y - wnd->get_scroll()) }); {
 					if (clickable_text(utils::format("+##%s", name.c_str()))) {
-						if (null_input::get_key_state("ctrl").down()) *value += ctrl_step;
+						if (null_input::get_key("ctrl")->down()) *value += ctrl_step;
 						else *value += step;
 					}
 				} deeps::pop_var();
 
 				deeps::push_var({ &wnd->draw_item_pos, vec2(size.max.x - value_size.x - plus_size.x - minus_size.x, size.min.y - wnd->get_scroll()) }); {
 					if (clickable_text(utils::format("-##%s", name.c_str()))) {
-						if (null_input::get_key_state("ctrl").down()) *value -= ctrl_step;
+						if (null_input::get_key("ctrl")->down()) *value -= ctrl_step;
 						else *value -= step;
 					}
 				} deeps::pop_var();

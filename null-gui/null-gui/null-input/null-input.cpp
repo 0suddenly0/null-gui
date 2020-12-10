@@ -6,6 +6,7 @@
 bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     int id = 0;
     bool state = false;
+
     switch (u_msg) {
     case WM_MBUTTONDOWN:
     case WM_MBUTTONUP:
@@ -31,12 +32,19 @@ bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
         return false;
     }
 
-    null_input::vars::keys[id].state_down = state;
+	null_input::input_key* key = &null_input::vars::keys[id];
+
+	if (key->callback && (key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false))
+		key->callback();
+
+	key->state_down = state;
+	null_input::vars::last_press_key = id;
     return true;
 }
 
 bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     int id = w_param;
+	null_input::input_key* key = &null_input::vars::keys[id];
     bool state = false;
 
     switch (u_msg) {
@@ -52,7 +60,10 @@ bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
         return false;
     }
 
-    null_input::vars::keys[id].state_down = state;
+	if (key->callback && (key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false))
+		key->callback();
+
+	key->state_down = state;
 	if(state) null_gui::deeps::text_input_info::win_poc(id);
 	null_input::vars::last_press_key = id;
     return true;
@@ -227,14 +238,14 @@ namespace null_input {
 		}
 
 		int get_id(std::string name) {
-			auto ret = std::find_if(names.begin(), names.end(), [&name](key_name_t& a) { return a.us == name || a.rus == name || a.us_shift == name || a.rus_shift == name; });
+			std::vector<key_name_t>::iterator ret = std::find_if(names.begin(), names.end(), [&name](key_name_t& a) { return a.us == name || a.rus == name || a.us_shift == name || a.rus_shift == name; });
 
 			if (ret == names.end()) return 0;
 			else return (*ret).id;
 		}
 
 		std::string get_name(int id, bool language_and_shift) {
-			auto ret = std::find_if(names.begin(), names.end(), [&id](key_name_t& a) { return a.id == id; });
+			std::vector<key_name_t>::iterator ret = std::find_if(names.begin(), names.end(), [&id](key_name_t& a) { return a.id == id; });
 			int language = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), NULL)) == (HKL)67699721 ? 0 : 1;
 
 			if (ret == names.end()) return std::to_string(id);
@@ -246,23 +257,23 @@ namespace null_input {
 					if (id == get_id("space")) return " ";
 
 					if (language == 0) {
-						if (key.us.size() == 1 && key.us.back() >= 'a' && key.us.back() <= 'z' && (get_key_state("shift").down() || caps)) {
+						if (key.us.size() == 1 && key.us.back() >= 'a' && key.us.back() <= 'z' && (get_key("shift")->down() || caps)) {
 							std::string result = key.us;
-							if (get_key_state("shift").down() && caps) return result;
+							if (get_key("shift")->down() && caps) return result;
 							result.back() = key.us.back() + ('A' - 'a');
 							return result;
 						}
-						if (get_key_state("shift").down() && key.us_shift != "") return key.us_shift;
+						if (get_key("shift")->down() && key.us_shift != "") return key.us_shift;
 
 						return key.us;
 					} else {
-						if (key.rus.size() == 1 && key.rus.back() >= 'à' && key.rus.back() <= 'ÿ' && (get_key_state("shift").down() || caps)) {
+						if (key.rus.size() == 1 && key.rus.back() >= 'à' && key.rus.back() <= 'ÿ' && (get_key("shift")->down() || caps)) {
 							std::string result = key.rus;
-							if (get_key_state("shift").down() && caps) return result;
+							if (get_key("shift")->down() && caps) return result;
 							result.back() = key.rus.back() + ('À' - 'à');
 							return result;
 						}
-						if (get_key_state("shift").down() && key.rus_shift != "") return key.rus_shift;
+						if (get_key("shift")->down() && key.rus_shift != "") return key.rus_shift;
 
 						return key.rus != "" ? key.rus : key.us;
 					}
@@ -273,9 +284,41 @@ namespace null_input {
 		}
 	}
 
-    void key_state::update_duration() {
+    void input_key::update_duration() {
         down_duration = down() ? (down_duration < 0.0f ? 0.0f : down_duration + null_gui::deeps::delta_time) : -1.0f;
     }
+
+	bind_key::bind_key(std::string _name, int key_id, bool* var, bind_type _type) {
+		key = get_key(key_id);
+		name = _name;
+		type = _type;
+		text = { "enable", "disable" };
+		set_callback({ [var]() { *var = true; }, [var]() { *var = false; }, [var]() {*var = !var; } });
+	}
+
+	bind_key::bind_key(std::string _name, std::string key_name, bool* var, bind_type _type) {
+		key = get_key(key_name);
+		name = _name;
+		type = _type;
+		text = { "enable", "disable" };
+		set_callback({ [var]() { *var = true; }, [var]() { *var = false; }, [var]() {*var = !var; } });
+	}
+
+	bind_key::bind_key(std::string _name, int key_id, bool* var, bind_type _type, std::array<std::string, 2> _text, std::array<std::function<void(void)>, 3> _callback) {
+		key = get_key(key_id);
+		name = _name;
+		type = _type;
+		text = _text;
+		set_callback(_callback);
+	}
+
+	bind_key::bind_key(std::string _name, std::string key_name, bool* var, bind_type _type, std::array<std::string, 2> _text, std::array<std::function<void(void)>, 3> _callback) {
+		key = get_key(key_name);
+		name = _name;
+		type = _type;
+		text = _text;
+		set_callback(_callback);
+	}
 
     LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
         switch (msg) {
@@ -309,21 +352,30 @@ namespace null_input {
 				null_render::d3dp->BackBufferHeight = HIWORD(l_param);
 				null_render::reset_device_d3d();
 			}
-			return 0;
+			return false;
         }
-        return 0;
+        return false;
     }
 
     void update_keys_state() {
-		for (key_state& key : vars::keys) {
+		for (input_key& key : vars::keys) {
 			key.state_clicked = key.down() && key.down_duration < 0.0f;
 			key.state_pressed = !key.down() && key.down_duration >= 0.f;
+
+			if (key.callback && (key.callback_state == null_input::key_state::clicked && key.state_clicked) || (key.callback_state == null_input::key_state::pressed && key.state_pressed))
+				key.callback();
+
 			key.update_duration();
 			key.state_double_clicked = false;
 			if (key.state_clicked) {
 				if ((float)(null_gui::deeps::real_time - key.clicked_time) < null_gui::gui_settings::double_click_time) {
 					vec2 delta = vars::mouse_pos - vars::mouse_click_pos;
-					if (delta.length_sqr() < pow(null_gui::gui_settings::double_click_max_dist, 2)) key.state_double_clicked = true;
+					if (delta.length_sqr() < pow(null_gui::gui_settings::double_click_max_dist, 2)) {
+						key.state_double_clicked = true;
+
+						if (key.callback && key.callback_state == null_input::key_state::double_clicked)
+							key.callback();
+					}
 					key.clicked_time = -FLT_MAX;
 				} else {
 					key.clicked_time = null_gui::deeps::real_time;
@@ -332,6 +384,36 @@ namespace null_input {
 			}
 		}
     }
+
+	void bind_control() {
+		for (bind_key* bind : vars::binds) {
+			switch (bind->type) {
+			case bind_type::hold: {
+				if (bind->key->down()) bind->callbacks[0]();
+				else bind->callbacks[1]();
+			} break;
+			case bind_type::hold_invers: {
+				if (!bind->key->down()) bind->callbacks[0]();
+				else bind->callbacks[1]();
+			} break;
+			case bind_type::toggle: if (bind->key->clicked()) bind->callbacks[0](); break;
+			case bind_type::always: bind->callbacks[0](); break;
+			}
+		}
+	}
+
+	void create_bind(bool can_show, bind_key* bind) {
+		bind->can_show = can_show;
+
+		std::vector<bind_key*>::iterator finded = std::find_if(vars::binds.begin(), vars::binds.end(), [bind](bind_key* first) { return first->name == bind->name; });
+
+		if (can_show) {
+			if (finded == vars::binds.end()) vars::binds.push_back(bind);
+		} else {
+			vars::binds.erase(vars::binds.begin() + std::distance(vars::binds.begin(), finded));
+			bind->callbacks[1]();
+		}
+	}
 
 	void write_clipboard(std::string value) {
 		if (OpenClipboard(null_gui::deeps::hwnd)) {

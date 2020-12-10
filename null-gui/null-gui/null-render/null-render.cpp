@@ -38,7 +38,7 @@ namespace null_font {
 		fnt->name = name;
 
 		if (!null_render::device) {
-			auto result = std::find(external_create_fonts.begin(), external_create_fonts.end(), fnt);
+			std::vector<font*>::iterator result = std::find(external_create_fonts.begin(), external_create_fonts.end(), fnt);
 			if (result == external_create_fonts.end() || external_create_fonts.size() <= 0)
 				external_create_fonts.push_back(fnt);
 			return;
@@ -51,7 +51,7 @@ namespace null_font {
 
 		if (set_main) main_font = *fnt;
 
-		auto result = std::find(all_fonts.begin(), all_fonts.end(), fnt);
+		std::vector<font*>::iterator result = std::find(all_fonts.begin(), all_fonts.end(), fnt);
 		if (result == all_fonts.end())
 			all_fonts.push_back(fnt);
 	}
