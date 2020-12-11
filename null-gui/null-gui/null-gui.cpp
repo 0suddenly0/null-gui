@@ -89,12 +89,12 @@ namespace null_gui {
 
 			bool ctrl = null_input::get_key("ctrl")->down();
 			
-			if (null_input::key_names::for_input(id) && !ctrl) {
+			if (null_input::key_name::for_input(id) && !ctrl) {
 				if (!active->is_selecting()) {
-					active->value->insert(active->value->begin() + active->pos_in_text, null_input::key_names::get_name(id, true).back());
+					active->value->insert(active->value->begin() + active->pos_in_text, null_input::key_name::get_name(id, true).back());
 				} else {
 					active->value->erase(active->value->begin() + active->select_min, active->value->begin() + active->select_max);
-					active->value->insert(active->value->begin() + active->select_min, null_input::key_names::get_name(id, true).back());
+					active->value->insert(active->value->begin() + active->select_min, null_input::key_name::get_name(id, true).back());
 					active->pos_in_text = active->select_min;
 					active->reset_select();
 				}
@@ -315,7 +315,7 @@ namespace null_gui {
 			return active_name == name;
 		}
 
-		void get_scroll_behavior(rect size, bool* hovered, bool* pressed) {
+		void scroll_behavior(rect size, bool* hovered, bool* pressed) {
 			window* wnd = deeps::current_window;
 			bool _hovered = false;
 			bool _pressed = false;
@@ -341,8 +341,53 @@ namespace null_gui {
 			if (hovered) *hovered = _hovered;
 			if (pressed) *pressed = _pressed;
 		}
+		
+		bool key_bind_behavior(null_input::bind_key* bind, rect size, bool* hovered, std::string name) {
+			window* wnd = deeps::current_window;
+			bool _hovered = false;
 
-		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
+			if ((hovered_name == "" || hovered_name == name)) {
+				if ((null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows()) || active_name == name) {
+					hovered_name = name;
+
+					if (null_input::mouse_in_region(wnd->draw_list->get_clip())) {
+						if (!null_input::get_key("mouse left")->down() && !bind->binding) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked() && !bind->binding) {
+							active_name = name;
+							bind->binding = true;
+							null_input::vars::last_press_key = 0;
+						}
+						if (null_input::get_key("mouse right")->pressed() && !bind->binding) {
+							deeps::add_window(utils::format("##%s keybind tooltip", name.c_str()), vec2(size.max.x, size.min.y), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size });
+						}
+					}
+				}
+			}
+
+			if ((!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && null_input::get_key("mouse left")->clicked() && bind->binding) {
+				active_name = "";
+				bind->binding = false;
+			}
+
+			if (bind->binding && active_name == name) {
+				if (null_input::get_key("escape")->clicked()) {
+					bind->key = null_input::get_key(0);
+					active_name = "";
+					bind->binding = false;
+				} else {
+					if (null_input::vars::last_press_key != 0) {
+						bind->key = null_input::get_key(null_input::vars::last_press_key);
+						bind->binding = false;
+						active_name = "";
+					}
+				}
+			}
+
+			if (hovered) *hovered = _hovered;
+			return active_name == name;
+		}
+
+		bool button_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
 			window* wnd = deeps::current_window;
 			bool _active = false;
 			bool _hovered = false;
@@ -372,7 +417,7 @@ namespace null_gui {
 			return _active;
 		}
 
-		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
+		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
 			window* wnd = deeps::current_window;
 			bool _hovered = false;
 			bool _pressed = false;
@@ -399,7 +444,7 @@ namespace null_gui {
 			if (pressed) *pressed = _pressed;
 		}
 
-		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags) {
+		bool combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags) {
 			window* wnd = deeps::current_window;
 			bool _active = false;
 			bool _hovered = false;
@@ -421,7 +466,7 @@ namespace null_gui {
 			return _active;
 		}
 
-		void get_colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar) {
+		void colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar) {
 			window* wnd = deeps::current_window;
 
 			if (hovered_name == "" || hovered_name == name_item) {
@@ -433,7 +478,7 @@ namespace null_gui {
 			}
 		}
 
-		bool get_colorpicker_sliders_behavior(rect size, std::string name) {
+		bool colorpicker_sliders_behavior(rect size, std::string name) {
 			window* wnd = deeps::current_window;
 			bool _pressed = false;
 
@@ -485,6 +530,10 @@ namespace null_gui {
 		void focus_current_window() {
 			if(current_window->have_flag(window_flags::group)) current_window->get_main_window()->focus_window();
 			else current_window->focus_window();
+		}
+
+		void close_current_window() {
+			current_window->close_call = true;
 		}
 
 		void window_control() {

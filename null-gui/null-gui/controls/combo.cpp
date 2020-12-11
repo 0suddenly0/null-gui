@@ -17,7 +17,7 @@ namespace null_gui {
 		std::vector<window_flags> flags = { window_flags::popup, window_flags::set_pos, window_flags::set_size, window_flags::auto_size };
 
 		bool hovered, pressed;
-		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s combo popup", text.c_str()), flags);
+		bool open = deeps::combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s combo popup", text.c_str()), flags);
 
 		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
 		wnd->draw_list->add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);

@@ -33,8 +33,8 @@ namespace null_gui {
 			this_window->pos.y = null_math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 		}
 
-		if (this_window->have_flag(window_flags::popup)) { //logic for popups
-			if ((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && (!this_window->in_popup_region() && !this_window->get_hovered_group())) {
+		if (this_window->have_flag(window_flags::popup) || this_window->close_call) { //logic for popups
+			if (((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && (!this_window->in_popup_region() && !this_window->get_hovered_group())) || this_window->close_call) {
 				deeps::windows.erase(deeps::windows.begin() + this_window->idx);
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
 				return false;

@@ -61,6 +61,7 @@ namespace null_gui {
 
 		int idx;
 		bool visible = true;
+		bool close_call;
 
 		window* parent_window = nullptr;
 		window* child_popup_window = nullptr;
@@ -202,19 +203,21 @@ namespace null_gui {
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags);
 
 		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name);
-		void get_scroll_behavior(rect size, bool* hovered, bool* pressed);
-		bool get_button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
-		void get_slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
-		bool get_combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
-		void get_colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
-		bool get_colorpicker_sliders_behavior(rect size, std::string name);
+		void scroll_behavior(rect size, bool* hovered, bool* pressed);
+		bool key_bind_behavior(null_input::bind_key* bind, rect size, bool* hovered, std::string name);
+		bool button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
+		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
+		bool combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags);
+		void colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
+		bool colorpicker_sliders_behavior(rect size, std::string name);
 		void add_item(vec2 size, std::string name); 
 		bool mouse_in_current_windows();
 		std::string format_item(std::string text);
 		void focus_current_window();
+		void close_current_window();
 		void push_var(gui_var var) { pushed_vars.push_back(var); }
 		void pop_var() { pushed_vars.back().pop(); pushed_vars.pop_back(); }
-		void window_moving();
+		void window_control();
 		void popups_control();
 	}
 
@@ -283,6 +286,7 @@ namespace null_gui {
 	float colorpicker_slider_alpha(color clr, std::string name);
 	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
 	bool text_input(std::string text, std::string* value, bool password = false);
+	void key_bind(std::string text, null_input::bind_key* bind);
 	
 	bool begin_group(std::string name, vec2 arg_size = vec2(0, 0));
 	void end_group();

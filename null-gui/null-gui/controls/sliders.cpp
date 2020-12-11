@@ -19,7 +19,7 @@ namespace null_gui {
 		int clamped = null_math::clamp(*value, min, max);
 
 		bool hovered, pressed;
-		deeps::get_slider_behavior(size_body, &hovered, &pressed, name);
+		deeps::slider_behavior(size_body, &hovered, &pressed, name);
 
 		if (hovered) {
 			formated_value = utils::format(format.c_str(), new_value);
@@ -81,7 +81,7 @@ namespace null_gui {
 		float clamped = null_math::clamp(*value, min, max);
 
 		bool hovered, pressed;
-		deeps::get_slider_behavior(size_body, &hovered, &pressed, name);
+		deeps::slider_behavior(size_body, &hovered, &pressed, name);
 
 		if (hovered) {
 			formated_value = utils::format(format.c_str(), new_value);

@@ -12,7 +12,7 @@ namespace null_gui {
 		float pos = draw_size.size().y * (abs(wnd->scroll_offset) / wnd->max_scroll);
 
 		bool hovered, pressed;
-		deeps::get_scroll_behavior(size, &hovered, &pressed);
+		deeps::scroll_behavior(size, &hovered, &pressed);
 
 		if (!pressed) {
 			wnd->scroll_mouse_offset = 0.f;
@@ -21,7 +21,9 @@ namespace null_gui {
 				if (null_input::mouse_in_region(draw_size.min + vec2(0.f, pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y) + vec2(0.f, pos + size_bar / 2))) {
 					wnd->scroll_mouse_offset = pos - (null_input::mouse_pos().y - draw_size.min.y);
 				}
-			} else if(null_input::mouse_in_region(size)) {
+			} else if (null_input::mouse_in_region(vec2(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2)), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2))) {
+				wnd->scroll_mouse_offset = draw_size.min.y + pos - null_input::mouse_pos().y;
+			} else if (null_input::mouse_in_region(size)) {
 				wnd->scroll_mouse_offset = (null_input::mouse_pos().y < draw_size.min.y ? draw_size.min.y : draw_size.max.y) - null_input::mouse_pos().y;
 			}
 		} else if (pressed) {

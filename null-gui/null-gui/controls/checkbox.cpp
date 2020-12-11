@@ -13,7 +13,7 @@ namespace null_gui {
 		rect size(draw_pos, vec2(draw_pos.x + gui_settings::checkbox_size, draw_pos.y + gui_settings::checkbox_size));
 
 		bool hovered, pressed;
-		bool active = null_gui::deeps::get_button_behavior(gui_settings::checkbox_hovered_with_text ? rect(size.min, size.max + text_spacing) : size, &hovered, &pressed, name);
+		bool active = null_gui::deeps::button_behavior(gui_settings::checkbox_hovered_with_text ? rect(size.min, size.max + text_spacing) : size, &hovered, &pressed, name);
 
 		if (active) *value = !*value;
 
@@ -21,6 +21,6 @@ namespace null_gui {
 		if(*value) wnd->draw_list->add_rect(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
 		wnd->draw_list->add_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), gui_settings::text, false, { false , true });
 
-		deeps::add_item((size.size()) + text_spacing, name);
+		deeps::add_item(size.size() + text_spacing, name);
 	}
 }

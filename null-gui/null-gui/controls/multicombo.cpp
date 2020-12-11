@@ -16,7 +16,7 @@ namespace null_gui {
 		std::vector<window_flags> flags = { window_flags::popup, window_flags::set_pos, window_flags::set_size, window_flags::auto_size };
 
 		bool hovered, pressed;
-		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s comboname", text.c_str()), flags);
+		bool open = deeps::combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s comboname", text.c_str()), flags);
 
 		std::string text_on_combo = "";
 		for (int a = 0; a < values->size(); a++) {
@@ -75,7 +75,7 @@ namespace null_gui {
 		std::vector<window_flags> flags = { window_flags::popup, window_flags::set_pos, window_flags::set_size, window_flags::auto_size };
 
 		bool hovered, pressed;
-		bool open = deeps::get_combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s comboname", text.c_str()), flags);
+		bool open = deeps::combo_behavior(size_draw, 5, &hovered, &pressed, utils::format("##%s comboname", text.c_str()), flags);
 
 		std::string text_on_combo = "";
 		for (int a = 0; a < values.size(); a++) {

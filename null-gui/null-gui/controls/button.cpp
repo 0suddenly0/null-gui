@@ -14,7 +14,7 @@ namespace null_gui {
 		rect size(draw_pos + left_spacing, (size_arg != 0.f ? draw_pos + size_arg : vec2(gui_settings::items_size_full_window ? draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2 + gui_settings::window_padding.x) : draw_pos.x + (gui_settings::button_padding.x * 2) + text_size.x, draw_pos.y + (gui_settings::button_padding.y * 2) + text_size.y)) + right_spacing);
 
 		bool hovered, pressed;
-		bool active = null_gui::deeps::get_button_behavior(size, &hovered, &pressed, name);
+		bool active = null_gui::deeps::button_behavior(size, &hovered, &pressed, name);
 
 		wnd->draw_list->add_rect(size.min, size.max, hovered || pressed ? pressed ? gui_settings::main_color : gui_settings::button_bg_hovered : gui_settings::button_bg);
 		wnd->draw_list->add_text(deeps::format_item(draw_text), size.max - size.size() / 2, gui_settings::text, false, { true , true });

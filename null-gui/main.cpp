@@ -95,7 +95,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	static int test_int = 0;
 
 	null_input::get_key("insert")->set_callback(null_input::key_state::double_clicked, []() {
-		printf("aue\n");
+		printf("test hotkey callback\n");
 		test_int = 100;
 		});
 
@@ -103,6 +103,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	null_font::create_font("Tahoma", 14, &null_font::main_font);
 
 	null_gui::pre_begin_gui(window);
+	null_input::begin_input();
 
 	while (msg.message != WM_QUIT) {
 		if (PeekMessage(&msg, NULL, 0U, 0U, PM_REMOVE)) {
@@ -120,12 +121,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			null_render::begin_render_states(); {
 				null_gui::begin_gui();
 
-				static bool debug_window = true;
-				static null_input::bind_key bind("auebind", "7", &debug_window, null_input::bind_type::hold);
+				static bool test_bool_bind;
+				static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold);
 
 				null_input::create_bind(true, &bind);
 
 				static bool settings_window = true;
+				static bool debug_window = true;
 
 				null_render::render();
 
@@ -136,7 +138,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					static std::vector<bool> test_bools = { false, false, false, false };
 					static std::string test_string = "https://github.com/0suddenly0/null-gui";
 
-					null_render::draw_text(null_font::first_font.name, vec2(10, 10), color(255, 255, 255), null_font::first_font);
+					if(test_bool_bind)
+						null_render::draw_text(null_font::first_font.name, vec2(10, 10), color(255, 255, 255), null_font::first_font);
 
 					if (null_gui::begin_window("debug window [ window with debug information ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
 						null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
@@ -213,8 +216,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::tooltip([]() { null_gui::text("test tooltip"); });
 						null_gui::checkbox("show settings window", &settings_window);
 						null_gui::text_input("text input", &test_string);
-						null_gui::text(utils::format("%d", null_input::vars::last_press_key));
-						null_gui::text(null_input::key_names::get_name(null_input::vars::last_press_key, true));
+						null_gui::key_bind("test key bind", &bind);
+						null_gui::text(null_input::key_name::get_name(null_input::vars::last_press_key, true));
 						null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
 						null_gui::end_window();
 					}
