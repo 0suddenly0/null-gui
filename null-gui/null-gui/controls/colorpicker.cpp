@@ -9,20 +9,20 @@ namespace null_gui {
 
 		color ret = clr;
 		vec2 draw_pos = wnd->draw_item_pos;
-		vec2 dot_pos = vec2(null_math::clamp(round(draw_pos.x + null_math::clamp(ret.g(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.x + 2, draw_pos.x + gui_settings::colorpicker_size - 2), null_math::clamp(round(draw_pos.y + null_math::clamp(1 - ret.b(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.y + 2, draw_pos.y + gui_settings::colorpicker_size - 2));
+		vec2 dot_pos = vec2(math::clamp(round(draw_pos.x + math::clamp(ret.g(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.x + 2, draw_pos.x + gui_settings::colorpicker_size - 2), math::clamp(round(draw_pos.y + math::clamp(1 - ret.b(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.y + 2, draw_pos.y + gui_settings::colorpicker_size - 2));
 		rect size(draw_pos, draw_pos + vec2(gui_settings::colorpicker_size, gui_settings::colorpicker_size));
 		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
 
 		if (pressed) {
-			ret.g() = null_math::clamp((null_input::mouse_pos().x - size.min.x) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
-			ret.b() = 1.0f - null_math::clamp((null_input::mouse_pos().y - size.min.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
+			ret.g() = math::clamp((null_input::mouse_pos().x - size.min.x) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
+			ret.b() = 1.0f - math::clamp((null_input::mouse_pos().y - size.min.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
 		}
 
-		wnd->draw_list->add_rect_multicolor(size.min, size.max, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() }, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() });
-		wnd->draw_list->add_rect_multicolor(size.min, size.max, { color(0, 0, 0, 0), color(0, 0, 0, 0) }, { color(0, 0, 0, 255), color(0, 0, 0, 255) });
+		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() }, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() });
+		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(0, 0, 0, 0), color(0, 0, 0, 0) }, { color(0, 0, 0, 255), color(0, 0, 0, 255) });
 
-		wnd->draw_list->add_circle(dot_pos, color(45, 45, 45, 100), 5.f, true);
-		wnd->draw_list->add_circle(dot_pos, color(clr.hsv_to_rgb(), 1.f), 3.f, true);
+		wnd->draw_list->draw_circle_filled(dot_pos, color(45, 45, 45, 100), 5.f);
+		wnd->draw_list->draw_circle_filled(dot_pos, color(clr.hsv_to_rgb(), 1.f), 3.f);
 
 		deeps::add_item(size.size(), name);
 		return ret;
@@ -38,14 +38,14 @@ namespace null_gui {
 		float calc_pos = round(draw_pos.y + (ret / 360.f) * size.size().y);
 		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
 
-		if (pressed) ret = null_math::clamp((null_input::mouse_pos().y - draw_pos.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f) * 360.f;
+		if (pressed) ret = math::clamp((null_input::mouse_pos().y - draw_pos.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f) * 360.f;
 
 		for (int i = 0; i < 6; i++) {
 			rect size_temp(vec2(draw_pos.x, draw_pos.y + (i * (size.size().y / 6))), vec2(size.max.x, draw_pos.y + ((i + 1) * (size.size().y / 6))));
-			wnd->draw_list->add_rect_multicolor(size_temp.min, size_temp.max, { colors[i], colors[i] }, { colors[i + 1], colors[i + 1] });
+			wnd->draw_list->draw_rect_filled_multi_color(size_temp.min, size_temp.max, { colors[i], colors[i] }, { colors[i + 1], colors[i + 1] });
 		}
 
-		wnd->draw_list->add_rect(vec2(size.min.x - 2, calc_pos - 1), vec2(size.max.x + 2, calc_pos + 1), color(255, 255, 255));
+		wnd->draw_list->draw_rect_filled(vec2(size.min.x - 2, calc_pos - 1), vec2(size.max.x + 2, calc_pos + 1), color(255, 255, 255));
 
 		deeps::add_item(size.size(), name);
 		return ret;
@@ -61,10 +61,10 @@ namespace null_gui {
 		float calc_pos = round(draw_pos.x + ret * size.size().x);
 		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
 
-		if (pressed) ret = null_math::clamp((null_input::mouse_pos().x - draw_pos.x) / (size.size().x - 1), 0.f, 1.f);
+		if (pressed) ret = math::clamp((null_input::mouse_pos().x - draw_pos.x) / (size.size().x - 1), 0.f, 1.f);
 
-		wnd->draw_list->add_rect_multicolor(size.min, size.max, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) }, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) });
-		wnd->draw_list->add_rect(vec2(calc_pos - 1.f, size.min.y - 2), vec2(calc_pos + 1.f, size.max.y + 2), color(255, 255, 255));
+		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) }, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) });
+		wnd->draw_list->draw_rect_filled(vec2(calc_pos - 1.f, size.min.y - 2), vec2(calc_pos + 1.f, size.max.y + 2), color(255, 255, 255));
 
 		deeps::add_item(size.size(), name);
 		return ret;
@@ -94,9 +94,9 @@ namespace null_gui {
 			else null_gui::text(utils::format("r: %.0f; g: %.0f; b: %.0f", clr->r() * 255.f, clr->g() * 255.f, clr->b() * 255.f));
 			});
 
-		wnd->draw_list->add_rect(size.max - size.size().y, size.max, gui_settings::button_bg);
-		wnd->draw_list->add_rect(size.max - size.size().y + vec2(2.f, 2.f), size.max - vec2(2.f, 2.f), color(*clr, 1.f));
-		wnd->draw_list->add_text(deeps::format_item(name), vec2(size.min.x, size.max.y - (size.max.y - size.min.y) / 2), gui_settings::text, false, { false , true });
+		wnd->draw_list->draw_rect_filled(size.max - size.size().y, size.max, gui_settings::button_bg);
+		wnd->draw_list->draw_rect_filled(size.max - size.size().y + vec2(2.f, 2.f), size.max - vec2(2.f, 2.f), color(*clr, 1.f));
+		wnd->draw_list->draw_text(deeps::format_item(name), vec2(size.min.x, size.max.y - (size.max.y - size.min.y) / 2), gui_settings::text, false, { false , true });
 
 		if (deeps::find_window(utils::format("##%s colorpicker", text.c_str())) != nullptr) {
 			deeps::push_var({ &gui_settings::window_padding, vec2(5.f, 5.f) }); {

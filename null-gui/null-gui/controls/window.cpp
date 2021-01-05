@@ -29,8 +29,8 @@ namespace null_gui {
 		}
 
 		if (gui_settings::clamp_window_on_screen && !this_window->have_flag(window_flags::group)) { //pohui, potom fixanu
-			this_window->pos.x = null_math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-			this_window->pos.y = null_math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
+			this_window->pos.x = math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
+			this_window->pos.y = math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 		}
 
 		if (this_window->have_flag(window_flags::popup) || this_window->close_call) { //logic for popups
@@ -53,8 +53,8 @@ namespace null_gui {
 				this_window->pos = null_input::mouse_pos() - this_window->drag_offset;
 
 				if (gui_settings::clamp_window_on_screen && !this_window->have_flag(window_flags::group)) { //pohui, potom fixanu
-					this_window->pos.x = null_math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-					this_window->pos.y = null_math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
+					this_window->pos.x = math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
+					this_window->pos.y = math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
 				}
 			}
 		}
@@ -63,15 +63,14 @@ namespace null_gui {
 			deeps::focus_current_window();
 		}
 
-		this_window->draw_list->add_rect(this_window->pos, this_window->pos + this_window->size, bg_color);
+		this_window->draw_list->draw_rect_filled(this_window->pos, this_window->pos + this_window->size, bg_color);
 
 		if (have_title_bar) {
-			this_window->draw_list->add_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), gui_settings::window_title_bg);
+			this_window->draw_list->draw_rect_filled(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), gui_settings::window_title_bg);
 
-			this_window->draw_list->push_clip(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size)); {
-				this_window->draw_list->add_text(utils::format("%s ( %.0f , %.0f )", formated_name.c_str(), this_window->pos.x, this_window->pos.y), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
-				//this_window->draw_list->add_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
-				this_window->draw_list->add_rect_multicolor(this_window->pos + vec2(this_window->size.x - 45 - (open ? gui_settings::window_title_size - 1 : 0), 0.f), this_window->pos + vec2(this_window->size.x - (open ? gui_settings::window_title_size - 1 : 0), gui_settings::window_title_size - 1), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
+			this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), this_window->have_flag(window_flags::group)); {
+				this_window->draw_list->draw_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
+				this_window->draw_list->draw_rect_filled_multi_color(this_window->pos + vec2(this_window->size.x - 45 - (open ? gui_settings::window_title_size - 1 : 0), 0.f), this_window->pos + vec2(this_window->size.x - (open ? gui_settings::window_title_size - 1 : 0), gui_settings::window_title_size - 1), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
 
 				deeps::push_var({ &this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size + 1, 1.f) }); {
 					deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
@@ -83,13 +82,13 @@ namespace null_gui {
 						} deeps::pop_var();
 					} deeps::pop_var();
 				} deeps::pop_var();
-			} this_window->draw_list->pop_clip();
+			} this_window->draw_list->pop_clip_rect();
 		}
 
-		if (!this_window->have_flag(window_flags::popup)) this_window->draw_list->add_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, 1.f), gui_settings::main_color);
+		if (!this_window->have_flag(window_flags::popup)) this_window->draw_list->draw_rect_filled(this_window->pos, this_window->pos + vec2(this_window->size.x, 1.f), gui_settings::main_color);
 
 		this_window->draw_item_pos = this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f) + gui_settings::window_padding;
-		this_window->draw_list->push_clip(this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f), this_window->pos + this_window->size);
+		this_window->draw_list->push_clip_rect(this_window->pos + vec2(0.f, have_title_bar ? gui_settings::window_title_size : 0.f), this_window->pos + this_window->size, true);
 
 		begin_scroll();
 
@@ -104,7 +103,7 @@ namespace null_gui {
 
 		end_scroll();
 
-		wnd->draw_list->pop_clip();
+		wnd->draw_list->pop_clip_rect();
 
 		if (deeps::current_window->have_flag(window_flags::auto_size)) { //auto-size logic
 			if (wnd->arg_size.x < 1.f) wnd->size.x = deeps::current_window->max_size.x + gui_settings::window_padding.x - gui_settings::item_spacing;

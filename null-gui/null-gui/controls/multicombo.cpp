@@ -39,10 +39,10 @@ namespace null_gui {
 			}
 		}
 
-		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list->add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
-		wnd->draw_list->add_rect(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
-		wnd->draw_list->add_text(text_on_combo, vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
+		wnd->draw_list->draw_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->draw_rect_filled(size_draw.min, size_draw.max, gui_settings::button_bg);
+		wnd->draw_list->draw_rect_filled(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
+		wnd->draw_list->draw_text(text_on_combo, vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
 
 		deeps::add_item(size.size(), name);
 
@@ -97,10 +97,10 @@ namespace null_gui {
 			}
 		}
 
-		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list->add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
-		wnd->draw_list->add_rect(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
-		wnd->draw_list->add_text(text_on_combo, vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
+		wnd->draw_list->draw_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->draw_rect_filled(size_draw.min, size_draw.max, gui_settings::button_bg);
+		wnd->draw_list->draw_rect_filled(vec2(size_draw.max.x - (size_draw.max.y - size_draw.min.y), size_draw.min.y), size_draw.max, hovered || pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered);
+		wnd->draw_list->draw_text(text_on_combo, vec2(size_draw.min.x + gui_settings::text_spacing, size_draw.max.y - ((size_draw.max.y - size_draw.min.y) / 2)), gui_settings::text, false, { false, true });
 
 		deeps::add_item(size.size(), name);
 

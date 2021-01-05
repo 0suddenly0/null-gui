@@ -17,9 +17,9 @@ namespace null_gui {
 
 		if (active) *value = !*value;
 
-		wnd->draw_list->add_rect(size.min, size.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
-		if(*value) wnd->draw_list->add_rect(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
-		wnd->draw_list->add_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), gui_settings::text, false, { false , true });
+		wnd->draw_list->draw_rect_filled(size.min, size.max, hovered || pressed ? gui_settings::button_bg_hovered : gui_settings::button_bg);
+		if(*value) wnd->draw_list->draw_rect_filled(size.min + vec2(2, 2), size.max - vec2(2, 2), gui_settings::main_color);
+		wnd->draw_list->draw_text(deeps::format_item(draw_text), vec2(size.max.x + gui_settings::text_spacing, size.min.y + (gui_settings::checkbox_size / 2)), gui_settings::text, false, { false , true });
 
 		deeps::add_item(size.size() + text_spacing, name);
 	}

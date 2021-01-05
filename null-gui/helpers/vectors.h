@@ -200,6 +200,14 @@ public:
         max.y = 0.f;
     }
 
+    template <typename T>
+    rect(T min_x, T min_y, T max_x, T max_y) {
+        min.x = min_x;
+        min.y = min_y;
+        max.x = max_x;
+        max.y = max_y;
+    }
+
     rect(vec2 _min, vec2 _max) {
         min.x = _min.x;
         min.y = _min.y;

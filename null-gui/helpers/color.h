@@ -8,7 +8,6 @@
 #define COL32_A_SHIFT    24
 #define COL32_A_MASK     0xFF000000
 #define COL32(R,G,B,A)    (((unsigned int)(A)<<COL32_A_SHIFT) | ((unsigned int)(B)<<COL32_B_SHIFT) | ((unsigned int)(G)<<COL32_G_SHIFT) | ((unsigned int)(R)<<COL32_R_SHIFT))
-#define COL32(clr)    (((unsigned int)(clr.a())<<COL32_A_SHIFT) | ((unsigned int)(clr.b())<<COL32_B_SHIFT) | ((unsigned int)(clr.g())<<COL32_G_SHIFT) | ((unsigned int)(clr.r())<<COL32_R_SHIFT))
 
 class color {
 public:
@@ -108,6 +107,13 @@ public:
         this->to_float();
         return temp;
     }
+
+	unsigned int to_unsigned() {
+		to_int();
+		unsigned int temp = COL32((int)source[0], (int)source[1], (int)source[2], (int)source[3]);
+		to_float();
+		return temp;
+	}
 
     int get_raw() const { return *((int*)this); }
     void set_raw(int color32) { *((int*)this) = color32; }

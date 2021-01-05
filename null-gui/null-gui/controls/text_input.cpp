@@ -27,15 +27,15 @@ namespace null_gui {
 		float pos_in_text = input->get_text_offset(input->pos_in_text) - (null_font::text_size("|").x / 2.f);
 		float size_selecting = input->get_size_select();
 
-		wnd->draw_list->add_text(draw_text, size.min, gui_settings::text, false);
-		wnd->draw_list->add_rect(size_draw.min, size_draw.max, gui_settings::button_bg);
+		wnd->draw_list->draw_text(draw_text, size.min, gui_settings::text, false);
+		wnd->draw_list->draw_rect_filled(size_draw.min, size_draw.max, gui_settings::button_bg);
 
-		wnd->draw_list->push_clip(size_draw.min, size_draw_text.max); {
-			if (input->is_selecting()) wnd->draw_list->add_rect(size_draw_text.min + vec2(2.f + input->get_text_offset(input->select_min), (size_draw_text.size().y / 2) - (value_size.y / 2)), size_draw_text.min + vec2(2.f + input->get_text_offset(input->select_min) + size_selecting, (size_draw_text.size().y / 2) + (value_size.y / 2)), gui_settings::select_text);
-			wnd->draw_list->add_text(value_text, size_draw_text.min + vec2(2.f, size_draw_text.size().y / 2), gui_settings::text, false, { false, true });
-			if (active && !input->is_selecting() && input->show_pos) wnd->draw_list->add_text("|", size_draw_text.min + vec2(2.f + pos_in_text, size_draw_text.size().y / 2), gui_settings::text, false, { false, true });
-		} wnd->draw_list->pop_clip();
-		wnd->draw_list->add_rect(vec2(size_draw.min.x, size_draw.max.y - 1.f), size_draw.max, gui_settings::main_color);
+		wnd->draw_list->push_clip_rect(size_draw.min, size_draw_text.max, true); {
+			if (input->is_selecting()) wnd->draw_list->draw_rect_filled(size_draw_text.min + vec2(2.f + input->get_text_offset(input->select_min), (size_draw_text.size().y / 2) - (value_size.y / 2)), size_draw_text.min + vec2(2.f + input->get_text_offset(input->select_min) + size_selecting, (size_draw_text.size().y / 2) + (value_size.y / 2)), gui_settings::select_text);
+			wnd->draw_list->draw_text(value_text, size_draw_text.min + vec2(2.f, size_draw_text.size().y / 2), gui_settings::text, false, { false, true });
+			if (active && !input->is_selecting() && input->show_pos) wnd->draw_list->draw_text("|", size_draw_text.min + vec2(2.f + pos_in_text, size_draw_text.size().y / 2), gui_settings::text, false, { false, true });
+		} wnd->draw_list->pop_clip_rect();
+		wnd->draw_list->draw_rect_filled(vec2(size_draw.min.x, size_draw.max.y - 1.f), size_draw.max, gui_settings::main_color);
 
 		deeps::add_item(size.size(), name);
 		return active;

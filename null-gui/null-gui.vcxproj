@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="helpers\math.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="null-gui\controls\button.cpp" />
     <ClCompile Include="null-gui\controls\checkbox.cpp" />
@@ -36,16 +37,21 @@
     <ClCompile Include="null-gui\controls\text_input.cpp" />
     <ClCompile Include="null-gui\controls\window.cpp" />
     <ClCompile Include="null-gui\null-gui.cpp" />
-    <ClCompile Include="null-gui\null-input\null-input.cpp" />
-    <ClCompile Include="null-gui\null-render\null-render.cpp" />
+    <ClCompile Include="null-input\null-input.cpp" />
+    <ClCompile Include="null-render\directx9\null-render-dx9.cpp" />
+    <ClCompile Include="null-render\null-render.cpp" />
     <ClCompile Include="utils\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers\color.h" />
+    <ClInclude Include="helpers\math.h" />
     <ClInclude Include="helpers\vectors.h" />
     <ClInclude Include="null-gui\null-gui.h" />
-    <ClInclude Include="null-gui\null-input\null-input.h" />
-    <ClInclude Include="null-gui\null-render\null-render.h" />
+    <ClInclude Include="null-input\null-input.h" />
+    <ClInclude Include="null-render\directx9\null-render-dx9.h" />
+    <ClInclude Include="null-render\null-render.h" />
+    <ClInclude Include="null-render\stb\rectpack.h" />
+    <ClInclude Include="null-render\stb\truetype.h" />
     <ClInclude Include="utils\utils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -127,7 +133,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/FORCE:MULTIPLE /ignore:4006 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

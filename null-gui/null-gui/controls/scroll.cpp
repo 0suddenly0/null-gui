@@ -7,7 +7,7 @@ namespace null_gui {
 		if (wnd->have_flag(window_flags::auto_size) || wnd->max_scroll == 0) return;
 
 		rect size(vec2(wnd->pos.x + wnd->size.x - gui_settings::scrollbar_thickness - gui_settings::scrollbar_padding.x, wnd->pos.y + gui_settings::window_title_size + gui_settings::scrollbar_padding.y), vec2(wnd->pos.x + wnd->size.x - gui_settings::scrollbar_padding.x, wnd->pos.y + wnd->size.y - gui_settings::scrollbar_padding.y));
-		float size_bar = null_math::clamp(size.size().y * (wnd->size.y / wnd->max_size.y), 2.f, size.size().y);
+		float size_bar = math::clamp(size.size().y * (wnd->size.y / wnd->max_size.y), 2.f, size.size().y);
 		rect draw_size(vec2(size.min.x, size.min.y + size_bar / 2), vec2(size.max.x, size.max.y - size_bar / 2));
 		float pos = draw_size.size().y * (abs(wnd->scroll_offset) / wnd->max_scroll);
 
@@ -28,18 +28,18 @@ namespace null_gui {
 			}
 		} else if (pressed) {
 			float mouse_pos = null_input::mouse_pos().y - draw_size.min.y + wnd->scroll_mouse_offset;
-			wnd->scroll_offset = null_math::clamp(-(wnd->max_scroll * (mouse_pos / draw_size.size().y)), -(wnd->max_scroll), 0.f);
+			wnd->scroll_target = -(wnd->max_scroll * (mouse_pos / draw_size.size().y));
 		}
 
-		wnd->draw_list->add_rect(size.min, size.max, gui_settings::button_bg);
-		wnd->draw_list->add_rect(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), gui_settings::main_color);
+		wnd->draw_list->draw_rect_filled(size.min, size.max, gui_settings::button_bg);
+		wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), gui_settings::main_color);
 	}
 
 	void end_scroll() {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		bool can_scroll = wnd->max_size.y > wnd->size.y && wnd->have_flag(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : deeps::hovered_window == wnd && wnd->hovered_group == nullptr;
+		bool can_scroll = wnd->max_size.y > wnd->size.y && wnd->have_flag(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : deeps::hovered_window == wnd;
 		if (!deeps::hovered_window) {
 			null_input::vars::mouse_wheel = 0;
 		} else {
@@ -48,14 +48,19 @@ namespace null_gui {
 					null_input::vars::mouse_wheel = 0;
 					return;
 				}
-				wnd->scroll_offset += null_input::vars::mouse_wheel * 10.f;
+				wnd->scroll_target += null_input::vars::mouse_wheel * 20.f;
 				null_input::vars::mouse_wheel = 0;
 			}
 		}
-
+		//&& (wnd->hovered_group == nullptr ? true : wnd->hovered_group->can_scroll())
+		//bool hovered = wnd->have_flag(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : (deeps::hovered_window == wnd && wnd->hovered_group == nullptr);
+		
 		if (wnd->max_size.y > wnd->size.y && !wnd->have_flag(null_gui::window_flags::auto_size)) {
+			wnd->scroll_offset = (int)math::lerp(wnd->scroll_offset, wnd->scroll_target, 0.2f);
+
 			wnd->max_scroll = ((wnd->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing) - wnd->size.y);
-			wnd->scroll_offset = null_math::clamp(wnd->scroll_offset, -wnd->max_scroll, 0.f);
+			wnd->scroll_target = math::clamp(wnd->scroll_target, -wnd->max_scroll, 0.f);
+			wnd->scroll_offset = math::clamp(wnd->scroll_offset, -wnd->max_scroll, 0.f);
 		} else {
 			wnd->max_scroll = 0.f;
 		}

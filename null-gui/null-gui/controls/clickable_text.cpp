@@ -14,9 +14,9 @@ namespace null_gui {
 		bool hovered, pressed;
 		bool active = null_gui::deeps::button_behavior(size, &hovered, &pressed, name);
 
-		wnd->draw_list->add_text(deeps::format_item(draw_text), draw_pos + left_spacing, hovered || pressed ? gui_settings::main_color : gui_settings::text, false);
+		wnd->draw_list->draw_text(deeps::format_item(draw_text), draw_pos + left_spacing, hovered || pressed ? gui_settings::main_color : gui_settings::text, false);
+		
 		deeps::add_item(size.size(), name);
-
 		return active;
 	}
 }

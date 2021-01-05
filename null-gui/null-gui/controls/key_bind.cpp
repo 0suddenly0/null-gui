@@ -21,21 +21,21 @@ namespace null_gui{
 		rect size_draw(vec2(size.max.x - bind_text_size.x - gui_settings::text_spacing * 2, size.max.y - size.size().y), size.max);
 
 		if (!draw_text.empty())
-			wnd->draw_list->add_text(draw_text, vec2(size.min.x, size.min.y + size.size().y / 2), gui_settings::text, false, { false, true });
+			wnd->draw_list->draw_text(draw_text, vec2(size.min.x, size.min.y + size.size().y / 2), gui_settings::text, false, { false, true });
 
 		bool hovered;
 		bool active = null_gui::deeps::key_bind_behavior(bind, size_draw, &hovered, name);
 
-		wnd->draw_list->add_rect(size_draw.min, size_draw.max, active ? gui_settings::button_bg_active : hovered ? gui_settings::button_bg_hovered : gui_settings::button_bg);
-		wnd->draw_list->add_text(bind_text, size_draw.min + size_draw.size() / 2, gui_settings::text, false, { true, true });
+		wnd->draw_list->draw_rect_filled(size_draw.min, size_draw.max, active ? gui_settings::button_bg_active : hovered ? gui_settings::button_bg_hovered : gui_settings::button_bg);
+		wnd->draw_list->draw_text(bind_text, size_draw.min + size_draw.size() / 2, gui_settings::text, false, { true, true });
 
 		deeps::add_item(size.size(), name);
 
 		if (deeps::find_window(utils::format("##%s keybind tooltip", name.c_str())) != nullptr) {
-			printf("aue\n");
 			deeps::push_var({ &gui_settings::window_padding, vec2(5.f, 5.f) }); {
 				deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
 					if (begin_window(utils::format("##%s keybind tooltip", name.c_str()), vec2(size_draw.max.x, size_draw.min.y), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size }, nullptr)) {
+						//pohui, potom fixanu
 						if (button("always", vec2(100, 16))) {
 							bind->type = null_input::bind_type::always;
 							deeps::close_current_window();

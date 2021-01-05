@@ -16,10 +16,10 @@ namespace null_gui {
 		bool hovered, pressed;
 		bool active = null_gui::deeps::button_behavior(size, &hovered, &pressed, name);
 
-		wnd->draw_list->add_rect(size.min, size.max, hovered || pressed ? pressed ? gui_settings::main_color : gui_settings::button_bg_hovered : gui_settings::button_bg);
-		wnd->draw_list->add_text(deeps::format_item(draw_text), size.max - size.size() / 2, gui_settings::text, false, { true , true });
+		wnd->draw_list->draw_rect_filled(size.min, size.max, hovered || pressed ? pressed ? gui_settings::main_color : gui_settings::button_bg_hovered : gui_settings::button_bg);
+		wnd->draw_list->draw_text(deeps::format_item(draw_text), size.max - size.size() / 2, gui_settings::text, false, { true , true });
+		
 		deeps::add_item(size.size(), name);
-
 		return active;
 	}
 }

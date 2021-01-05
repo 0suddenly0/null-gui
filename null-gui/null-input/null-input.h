@@ -1,10 +1,11 @@
 #pragma once
-#include <Windows.h>
+#define NOMINMAX
+#include <windows.h>
 #include <functional>
 #include <array>
 #include <string>
 #include <vector>
-#include "../../helpers/vectors.h"
+#include "../helpers/vectors.h"
 
 namespace null_input {
 	enum class bind_type {
@@ -101,7 +102,6 @@ namespace null_input {
 		vec2 mouse_click_pos;
 	}
 
-	void begin_input();
 	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 	void bind_control();

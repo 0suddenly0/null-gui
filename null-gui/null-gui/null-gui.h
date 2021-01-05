@@ -1,17 +1,9 @@
 #pragma once
 #include <stack>
-#include "null-render/null-render.h"
-#include "null-input/null-input.h"
+#include "../helpers/math.h"
+#include "../null-render/null-render.h"
+#include "../null-input/null-input.h"
 #include "../utils/utils.h"
-
-namespace null_math {
-	template <typename T>
-	T clamp(T a, T min, T max) {
-		if (a < min) return min;
-		else if (a > max) return max;
-		return a;
-	}
-}
 
 namespace null_gui {
 	enum class window_flags {
@@ -54,6 +46,7 @@ namespace null_gui {
 
 		bool ignore_scroll;
 		float scroll_offset;
+		float scroll_target;
 		float max_scroll;
 		float scroll_mouse_offset;
 
@@ -69,7 +62,7 @@ namespace null_gui {
 
 		window* hovered_group = nullptr;
 
-		null_render::null_draw_list* draw_list;
+		null_render::draw_list* draw_list;
 	};
 
 	enum class gui_var_t {
@@ -158,9 +151,9 @@ namespace null_gui {
 			void get_pos_on_cursor();
 			void select_text();
 			void clamp(int start = 0) {
-				pos_in_text = null_math::clamp(pos_in_text, start, (int)value->size());
-				select_max = null_math::clamp(select_max, start, (int)value->size());
-				select_min = null_math::clamp(select_min, start, (int)value->size());
+				pos_in_text = math::clamp(pos_in_text, start, (int)value->size());
+				select_max = math::clamp(select_max, start, (int)value->size());
+				select_min = math::clamp(select_min, start, (int)value->size());
 			}
 			void reset_select() { selecting = select_type::none; select_max = 0; select_min = 0; };
 

@@ -1,7 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include "null-input.h"
-#include "../null-gui.h"
+#define NOMINMAX
 #include <windowsx.h>
+#include "null-input.h"
+#include "../null-gui/null-gui.h"
 
 bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     int id = 0;
@@ -182,6 +183,7 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "num 9", 105 }),
 	(null_input::key_name{ "num *", 106 }),
 	(null_input::key_name{ "num +", 107 }),
+	(null_input::key_name{ "unkown key", 108 }),
 	(null_input::key_name{ "num -", 109 }),
 	(null_input::key_name{ "num .", 110 }),
 	(null_input::key_name{ "num /", 111 }),
@@ -409,13 +411,6 @@ namespace null_input {
 		set_callback(_callback);
 	}
 
-	void begin_input() {
-		/*for (int i = 0; i < names.size(); i++) {
-			//get_key(names[i].us)->id = names[i].id;
-			vars::keys[names[i].id].id = names[i].id;
-		}*/
-	}
-
 	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
 		switch (msg) {
 		case WM_MBUTTONDBLCLK:
@@ -442,20 +437,13 @@ namespace null_input {
 		case WM_MOUSEMOVE:
 			vars::mouse_pos = vec2((signed short)(l_param), (signed short)(l_param >> 16));
 			return true;
-		case WM_SIZE:
-			if (null_render::device != NULL && w_param != SIZE_MINIMIZED) {
-				null_render::d3dp->BackBufferWidth = LOWORD(l_param);
-				null_render::d3dp->BackBufferHeight = HIWORD(l_param);
-				null_render::reset_device_d3d();
-			}
-			return false;
 		}
 		return false;
 	}
 
 	void bind_control() {
 		for (bind_key* bind : vars::binds) {
-			if (bind->binding) continue;
+			if (bind->binding && bind->type != bind_type::always) continue;
 			switch (bind->type) {
 			case bind_type::hold: {
 				if (bind->key->down()) bind->callbacks[0]();
@@ -491,8 +479,7 @@ namespace null_input {
 							key.callback();
 					}
 					key.clicked_time = -FLT_MAX;
-				}
-				else {
+				} else {
 					key.clicked_time = null_gui::deeps::real_time;
 				}
 				vars::mouse_click_pos = vars::mouse_pos;
@@ -507,8 +494,7 @@ namespace null_input {
 
 		if (can_show) {
 			if (finded == vars::binds.end()) vars::binds.push_back(bind);
-		}
-		else {
+		} else {
 			vars::binds.erase(vars::binds.begin() + std::distance(vars::binds.begin(), finded));
 			bind->callbacks[1]();
 		}
