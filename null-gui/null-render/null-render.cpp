@@ -1339,7 +1339,7 @@ namespace null_render {
 
             assert(draw_list->vtx_buffer.size() == 0 || draw_list->_vtx_write_ptr == draw_list->vtx_buffer.data() + draw_list->vtx_buffer.size());
             assert(draw_list->idx_buffer.size() == 0 || draw_list->_idx_write_ptr == draw_list->idx_buffer.data() + draw_list->idx_buffer.size());
-            if (!(draw_list->flags & flags::draw_list_flags_allow_vtx_offset))
+            if (!(draw_list->flags.contains(draw_list_flags::allow_vtx_offset)))
                 assert((int)draw_list->_vtx_current_idx == draw_list->vtx_buffer.size());
 
             if (sizeof(unsigned short) == 2)
@@ -1409,15 +1409,15 @@ namespace null_render {
         path_stroke(col, false, thickness);
     }
 
-    void draw_list::draw_rect(const vec2& p_min, const vec2& p_max, color col, float rounding, corner_flags rounding_corners, float thickness) {
+    void draw_list::draw_rect(const vec2& p_min, const vec2& p_max, color col, float rounding, flags_list<corner_flags> rounding_corners, float thickness) {
         if (col.a() == 0.f) return;
         
-        if (flags & flags::draw_list_flags_anti_aliased_lines) path_rect(p_min + vec2(0.50f, 0.50f), p_max - vec2(0.50f, 0.50f), rounding, rounding_corners);
+        if (flags.contains(draw_list_flags::anti_aliased_lines)) path_rect(p_min + vec2(0.50f, 0.50f), p_max - vec2(0.50f, 0.50f), rounding, rounding_corners);
         else path_rect(p_min + vec2(0.50f, 0.50f), p_max - vec2(0.49f, 0.49f), rounding, rounding_corners);
         path_stroke(col, true, thickness);
     }
 
-    void draw_list::draw_rect_filled(const vec2& p_min, const vec2& p_max, color col, float rounding, corner_flags rounding_corners) {
+    void draw_list::draw_rect_filled(const vec2& p_min, const vec2& p_max, color col, float rounding, flags_list<corner_flags> rounding_corners) {
         if (col.a() == 0.f) return;
         
         if (rounding > 0.0f) {
@@ -1429,17 +1429,22 @@ namespace null_render {
         }
     }
 
-    void draw_list::draw_rect_filled_multi_color(const vec2& p_min, const vec2& p_max, std::array<color, 2> top, std::array<color, 2> down) {
+    void draw_list::draw_rect_filled_multi_color(const vec2& p_min, const vec2& p_max, std::array<color, 2> top, std::array<color, 2> down, float rounding) {
         if (top[0].a() == 0.f && top[1].a() == 0.f && down[0].a() == 0.f && down[1].a() == 0.f) return;
 
-        const vec2 uv = _data->tex_uv_white_pixel;
-        prim_reserve(6, 4);
-        prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 1)); prim_write_idx((unsigned short)(_vtx_current_idx + 2));
-        prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 2)); prim_write_idx((unsigned short)(_vtx_current_idx + 3));
-        prim_write_vtx(p_min, uv, top[0]);
-        prim_write_vtx(vec2(p_max.x, p_min.y), uv, top[1]);
-        prim_write_vtx(p_max, uv, down[1]);
-        prim_write_vtx(vec2(p_min.x, p_max.y), uv, down[0]);
+        if (rounding > 0.0f) {
+            path_rect(p_min, p_max, rounding, corner_flags::all);
+            path_fill_convex_multi_color(p_min, vec2(p_max.x, p_min.y), top, down);
+        } else {
+            const vec2 uv = _data->tex_uv_white_pixel;
+            prim_reserve(6, 4);
+            prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 1)); prim_write_idx((unsigned short)(_vtx_current_idx + 2));
+            prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 2)); prim_write_idx((unsigned short)(_vtx_current_idx + 3));
+            prim_write_vtx(p_min, uv, top[0]);
+            prim_write_vtx(vec2(p_max.x, p_min.y), uv, top[1]);
+            prim_write_vtx(p_max, uv, down[1]);
+            prim_write_vtx(vec2(p_min.x, p_max.y), uv, down[0]);
+        }
     }
 
     void draw_list::draw_quad(const vec2& p1, const vec2& p2, const vec2& p3, const vec2& p4, color col, float thickness) {
@@ -1709,15 +1714,14 @@ namespace null_render {
         const int count = closed ? points_count : points_count - 1;
         const bool thick_line = (thickness > 1.0f);
 
-        if (flags & flags::draw_list_flags_anti_aliased_lines) {
+        if (flags.contains(draw_list_flags::anti_aliased_lines)) {
             const float AA_SIZE = 1.0f;
 
             thickness = math::max(thickness, 1.0f);
             const int integer_thickness = (int)thickness;
             const float fractional_thickness = thickness - integer_thickness;
 
-            const bool use_texture = (flags & flags::draw_list_flags_anti_aliased_lines_use_tex) && (integer_thickness < 63) && (fractional_thickness <= 0.00001f);
-
+            const bool use_texture = (flags.contains(draw_list_flags::anti_aliased_lines_use_tex)) && (integer_thickness < 63) && (fractional_thickness <= 0.00001f);
 
             const int idx_count = use_texture ? (count * 6) : (thick_line ? count * 18 : count * 12);
             const int vtx_count = use_texture ? (points_count * 2) : (thick_line ? points_count * 4 : points_count * 3);
@@ -1791,8 +1795,8 @@ namespace null_render {
                 } else {
                     for (int i = 0; i < points_count; i++) {
                         _vtx_write_ptr[0].pos = points[i];              _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].col = col;
-                        _vtx_write_ptr[1].pos = temp_points[i * 2 + 0]; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].col = color(col, 1.f);
-                        _vtx_write_ptr[2].pos = temp_points[i * 2 + 1]; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].col = color(col, 1.f);
+                        _vtx_write_ptr[1].pos = temp_points[i * 2 + 0]; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].col = color(col, 0.f);
+                        _vtx_write_ptr[2].pos = temp_points[i * 2 + 1]; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].col = color(col, 0.f);
                         _vtx_write_ptr += 3;
                     }
                 }
@@ -1846,10 +1850,10 @@ namespace null_render {
                 }
 
                 for (int i = 0; i < points_count; i++) {
-                    _vtx_write_ptr[0].pos = temp_points[i * 4 + 0]; _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].col = color(col, 1.f);
+                    _vtx_write_ptr[0].pos = temp_points[i * 4 + 0]; _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].col = color(col, 0.f);
                     _vtx_write_ptr[1].pos = temp_points[i * 4 + 1]; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].col = col;
                     _vtx_write_ptr[2].pos = temp_points[i * 4 + 2]; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].col = col;
-                    _vtx_write_ptr[3].pos = temp_points[i * 4 + 3]; _vtx_write_ptr[3].uv = opaque_uv; _vtx_write_ptr[3].col = color(col, 1.f);
+                    _vtx_write_ptr[3].pos = temp_points[i * 4 + 3]; _vtx_write_ptr[3].uv = opaque_uv; _vtx_write_ptr[3].col = color(col, 0.f);
                     _vtx_write_ptr += 4;
                 }
             }
@@ -1889,7 +1893,7 @@ namespace null_render {
 
         const vec2 uv = _data->tex_uv_white_pixel;
 
-        if (flags & flags::draw_list_flags_anti_aliased_fill) {
+        if (flags.contains(draw_list_flags::anti_aliased_fill)) {
             const float AA_SIZE = 1.0f;
             const int idx_count = (points_count - 2) * 3 + points_count * 6;
             const int vtx_count = (points_count * 2);
@@ -1923,7 +1927,7 @@ namespace null_render {
                 dm_y *= AA_SIZE * 0.5f;
 
                 _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].col = col;
-                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].col = color(col, 1.f);
+                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].col = color(col, 0.f);
                 _vtx_write_ptr += 2;
 
                 _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
@@ -1937,6 +1941,79 @@ namespace null_render {
             prim_reserve(idx_count, vtx_count);
             for (int i = 0; i < vtx_count; i++) {
                 _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].col = col;
+                _vtx_write_ptr++;
+            }
+
+            for (int i = 2; i < points_count; i++) {
+                _idx_write_ptr[0] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[1] = (unsigned short)(_vtx_current_idx + i - 1); _idx_write_ptr[2] = (unsigned short)(_vtx_current_idx + i);
+                _idx_write_ptr += 3;
+            }
+            _vtx_current_idx += (unsigned short)vtx_count;
+        }
+    }
+
+    void draw_list::draw_convex_poly_filled_multi_color(const vec2* points, int points_count, vec2 min, vec2 max, std::array<color, 2> top, std::array<color, 2> down) {
+        if (points_count < 3) return;
+
+        const vec2 uv = _data->tex_uv_white_pixel;
+
+        if (flags.contains(draw_list_flags::anti_aliased_fill)) {
+            const float AA_SIZE = 1.0f;
+            const int idx_count = (points_count - 2) * 3 + points_count * 6;
+            const int vtx_count = (points_count * 2);
+            prim_reserve(idx_count, vtx_count);
+
+            unsigned int vtx_inner_idx = _vtx_current_idx;
+            unsigned int vtx_outer_idx = _vtx_current_idx + 1;
+            for (int i = 2; i < points_count; i++) {
+                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
+                _idx_write_ptr += 3;
+            }
+
+            vec2* temp_normals = (vec2*)alloca(points_count * sizeof(vec2));
+            for (int i0 = points_count - 1, i1 = 0; i1 < points_count; i0 = i1++) {
+                const vec2& p0 = points[i0];
+                const vec2& p1 = points[i1];
+                float dx = p1.x - p0.x;
+                float dy = p1.y - p0.y;
+                NORMALIZE2F_OVER_ZERO(dx, dy);
+                temp_normals[i0].x = dy;
+                temp_normals[i0].y = -dx;
+            }
+
+            for (int i0 = points_count - 1, i1 = 0; i1 < points_count; i0 = i1++) {
+                const vec2& n0 = temp_normals[i0];
+                const vec2& n1 = temp_normals[i1];
+                float dm_x = (n0.x + n1.x) * 0.5f;
+                float dm_y = (n0.y + n1.y) * 0.5f;
+                FIXNORMAL2F(dm_x, dm_y);
+                dm_x *= AA_SIZE * 0.5f;
+                dm_y *= AA_SIZE * 0.5f;
+
+                color clr;
+                float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length_sqr()), 0.0f, 1.0f);
+                if (i1 < 8) clr = color(top[0] + (top[1] - top[0]) * t);
+                else clr = color(down[0] + (down[1] - down[0]) * t);
+
+                _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].col = clr;
+                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].col = color(clr, 0.f);
+                _vtx_write_ptr += 2;
+
+                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
+                _idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); _idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); _idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
+                _idx_write_ptr += 6;
+            }
+            _vtx_current_idx += (unsigned short)vtx_count;
+        } else {
+            const int idx_count = (points_count - 2) * 3;
+            const int vtx_count = points_count;
+            prim_reserve(idx_count, vtx_count);
+            for (int i = 0; i < vtx_count; i++) {
+                color clr;
+                float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length_sqr()), 0.0f, 1.0f);
+                if (i < points_count / 2) clr = color(top[0] + (top[1] - top[0]) * t);
+                else clr = color(down[0] + (down[1] - down[0]) * t);
+                _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].col = clr;
                 _vtx_write_ptr++;
             }
 
@@ -1984,10 +2061,10 @@ namespace null_render {
             pop_texture_id();
     }
 
-    void draw_list::draw_image_rounded(void* user_texture_id, const vec2& p_min, const vec2& p_max, const vec2& uv_min, const vec2& uv_max, color col, float rounding, corner_flags rounding_corners) {
+    void draw_list::draw_image_rounded(void* user_texture_id, const vec2& p_min, const vec2& p_max, const vec2& uv_min, const vec2& uv_max, color col, float rounding, flags_list<corner_flags> rounding_corners) {
         if (col.a() == 0.f) return;
 
-        if (rounding <= 0.0f || (rounding_corners & flags::corner_flags_all) == 0) {
+        if (rounding <= 0.0f || rounding_corners.contains(corner_flags::all)) {
             draw_image(user_texture_id, p_min, p_max, uv_min, uv_max, col);
             return;
         }
@@ -2049,20 +2126,31 @@ namespace null_render {
         }
     }
 
-    void draw_list::path_rect(const vec2& a, const vec2& b, float rounding, corner_flags rounding_corners) {
-        rounding = math::min(rounding, fabsf(b.x - a.x) * (((rounding_corners & flags::corner_flags_top) == flags::corner_flags_top) || ((rounding_corners & flags::corner_flags_bot) == flags::corner_flags_bot) ? 0.5f : 1.0f) - 1.0f);
-        rounding = math::min(rounding, fabsf(b.y - a.y) * (((rounding_corners & flags::corner_flags_left) == flags::corner_flags_left) || ((rounding_corners & flags::corner_flags_right) == flags::corner_flags_right) ? 0.5f : 1.0f) - 1.0f);
+    void draw_list::path_rect(const vec2& a, const vec2& b, float rounding, flags_list<corner_flags> rounding_corners) {
+        if (rounding_corners.contains(corner_flags::all))
+            rounding_corners.add({ corner_flags::top, corner_flags::left, corner_flags::bot, corner_flags::right });
 
-        if (rounding <= 0.0f || rounding_corners == 0) {
+        rounding = math::min(rounding, fabsf(b.x - a.x) * (rounding_corners.contains(corner_flags::top) || rounding_corners.contains(corner_flags::bot) ? 0.5f : 1.0f) - 1.0f);
+        rounding = math::min(rounding, fabsf(b.y - a.y) * (rounding_corners.contains(corner_flags::left) || rounding_corners.contains(corner_flags::right) ? 0.5f : 1.0f) - 1.0f);
+
+        if (rounding <= 0.0f || rounding_corners.empty()) {
             path_line_to(a);
             path_line_to(vec2(b.x, a.y));
             path_line_to(b);
             path_line_to(vec2(a.x, b.y));
         } else {
-            const float rounding_tl = (rounding_corners & flags::corner_flags_top_left) ? rounding : 0.0f;
-            const float rounding_tr = (rounding_corners & flags::corner_flags_top_right) ? rounding : 0.0f;
-            const float rounding_br = (rounding_corners & flags::corner_flags_bot_right) ? rounding : 0.0f;
-            const float rounding_bl = (rounding_corners & flags::corner_flags_bot_left) ? rounding : 0.0f;
+            float rounding_tl = rounding_corners.contains(corner_flags::top_left) || rounding_corners.contains(corner_flags::top) || rounding_corners.contains(corner_flags::left) ? rounding : 0.0f;
+            float rounding_tr = rounding_corners.contains(corner_flags::top_right) || rounding_corners.contains(corner_flags::top) || rounding_corners.contains(corner_flags::right) ? rounding : 0.0f;
+            float rounding_br = rounding_corners.contains(corner_flags::bot_right) || rounding_corners.contains(corner_flags::bot) || rounding_corners.contains(corner_flags::right) ? rounding : 0.0f;
+            float rounding_bl = rounding_corners.contains(corner_flags::bot_left) || rounding_corners.contains(corner_flags::bot) || rounding_corners.contains(corner_flags::left) ? rounding : 0.0f;
+
+            if (rounding_corners.contains(corner_flags::all)) {
+                rounding_tl = rounding;
+                rounding_tr = rounding;
+                rounding_br = rounding;
+                rounding_bl = rounding;
+            }
+
             path_arc_to_fast(vec2(a.x + rounding_tl, a.y + rounding_tl), rounding_tl, 6, 9);
             path_arc_to_fast(vec2(b.x - rounding_tr, a.y + rounding_tr), rounding_tr, 9, 12);
             path_arc_to_fast(vec2(b.x - rounding_br, b.y - rounding_br), rounding_br, 0, 3);
@@ -2099,6 +2187,7 @@ namespace null_render {
         draw_cmd.idx_offset = idx_buffer.size();
 
         assert(draw_cmd.clip_rect.min.x <= draw_cmd.clip_rect.max.x && draw_cmd.clip_rect.min.y <= draw_cmd.clip_rect.max.y);
+
         cmd_buffer.push_back(draw_cmd);
     }
 
@@ -2112,7 +2201,7 @@ namespace null_render {
     }
 
     void draw_list::prim_reserve(int idx_count, int vtx_count) {
-        if (sizeof(unsigned short) == 2 && (_vtx_current_idx + vtx_count >= (1 << 16)) && (flags & flags::draw_list_flags_allow_vtx_offset)) {
+        if (sizeof(unsigned short) == 2 && (_vtx_current_idx + vtx_count >= (1 << 16)) && (flags.contains(draw_list_flags::allow_vtx_offset))) {
             _cmd_header.vtx_offset = vtx_buffer.size();
             _on_changed_vtx_offset();
         }
@@ -2200,7 +2289,6 @@ namespace null_render {
         cmd_buffer.clear();
         idx_buffer.clear();
         vtx_buffer.clear();
-        flags = flags::draw_list_flags_none;
         _vtx_current_idx = 0;
         _vtx_write_ptr = NULL;
         _idx_write_ptr = NULL;
@@ -2288,11 +2376,8 @@ namespace null_render {
         shared_data.clip_rect_fullscreen = rect(0.0f, 0.0f, settings::display_size.x, settings::display_size.y);
         shared_data.curve_tessellation_tol = 1.25f;
         shared_data.set_circle_segment_max_error(1.60f);
-        shared_data.initial_flags = flags::draw_list_flags_none;
-        shared_data.initial_flags |= flags::draw_list_flags_anti_aliased_lines;
-        shared_data.initial_flags |= flags::draw_list_flags_anti_aliased_lines_use_tex;
-        shared_data.initial_flags |= flags::draw_list_flags_anti_aliased_fill;
-        if (settings::renderer_has_vtx_offset) shared_data.initial_flags |= flags::draw_list_flags_allow_vtx_offset;
+        shared_data.initial_flags.add({ draw_list_flags::anti_aliased_lines, draw_list_flags::anti_aliased_lines_use_tex, draw_list_flags::anti_aliased_fill });
+        if (settings::renderer_has_vtx_offset) shared_data.initial_flags.add(draw_list_flags::allow_vtx_offset);
 
         background_draw_list._reset_for_begin_render();
         background_draw_list.push_texture_id(null_font::vars::font_atlas->tex_id);
@@ -2318,7 +2403,7 @@ namespace null_render {
             helpers::add_draw_list_to_draw_data(&data_builder.layer, &background_draw_list);
 
         for (null_gui::window* wnd : null_gui::deeps::windows) {
-            if (!wnd->have_flag(null_gui::window_flags::group) && !wnd->draw_list->vtx_buffer.empty()) helpers::add_draw_list_to_draw_data(&data_builder.layer, wnd->draw_list);
+            if (!wnd->flags.contains(null_gui::window_flags::group) && !wnd->draw_list->vtx_buffer.empty()) helpers::add_draw_list_to_draw_data(&data_builder.layer, wnd->draw_list);
         }
 
         if (!foreground_draw_list.vtx_buffer.empty())

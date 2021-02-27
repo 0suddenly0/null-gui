@@ -219,6 +219,10 @@ public:
         return max - min;
     }
 
+    vec2 centre() {
+        return min + size() / 2;
+    }
+
     float& operator[](int i) {
         return ((float*)this)[i];
     }

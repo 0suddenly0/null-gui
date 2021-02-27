@@ -7,25 +7,23 @@ namespace null_gui {
 		size = arg_size = wnd_size;
 		flags = wnd_flags;
 
-		if (null_gui::deeps::windows.size() != 0 && (have_flag(window_flags::group) || have_flag(window_flags::popup))) {
-			parent_window = null_gui::deeps::windows.back();
+		if (deeps::current_window && (flags.contains(window_flags::group) || flags.contains(window_flags::popup))) {
+			parent_window = deeps::current_window;
 		}
 
-		draw_list = have_flag(window_flags::group) && parent_window ? get_main_window()->draw_list : new null_render::draw_list(&null_render::shared_data);
+		draw_list = flags.contains(window_flags::group) && parent_window ? get_main_window()->draw_list : new null_render::draw_list(&null_render::shared_data);
 		draw_list->_reset_for_begin_render();
 		draw_list->push_texture_id(null_font::vars::font_atlas->tex_id);
 		draw_list->push_clip_rect_full_screen();
 	}
 
-	bool window::in_popup_region() {
-		window* last_child = have_flag(window_flags::popup) ? this : child_popup_window;
-
-		while (last_child != nullptr) {
-			if (null_input::mouse_in_region(last_child->pos, last_child->pos + last_child->size)) return true;
-			last_child = last_child->child_popup_window;
+	window* window::in_popup_region() {
+		if (!parent_window) return nullptr;
+		if (parent_window->child_popup_window.size() <= 0) return nullptr;
+		for (window* group : parent_window->child_popup_window) {
+			if (null_input::mouse_in_region(group->pos, group->pos + group->size)) return group;
 		}
-
-		return false;
+		return nullptr;
 	}
 
 	window* window::get_hovered_group() {
@@ -39,9 +37,9 @@ namespace null_gui {
 	window* window::get_main_window() {
 		window* last = this;
 
-		if (!last->parent_window) return nullptr;
+		if (!last->parent_window) return last;
 
-		while (last->have_flag(window_flags::popup) || last->have_flag(window_flags::group)) {
+		while (last->flags.contains(window_flags::popup) || last->flags.contains(window_flags::group)) {
 			if (!last->parent_window) break;
 			last = last->parent_window;
 		}
@@ -49,14 +47,26 @@ namespace null_gui {
 		return last;
 	}
 
-	float window::get_scroll_offset() {
-		if (!can_scroll()) return 0.f;
+	float window::get_scroll_thickness() {
+		return can_scroll() ? gui_settings::scrollbar_padding.x + gui_settings::scrollbar_thickness : 0.f;
+	}
 
-		return gui_settings::scrollbar_padding.x + gui_settings::scrollbar_thickness;
+	bool window::can_open_tooltip() {
+		if (child_popup_window.size() > 1) return false; 
+		else if (child_popup_window.size() == 1 && child_popup_window.back()->name == "##tooltip") return true;
+		else if (child_popup_window.size() == 0) return true;
+		return false;
+	}
+
+	float window::get_title_size() {
+		float result = 0.f;
+		result += (flags.contains(window_flags::no_title_bar) || flags.contains(window_flags::popup) ? 0.f : gui_settings::window_title_size);
+		result += (flags.contains(window_flags::no_title_line) ? 0.f : gui_settings::window_title_line_size);
+		return result;
 	}
 
 	rect window::get_draw_pos(rect value) {
-		vec2 clamped_draw_pos(math::clamp(draw_item_pos.x, pos.x, pos.x + size.x), math::clamp(draw_item_pos.y + get_scroll(), pos.y, pos.y + size.y));
+		vec2 clamped_draw_pos(math::clamp(draw_item_pos.x, pos.x, pos.x + size.x), math::clamp(draw_item_pos.y + get_scroll_offset(), pos.y, pos.y + size.y));
 		return rect(vec2(math::clamp(value.min.x, clamped_draw_pos.x, value.max.x), math::clamp(value.min.y, clamped_draw_pos.y, value.max.y)), value.max);
 	}
 
@@ -92,7 +102,7 @@ namespace null_gui {
 
 			bool ctrl = null_input::get_key("ctrl")->down();
 			
-			if (null_input::key_name::for_input(id) && !ctrl) {
+			if (null_input::key_name::for_input(null_input::key_list[id].data.id) && !ctrl) {
 				if (!active->is_selecting()) {
 					active->value->insert(active->value->begin() + active->pos_in_text, null_input::key_name::get_name(id, true).back());
 				} else {
@@ -197,7 +207,7 @@ namespace null_gui {
 				float last_size = null_font::text_size(a).x;
 				float centre_pos = work_rect.min.x + get_text_offset(get_id_under_cursor()) + (last_size / 2.f);
 
-				pos_in_text = null_input::mouse_pos().x <= centre_pos ? get_id_under_cursor() : get_id_under_cursor() + 1;
+				pos_in_text = null_input::mouse_pos.x <= centre_pos ? get_id_under_cursor() : get_id_under_cursor() + 1;
 			}
 		}
 
@@ -222,7 +232,7 @@ namespace null_gui {
 				std::string a_t = ""; a_t += visible_text[get_id_under_cursor()];
 				float last_size = null_font::text_size(a_t).x;
 				float centre_pos = work_rect.min.x + get_text_offset(get_id_under_cursor()) + (last_size / 2.f);
-				int b = null_input::mouse_pos().x <= centre_pos ? get_id_under_cursor() : get_id_under_cursor() + 1;
+				int b = null_input::mouse_pos.x <= centre_pos ? get_id_under_cursor() : get_id_under_cursor() + 1;
 				int a = pos_in_text;
 
 				if (a != b) {
@@ -260,6 +270,10 @@ namespace null_gui {
 			return null_font::text_size(text).x;
 		}
 
+		bool window_exist(std::string name) {
+			return find_window(name) != nullptr;
+		}
+
 		window* find_window(std::string name) {
 			for (int i = 0; i < windows.size(); i++) {
 				window* wnd = windows[i];
@@ -274,17 +288,17 @@ namespace null_gui {
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags) {
 			window* wnd = new window(name, pos, size, flags);
 
-			if (wnd->have_flag(window_flags::popup)) wnd->flags.push_back(window_flags::no_move);
+			if (wnd->flags.contains(window_flags::popup)) wnd->flags.add(window_flags::no_move);
 
-			wnd->idx = wnd->have_flag(window_flags::group) ? 0 : windows.size();
+			wnd->idx = wnd->flags.contains(window_flags::group) ? 0 : windows.size();
 
 			if (windows.size() == 0) windows.push_back(wnd);
 			else {
-				if (wnd->have_flag(window_flags::popup) || wnd->have_flag(window_flags::group)) {
-					if(wnd->have_flag(window_flags::popup)) windows.back()->child_popup_window = wnd;
-					else windows.back()->child_group_window.push_back(wnd);
+				if (wnd->flags.contains(window_flags::popup) || wnd->flags.contains(window_flags::group)) {
+					if (wnd->flags.contains(window_flags::popup)) current_window->child_popup_window.push_back(wnd);
+					else current_window->child_group_window.push_back(wnd);
 				}
-				windows.insert(wnd->have_flag(window_flags::group) ? windows.begin() : windows.end(), wnd);
+				windows.insert(wnd->flags.contains(window_flags::group) ? windows.begin() : windows.end(), wnd);
 			}
 
 			return wnd;
@@ -355,21 +369,26 @@ namespace null_gui {
 
 					if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect())) {
 						if (!null_input::get_key("mouse left")->down() && !bind->binding) _hovered = true;
+						if (null_input::get_key("mouse right")->clicked() && !bind->binding) active_name = name;
 						if (null_input::get_key("mouse left")->clicked() && !bind->binding) {
 							active_name = name;
 							bind->binding = true;
-							null_input::vars::last_press_key = 0;
+							null_input::last_press_key = 0;
 						}
-						if (null_input::get_key("mouse right")->pressed() && !bind->binding) {
+						if (active_name == name && null_input::get_key("mouse right")->pressed() && !bind->binding && null_input::click_mouse_in_region(wnd->get_draw_pos(size)) && wnd->can_open_tooltip()) {
 							deeps::add_window(utils::format("##%s keybind tooltip", name.c_str()), vec2(size.max.x, size.min.y), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size });
 						}
 					}
 				}
 			}
 
-			if ((!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && null_input::get_key("mouse left")->clicked() && bind->binding) {
+			if (bind->binding) {
+				if ((!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && null_input::get_key("mouse left")->clicked()) {
+					active_name = "";
+					bind->binding = false;
+				}
+			} else if(active_name == name && !null_input::get_key("mouse right")->down()) {
 				active_name = "";
-				bind->binding = false;
 			}
 
 			if (bind->binding && active_name == name) {
@@ -378,8 +397,8 @@ namespace null_gui {
 					active_name = "";
 					bind->binding = false;
 				} else {
-					if (null_input::vars::last_press_key != 0) {
-						bind->key = null_input::get_key(null_input::vars::last_press_key);
+					if (null_input::last_press_key != 0) {
+						bind->key = null_input::get_key(null_input::last_press_key);
 						bind->binding = false;
 						active_name = "";
 					}
@@ -447,21 +466,32 @@ namespace null_gui {
 			if (pressed) *pressed = _pressed;
 		}
 
-		bool combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags> flags) {
+		bool combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags) {
 			window* wnd = deeps::current_window;
 			bool _active = false;
 			bool _hovered = false;
 			bool _pressed = false;
-			int max_size = item_count * null_font::text_size(name).y;
 
 			if (hovered_name == "" || hovered_name == name) {
 				if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name;
 
-					if (!null_input::get_key("mouse left")->down()) _hovered = true;
-					else _pressed = true;
-					if (null_input::get_key("mouse left")->pressed()) deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
+					if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect())) {
+						if (!null_input::get_key("mouse left")->down()) _hovered = true;
+						if (null_input::get_key("mouse left")->clicked()) active_name = name;
+					}
+					if (active_name == name) {
+						if (null_input::get_key("mouse left")->down()) _pressed = true;
+						if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::get_key("mouse left")->pressed() && null_input::click_mouse_in_region(wnd->get_draw_pos(size)) && wnd->can_open_tooltip()) {
+							deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
+							_active = true;
+						}
+					}
 				}
+			}
+
+			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+				active_name = "";
 			}
 
 			if (hovered) *hovered = _hovered;
@@ -475,9 +505,20 @@ namespace null_gui {
 			if (hovered_name == "" || hovered_name == name_item) {
 				if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name_item;
-					if (null_input::get_key("mouse left")->pressed()) deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
-					if (null_input::get_key("mouse right")->pressed()) deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+					if (null_input::click_mouse_in_region(wnd->get_draw_pos(size))) {
+						if (null_input::get_key("mouse left")->down() || null_input::get_key("mouse right")->down()) active_name = name_item;
+						if (null_input::get_key("mouse left")->pressed() && wnd->can_open_tooltip()) {
+							flags.push_back(window_flags::no_title_line);
+							deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+						} else if (null_input::get_key("mouse right")->pressed() && wnd->can_open_tooltip()) {
+							deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+						}
+					}
 				}
+			}
+
+			if (!null_input::get_key("mouse left")->down() && !null_input::get_key("mouse right")->down() && active_name == name_item) {
+				active_name = "";
 			}
 		}
 
@@ -489,7 +530,7 @@ namespace null_gui {
 				if (null_input::mouse_in_region(wnd->get_draw_pos(size)) && deeps::mouse_in_current_windows() && null_input::mouse_in_region(wnd->get_draw_pos(size))) {
 					hovered_name = name;
 
-					if (null_input::get_key("mouse left")->down() && active_name == "") active_name = name;
+					if (null_input::get_key("mouse left")->clicked() && active_name == "") active_name = name;
 				}
 			}
 
@@ -506,17 +547,24 @@ namespace null_gui {
 			window* wnd = current_window;
 			size += vec2(gui_settings::item_spacing, 0.f);
 			wnd->draw_item_pos_prev = wnd->draw_item_pos + vec2(size.x, 0.f);
-			wnd->draw_item_pos.x = wnd->pos.x + (wnd->column_offset == 0.f ? gui_settings::window_padding.x : wnd->column_offset);
-			wnd->draw_item_pos.y += size.y + gui_settings::item_spacing;
+			
+			if (wnd->draw_item_pos_same_line != vec2(0, 0)) {
+				wnd->draw_item_pos.x = wnd->draw_item_pos_same_line.x;
+				wnd->draw_item_pos.y = math::max(wnd->draw_item_pos_same_line.y, wnd->draw_item_pos.y + size.y + gui_settings::item_spacing);
+			} else {
+				wnd->draw_item_pos.x = wnd->pos.x + (wnd->column_offset == 0.f ? gui_settings::window_padding.x : wnd->column_offset);
+				wnd->draw_item_pos.y += size.y + gui_settings::item_spacing;
+			}
 
-			if (wnd->max_size.x < wnd->draw_item_pos_prev.x - deeps::current_window->pos.x) wnd->max_size.x = wnd->draw_item_pos_prev.x - deeps::current_window->pos.x;
+			if (wnd->max_size.x < wnd->draw_item_pos_prev.x - deeps::current_window->pos.x + wnd->get_scroll_thickness()) wnd->max_size.x = wnd->draw_item_pos_prev.x - deeps::current_window->pos.x + wnd->get_scroll_thickness();
 			if (wnd->max_size.y < wnd->draw_item_pos.y - deeps::current_window->pos.y) wnd->max_size.y = wnd->draw_item_pos.y - deeps::current_window->pos.y;
 
+			wnd->draw_item_pos_same_line = vec2(0, 0);
 			last_item_name = name;
 		}
 
 		bool mouse_in_current_windows() {
-			return deeps::hovered_window == (deeps::current_window->have_flag(window_flags::group) ? deeps::current_window->get_main_window() : deeps::current_window);
+			return deeps::hovered_window == (deeps::current_window->flags.contains(window_flags::group) ? deeps::current_window->get_main_window() : deeps::current_window);
 		}
 
 		std::string format_item(std::string text) {
@@ -531,7 +579,7 @@ namespace null_gui {
 		}
 
 		void focus_current_window() {
-			if(current_window->have_flag(window_flags::group)) current_window->get_main_window()->focus_window();
+			if(current_window->flags.contains(window_flags::group)) current_window->get_main_window()->focus_window();
 			else current_window->focus_window();
 		}
 
@@ -547,7 +595,7 @@ namespace null_gui {
 				if (!null_input::mouse_in_region(wnd->pos, wnd->pos + wnd->size)) {
 					wnd->hovered_group = nullptr;
 				} else {
-					hovered_window = wnd->have_flag(window_flags::group) ? wnd->get_main_window() : wnd;
+					hovered_window = wnd->flags.contains(window_flags::group) ? wnd->get_main_window() : wnd;
 					hovered_window->hovered_group = hovered_window->get_hovered_group();
 					break;
 				}
@@ -557,10 +605,10 @@ namespace null_gui {
 				for (int i = windows.size() - 1; i >= 0; --i) {
 					window* wnd = windows[i];
 
-					if (wnd->have_flag(window_flags::no_move)) continue;
+					if (wnd->flags.contains(window_flags::no_move)) continue;
 
 					if (!wnd->dragging && hovered_window == wnd && null_input::mouse_in_region(wnd->pos, wnd->pos + vec2(wnd->size.x, gui_settings::move_window_on_title_bar ? gui_settings::window_title_size : wnd->size.y)) && wnd->visible) {
-						wnd->drag_offset = null_input::mouse_pos() - wnd->pos;
+						wnd->drag_offset = null_input::mouse_pos - wnd->pos;
 						wnd->dragging = true;
 						active_window_name = wnd->name;
 						break;
@@ -573,8 +621,8 @@ namespace null_gui {
 			for (int i = 0; i < deeps::windows.size(); i++) {
 				window* wnd = deeps::windows[i];
 
-				if (wnd->have_flag(window_flags::popup)) {
-					if (deeps::find_window(wnd->parent_window->name) == nullptr || !wnd->parent_window->visible) {
+				if (wnd->flags.contains(window_flags::popup)) {
+					if (!deeps::window_exist(wnd->parent_window->name) || !wnd->parent_window->visible) {
 						deeps::windows.erase(deeps::windows.begin() + wnd->idx);
 						if (deeps::active_window_name == wnd->name) deeps::active_window_name = "";
 					}
@@ -602,6 +650,7 @@ namespace null_gui {
 
 		if (deeps::hovered_window && !null_input::mouse_in_region(deeps::hovered_window->pos, deeps::hovered_window->pos + deeps::hovered_window->size))
 			deeps::hovered_window = nullptr;
+
 		deeps::hovered_name = "";
 		deeps::last_item_name = "";
 		null_input::bind_control();
@@ -617,14 +666,16 @@ namespace null_gui {
 	}
 
 	void tooltip(std::function<void()> func, std::string need_name) {
-		if (deeps::active_window_name != "") return;
+		window* wnd = deeps::current_window;
+		if (!wnd) return;
+		if (deeps::active_window_name != "" || deeps::active_name != "" || !wnd->can_open_tooltip()) return;
 		bool close = deeps::hovered_name == deeps::last_item_name;
-		deeps::push_var({ &gui_settings::spacing_checkbox_size, false }); {
-				if (begin_window("##tooltip", null_input::mouse_pos() + vec2(10, 10), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size }, &close)) {
-					deeps::focus_current_window();
-					func();
-					end_window();
-				}
+		deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
+			if (begin_window("##tooltip", null_input::mouse_pos + vec2(10, 10), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size }, &close)) {
+				deeps::focus_current_window();
+				func();
+				end_window();
+			}
 		} deeps::pop_var();
 	}
 }

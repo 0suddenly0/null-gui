@@ -12,41 +12,44 @@ bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
     case WM_MBUTTONDOWN:
     case WM_MBUTTONUP:
         state = u_msg == WM_MBUTTONUP ? false : true;
-		id = null_input::key_name::get_id("mouse midle");
+		id = null_input::key_name::get_array_id("mouse midle");
         break;
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
         state = u_msg == WM_RBUTTONUP ? false : true;
-		id = null_input::key_name::get_id("mouse right");
+		id = null_input::key_name::get_array_id("mouse right");
         break;
     case WM_LBUTTONDOWN:
     case WM_LBUTTONUP:
         state = u_msg == WM_LBUTTONUP ? false : true;
-		id = null_input::key_name::get_id("mouse left");
+		id = null_input::key_name::get_array_id("mouse left");
         break;
     case WM_XBUTTONDOWN:
     case WM_XBUTTONUP:
         state = u_msg == WM_XBUTTONUP ? false : true;
-		id = (HIWORD(w_param) == XBUTTON1 ? null_input::key_name::get_id("mouse x1") : null_input::key_name::get_id("mouse x2"));
+		id = (HIWORD(w_param) == XBUTTON1 ? null_input::key_name::get_array_id("mouse x1") : null_input::key_name::get_array_id("mouse x2"));
         break;
     default:
         return false;
     }
 
-	null_input::input_key* key = &null_input::vars::keys[id];
+	null_input::input_key* key = &null_input::key_list[id];
 
 	if (key->callback && (key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false))
 		key->callback();
 
 	key->state_down = state;
-	if(state) null_input::vars::last_press_key = id;
+	if (state) {
+		null_input::click_mouse_pos = null_input::mouse_pos;
+		null_input::last_press_key = id;
+	}
 
     return true;
 }
 
 bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
-    int id = w_param;
-	null_input::input_key* key = &null_input::vars::keys[id];
+    int id = null_input::key_name::get_array_id(w_param);
+	null_input::input_key* key = &null_input::key_list[id];
     bool state = false;
 
     switch (u_msg) {
@@ -68,45 +71,45 @@ bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 	key->state_down = state;
 	if (state) {
 		null_gui::deeps::text_input_info::win_poc(id);
-		null_input::vars::last_press_key = id;
+		null_input::last_press_key = id;
 	}
 
     return true;
 }
 
-std::vector<null_input::input_key> null_input::vars::keys = {
-	(null_input::key_name{ "unkown key", 0 }),
+std::vector<null_input::input_key> null_input::key_list = {
+	//(null_input::key_name{ "unkown key", 0 }),
 	(null_input::key_name{ "mouse left", 1 }),
 	(null_input::key_name{ "mouse right", 2 }),
 	(null_input::key_name{ "cancel", 3 }),
 	(null_input::key_name{ "mouse midle", 4 }),
 	(null_input::key_name{ "mouse x1", 5 }),
 	(null_input::key_name{ "mouse x2", 6 }),
-	(null_input::key_name{ "unkown key 1", 7 }),
+	//(null_input::key_name{ "unkown key", 7 }),
 	(null_input::key_name{ "backspace", 8 }),
 	(null_input::key_name{ "tab", 9 }),
-	(null_input::key_name{ "unkown key", 10 }),
-	(null_input::key_name{ "unkown key", 11 }),
+	/*(null_input::key_name{ "unkown key", 10 }),
+	(null_input::key_name{ "unkown key", 11 }),*/
 	(null_input::key_name{ "clear", 12  }),
 	(null_input::key_name{ "enter", 13 }),
-	(null_input::key_name{ "unkown key", 14 }),
-	(null_input::key_name{ "unkown key", 15 }),
+	/*(null_input::key_name{ "unkown key", 14 }),
+	(null_input::key_name{ "unkown key", 15 }),*/
 	(null_input::key_name{ "shift", 16 }),
 	(null_input::key_name{ "ctrl", 17 }),
 	(null_input::key_name{ "alt", 18 }),
 	(null_input::key_name{ "pause", 19 }),
 	(null_input::key_name{ "caps lock", 20 }),
-	(null_input::key_name{ "unkown key", 21 }),
+	/*(null_input::key_name{ "unkown key", 21 }),
 	(null_input::key_name{ "unkown key", 22 }),
 	(null_input::key_name{ "unkown key", 23 }),
 	(null_input::key_name{ "unkown key", 24 }),
 	(null_input::key_name{ "unkown key", 25 }),
-	(null_input::key_name{ "unkown key", 26 }),
+	(null_input::key_name{ "unkown key", 26 }),*/
 	(null_input::key_name{ "escape", 27 }),
-	(null_input::key_name{ "unkown key", 28 }),
+	/*(null_input::key_name{ "unkown key", 28 }),
 	(null_input::key_name{ "unkown key", 29 }),
 	(null_input::key_name{ "unkown key", 30 }),
-	(null_input::key_name{ "unkown key", 31 }),
+	(null_input::key_name{ "unkown key", 31 }),*/
 	(null_input::key_name{ "space", 32 }),
 	(null_input::key_name{ "page up", 33 }),
 	(null_input::key_name{ "page down", 34 }),
@@ -116,13 +119,13 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "up", 38 }),
 	(null_input::key_name{ "right", 39 }),
 	(null_input::key_name{ "down", 40 }),
-	(null_input::key_name{ "unkown key", 41 }),
+	/*(null_input::key_name{ "unkown key", 41 }),
 	(null_input::key_name{ "unkown key", 42 }),
-	(null_input::key_name{ "unkown key", 43 }),
+	(null_input::key_name{ "unkown key", 43 }),*/
 	(null_input::key_name{ "print screen", 44 }),
 	(null_input::key_name{ "insert", 45 }),
 	(null_input::key_name{ "del", 46 }),
-	(null_input::key_name{ "unkown key", 47 }),
+	//(null_input::key_name{ "unkown key", 47 }),
 	(null_input::key_name{ "0", "", ")", 48 }),
 	(null_input::key_name{ "1", "", "!", 49 }),
 	(null_input::key_name{ "2", "", "@", "\"", 50 }),
@@ -133,13 +136,13 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "7", "", "&", "?",55 }),
 	(null_input::key_name{ "8", "", "*", "*",56 }),
 	(null_input::key_name{ "9", "", "(", 57 }),
-	(null_input::key_name{ "unkown key", 58 }),
+	/*(null_input::key_name{ "unkown key", 58 }),
 	(null_input::key_name{ "unkown key", 59 }),
 	(null_input::key_name{ "unkown key", 60 }),
 	(null_input::key_name{ "unkown key", 61 }),
 	(null_input::key_name{ "unkown key", 62 }),
 	(null_input::key_name{ "unkown key", 63 }),
-	(null_input::key_name{ "unkown key", 64 }),
+	(null_input::key_name{ "unkown key", 64 }),*/
 	(null_input::key_name{ "a", "ô", 65 }),
 	(null_input::key_name{ "b", "è", 66 }),
 	(null_input::key_name{ "c", "ñ", 67 }),
@@ -167,10 +170,10 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "y", "í", 89 }),
 	(null_input::key_name{ "z", "ÿ", 90 }),
 	(null_input::key_name{ "win", 91 }),
-	(null_input::key_name{ "unkown key", 92 }),
+	//(null_input::key_name{ "unkown key", 92 }),
 	(null_input::key_name{ "app", 93 }),
-	(null_input::key_name{ "unkown key", 94 }),
-	(null_input::key_name{ "unkown key", 95 }),
+	/*(null_input::key_name{ "unkown key", 94 }),
+	(null_input::key_name{ "unkown key", 95 }),*/
 	(null_input::key_name{ "num 0", 96 }),
 	(null_input::key_name{ "num 1", 97 }),
 	(null_input::key_name{ "num 2", 98 }),
@@ -183,7 +186,7 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "num 9", 105 }),
 	(null_input::key_name{ "num *", 106 }),
 	(null_input::key_name{ "num +", 107 }),
-	(null_input::key_name{ "unkown key", 108 }),
+	//(null_input::key_name{ "unkown key", 108 }),
 	(null_input::key_name{ "num -", 109 }),
 	(null_input::key_name{ "num .", 110 }),
 	(null_input::key_name{ "num /", 111 }),
@@ -211,17 +214,17 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "f22", 133 }),
 	(null_input::key_name{ "f23", 134 }),
 	(null_input::key_name{ "f24", 135 }),
-	(null_input::key_name{ "unkown key", 136 }),
+	/*(null_input::key_name{ "unkown key", 136 }),
 	(null_input::key_name{ "unkown key", 137 }),
 	(null_input::key_name{ "unkown key", 138 }),
 	(null_input::key_name{ "unkown key", 139 }),
 	(null_input::key_name{ "unkown key", 140 }),
 	(null_input::key_name{ "unkown key", 141 }),
 	(null_input::key_name{ "unkown key", 142 }),
-	(null_input::key_name{ "unkown key", 143 }),
+	(null_input::key_name{ "unkown key", 143 }),*/
 	(null_input::key_name{ "num lock", 144 }),
 	(null_input::key_name{ "scroll lock", 145 }),
-	(null_input::key_name{ "unkown key", 146 }),
+	/*(null_input::key_name{ "unkown key", 146 }),
 	(null_input::key_name{ "unkown key", 147 }),
 	(null_input::key_name{ "unkown key", 148 }),
 	(null_input::key_name{ "unkown key", 149 }),
@@ -234,14 +237,14 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "unkown key", 156 }),
 	(null_input::key_name{ "unkown key", 157 }),
 	(null_input::key_name{ "unkown key", 158 }),
-	(null_input::key_name{ "unkown key", 159 }),
+	(null_input::key_name{ "unkown key", 159 }),*/
 	(null_input::key_name{ "left shift", 160 }),
 	(null_input::key_name{ "right shift", 161 }),
 	(null_input::key_name{ "left ctrl", 162 }),
 	(null_input::key_name{ "right ctrl", 163 }),
 	(null_input::key_name{ "left menu", 164 }),
 	(null_input::key_name{ "right menu", 165 }),
-	(null_input::key_name{ "unkown key", 166 }),
+	/*(null_input::key_name{ "unkown key", 166 }),
 	(null_input::key_name{ "unkown key", 167 }),
 	(null_input::key_name{ "unkown key", 168 }),
 	(null_input::key_name{ "unkown key", 169 }),
@@ -261,14 +264,14 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "unkown key", 183 }),
 	(null_input::key_name{ "unkown key", 184 }),
 	(null_input::key_name{ "unkown key", 185 }),
-	(null_input::key_name{ "unkown key", 186 }),
+	(null_input::key_name{ "unkown key", 186 }),*/
 	(null_input::key_name{ "=", "", "+", 187 }),
 	(null_input::key_name{ ",", "á", "<", 188 }),
 	(null_input::key_name{ "-", "", "_", "_", 189 }),
 	(null_input::key_name{ ".", "þ", ">", 190 }),
 	(null_input::key_name{ "/", ".", "?", ",", 191 }),
 	(null_input::key_name{ "`", "¸", "~", 192 }),
-	(null_input::key_name{ "unkown key", 192 }),
+	/*(null_input::key_name{ "unkown key", 192 }),
 	(null_input::key_name{ "unkown key", 193 }),
 	(null_input::key_name{ "unkown key", 194 }),
 	(null_input::key_name{ "unkown key", 195 }),
@@ -294,7 +297,7 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 	(null_input::key_name{ "unkown key", 215 }),
 	(null_input::key_name{ "unkown key", 216 }),
 	(null_input::key_name{ "unkown key", 217 }),
-	(null_input::key_name{ "unkown key", 218 }),
+	(null_input::key_name{ "unkown key", 218 }),*/
 	(null_input::key_name{ "[", "õ", "{", 219 }),
 	(null_input::key_name{ "\\", "", "|", "/", 220 }),
 	(null_input::key_name{ "]", "ú", "}", 221 }),
@@ -302,51 +305,32 @@ std::vector<null_input::input_key> null_input::vars::keys = {
 };
 
 namespace null_input {
-	key_name::key_name(std::string _us, int _id) {
-		us = _us;
-		id = _id;
-	}
-
-	key_name::key_name(std::string _us, std::string _rus, int _id) {
-		us = _us;
-		rus = _rus;
-		id = _id;
-	}
-
-	key_name::key_name(std::string _us, std::string _rus, std::string _us_shift, int _id) {
-		us = _us;
-		rus = _rus;
-		us_shift = _us_shift;
-		id = _id;
-	}
-
-	key_name::key_name(std::string _us, std::string _rus, std::string _us_shift, std::string _rus_shift, int _id) {
-		us = _us;
-		rus = _rus;
-		us_shift = _us_shift;
-		rus_shift = _rus_shift;
-		id = _id;
-	}
-
 	bool key_name::for_input(int id) {
 		return (id >= 48 && id <= 90) || (id >= 186 && id <= 192) || (id >= 219 && id <= 222) || (id >= 96 && id <= 111) || id == 32;
 	}
 
-	int key_name::get_id(std::string name) {
-		std::vector<input_key>::iterator ret = std::find_if(vars::keys.begin(), vars::keys.end(), [&name](input_key& a) { return a.data.us == name || a.data.rus == name || a.data.us_shift == name || a.data.rus_shift == name; });
+	int key_name::get_array_id(std::string name) {
+		std::vector<input_key>::iterator ret = std::find_if(key_list.begin(), key_list.end(), [=](input_key& a) { return a.data.us == name || a.data.rus == name || a.data.us_shift == name || a.data.rus_shift == name; });
 
-		if (ret == vars::keys.end()) return 0;
-		else return (*ret).data.id;
+		if (ret == key_list.end()) return 0;
+		else return std::distance(key_list.begin(), ret);
+	}
+
+	int key_name::get_array_id(int id) {
+		std::vector<input_key>::iterator ret = std::find_if(key_list.begin(), key_list.end(), [=](input_key& a) { return a.data.id == id; });
+
+		if (ret == key_list.end()) return 0;
+		else return std::distance(key_list.begin(), ret);
 	}
 
 	std::string key_name::get_name(int id, bool language_and_shift) {
 		int language = GetKeyboardLayout(GetWindowThreadProcessId(GetForegroundWindow(), NULL)) == (HKL)67699721 ? 0 : 1;
 
-		key_name key = vars::keys[id].data;
+		key_name key = key_list[id].data;
 		bool caps = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
 
 		if (language_and_shift) {
-			if (id == get_id("space")) return " ";
+			if (key.us == "space") return " ";
 
 			if (language == 0) {
 				if (key.us.size() == 1 && key.us.back() >= 'a' && key.us.back() <= 'z' && (get_key("shift")->down() || caps)) {
@@ -365,7 +349,7 @@ namespace null_input {
 					result.back() = key.rus.back() + ('À' - 'à');
 					return result;
 				}
-				if (get_key("shift")->down() && key.rus_shift != "") return key.rus_shift;
+				if (get_key("shift")->down() && (key.rus_shift != "" || key.us_shift != "")) return key.rus_shift != "" ? key.rus_shift : key.us_shift != "" ? key.us_shift : "";
 
 				return key.rus != "" ? key.rus : key.us;
 			}
@@ -432,24 +416,24 @@ namespace null_input {
 		case WM_SYSKEYUP:
 			return process_keybd_message(msg, w_param, l_param);
 		case WM_MOUSEWHEEL:
-			vars::mouse_wheel += GET_WHEEL_DELTA_WPARAM(w_param) > 0 ? +1.0f : -1.0f;
+			mouse_wheel += GET_WHEEL_DELTA_WPARAM(w_param) > 0 ? +1.0f : -1.0f;
 			return true;
 		case WM_MOUSEMOVE:
-			vars::mouse_pos = vec2((signed short)(l_param), (signed short)(l_param >> 16));
+			mouse_pos = vec2((signed short)(l_param), (signed short)(l_param >> 16));
 			return true;
 		}
 		return false;
 	}
 
 	void bind_control() {
-		for (bind_key* bind : vars::binds) {
+		for (bind_key* bind : bind_list) {
 			if (bind->binding && bind->type != bind_type::always) continue;
 			switch (bind->type) {
-			case bind_type::hold: {
+			case bind_type::hold_on: {
 				if (bind->key->down()) bind->callbacks[0]();
 				else bind->callbacks[1]();
 			} break;
-			case bind_type::hold_invers: {
+			case bind_type::hold_off: {
 				if (!bind->key->down()) bind->callbacks[0]();
 				else bind->callbacks[1]();
 			} break;
@@ -460,7 +444,8 @@ namespace null_input {
 	}
 
 	void update_keys_state() {
-		for (input_key& key : vars::keys) {
+		static vec2 mouse_click_pos;
+		for (input_key& key : key_list) {
 			key.state_clicked = key.down() && key.down_duration < 0.0f;
 			key.state_pressed = !key.down() && key.down_duration >= 0.f;
 
@@ -471,7 +456,7 @@ namespace null_input {
 			key.state_double_clicked = false;
 			if (key.state_clicked) {
 				if ((float)(null_gui::deeps::real_time - key.clicked_time) < null_gui::gui_settings::double_click_time) {
-					vec2 delta = vars::mouse_pos - vars::mouse_click_pos;
+					vec2 delta = mouse_pos - mouse_click_pos;
 					if (delta.length_sqr() < pow(null_gui::gui_settings::double_click_max_dist, 2)) {
 						key.state_double_clicked = true;
 
@@ -482,7 +467,7 @@ namespace null_input {
 				} else {
 					key.clicked_time = null_gui::deeps::real_time;
 				}
-				vars::mouse_click_pos = vars::mouse_pos;
+				mouse_click_pos = mouse_pos;
 			}
 		}
 	}
@@ -490,12 +475,12 @@ namespace null_input {
 	void create_bind(bool can_show, bind_key* bind) {
 		bind->can_show = can_show;
 
-		std::vector<bind_key*>::iterator finded = std::find_if(vars::binds.begin(), vars::binds.end(), [bind](bind_key* first) { return first->name == bind->name; });
+		std::vector<bind_key*>::iterator finded = std::find_if(bind_list.begin(), bind_list.end(), [=](bind_key* first) { return first->name == bind->name; });
 
 		if (can_show) {
-			if (finded == vars::binds.end()) vars::binds.push_back(bind);
+			if (finded == bind_list.end()) bind_list.push_back(bind);
 		} else {
-			vars::binds.erase(vars::binds.begin() + std::distance(vars::binds.begin(), finded));
+			bind_list.erase(bind_list.begin() + std::distance(bind_list.begin(), finded));
 			bind->callbacks[1]();
 		}
 	}

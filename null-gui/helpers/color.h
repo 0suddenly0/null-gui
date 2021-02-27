@@ -95,24 +95,43 @@ public:
 		return out;
 	}
 
-    void operator=(const color& _color) { inalizate(_color.source[0], _color.source[1], _color.source[2], _color.source[3]); }
-    color& operator=(const float* _color) { inalizate(_color[0], _color[1], _color[2], _color[3]); return *this; }
-    color& operator=(const int* _color) { inalizate(_color[0], _color[1], _color[2], _color[3]); return *this; }
-    bool operator==(const color& rhs) const { return (*((int*)this) == *((int*)&rhs)); }
-    bool operator!=(const color& rhs) const { return !(operator==(rhs)); }
-
-    D3DCOLOR get_d3d() {
-        this->to_int();
-        D3DCOLOR temp = D3DCOLOR_RGBA((int)source[0], (int)source[1], (int)source[2], (int)source[3]);
-        this->to_float();
-        return temp;
-    }
-
 	unsigned int to_unsigned() {
 		to_int();
 		unsigned int temp = COL32((int)source[0], (int)source[1], (int)source[2], (int)source[3]);
 		to_float();
 		return temp;
+	}
+
+	color operator+(color _color) {
+		return color(r() + _color.r(), g() + _color.g(), b() + _color.b(), a() + _color.a());
+	}
+
+	color operator-(color& _color) {
+		return color(r() - _color.r(), g() - _color.g(), b() - _color.b(), a() - _color.a());
+	}
+
+	color operator*(float& value) {
+		return color(r() * value, g() * value, b() * value, a() * value);
+	}
+
+    void operator=(const color& _color) {
+		inalizate(_color.source[0], _color.source[1], _color.source[2], _color.source[3]);
+	}
+
+    color& operator=(const float* _color) {
+		inalizate(_color[0], _color[1], _color[2], _color[3]); return *this;
+	}
+
+    color& operator=(const int* _color) {
+		inalizate(_color[0], _color[1], _color[2], _color[3]); return *this;
+	}
+
+    bool operator==(const color& rhs) const {
+		return (*((int*)this) == *((int*)&rhs));
+	}
+
+    bool operator!=(const color& rhs) const {
+		return !(operator==(rhs));
 	}
 
     int get_raw() const { return *((int*)this); }

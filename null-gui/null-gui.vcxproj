@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="helpers\color.h" />
+    <ClInclude Include="helpers\flags_list.h" />
     <ClInclude Include="helpers\math.h" />
     <ClInclude Include="helpers\vectors.h" />
     <ClInclude Include="null-gui\null-gui.h" />

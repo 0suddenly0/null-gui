@@ -129,5 +129,8 @@
     <ClInclude Include="null-input\null-input.h">
       <Filter>source\null-input</Filter>
     </ClInclude>
+    <ClInclude Include="helpers\flags_list.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

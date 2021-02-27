@@ -9,12 +9,10 @@ namespace null_gui {
 		if (password) std::fill(value_text.begin(), value_text.end(), '*');
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
-		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll());
+		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(value_text);
-		vec2 left_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : 0, 0.f);
-		vec2 right_spacing(gui_settings::spacing_checkbox_size ? gui_settings::checkbox_size + gui_settings::text_spacing : wnd->get_scroll_offset(), 0.f);
-		rect size(draw_pos + left_spacing, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (left_spacing.x * 2 + gui_settings::window_padding.x), draw_pos.y + gui_settings::combo_size + text_size.y + gui_settings::text_spacing) + right_spacing);
+		rect size(draw_pos, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - gui_settings::window_padding.x, draw_pos.y + gui_settings::combo_size + text_size.y + gui_settings::text_spacing) + wnd->get_scroll_thickness());
 		rect size_draw(vec2(size.min.x, size.min.y + text_size.y + gui_settings::text_spacing), size.max);
 		rect size_draw_text(size_draw.min, size_draw.max - vec2(2.f, 2.f));
 		deeps::text_input_info* input = deeps::text_input_info::add(new deeps::text_input_info{ name, value, value_text, size_draw });

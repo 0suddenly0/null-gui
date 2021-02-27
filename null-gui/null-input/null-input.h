@@ -10,8 +10,8 @@
 namespace null_input {
 	enum class bind_type {
 		always = 0,
-		hold,
-		hold_invers,
+		hold_on,
+		hold_off,
 		toggle
 	};
 
@@ -26,14 +26,16 @@ namespace null_input {
 
 	class key_name {
 	public:
+		//удалить этот говнокод нахуй
 		key_name() {}
-		key_name(std::string _us, int _id);
-		key_name(std::string _us, std::string _rus, int _id);
-		key_name(std::string _us, std::string _rus, std::string _us_shift, int _id);
-		key_name(std::string _us, std::string _rus, std::string _us_shift, std::string _rus_shift, int _id);
+		key_name(std::string _us, int _id) : us(_us), id(_id) {};
+		key_name(std::string _us, std::string _rus, int _id) : us(_us), rus(_rus), id(_id) {};
+		key_name(std::string _us, std::string _rus, std::string _us_shift, int _id) : us(_us), rus(_rus), us_shift(_us_shift), id(_id) {};
+		key_name(std::string _us, std::string _rus, std::string _us_shift, std::string _rus_shift, int _id) : us(_us), rus(_rus), us_shift(_us_shift), rus_shift(_rus_shift), id(_id) {};
 
 		static bool for_input(int id);
-		static int get_id(std::string name);
+		static int get_array_id(std::string name);
+		static int get_array_id(int id);
 		static std::string get_name(int id, bool language_and_shift = false);
 
 		std::string us;
@@ -93,25 +95,24 @@ namespace null_input {
 		std::array<std::function<void(void)>, 3> callbacks;
 	};
 
-	namespace vars {
-		int last_press_key;
-		extern std::vector<input_key> keys;
-		std::vector<bind_key*> binds;
-		float mouse_wheel;
-		vec2 mouse_pos;
-		vec2 mouse_click_pos;
-	}
+	int last_press_key;
+	extern std::vector<input_key> key_list;
+	std::vector<bind_key*> bind_list;
+	float mouse_wheel;
+	vec2 mouse_pos;
+	vec2 click_mouse_pos;
 
 	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 	void bind_control();
 	void update_keys_state();
 
-	vec2 mouse_pos() { return vars::mouse_pos; }
-	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos() <= min && mouse_pos() >= max; }
-	bool mouse_in_region(rect region) { return mouse_pos() <= region.min && mouse_pos() >= region.max; }
-	input_key* get_key(std::string name) { return &vars::keys[key_name::get_id(name)]; }
-	input_key* get_key(int id) { return &vars::keys[id]; }
+	bool click_mouse_in_region(vec2 min, vec2 max) { return click_mouse_pos <= min && click_mouse_pos >= max; }
+	bool click_mouse_in_region(rect region) { return click_mouse_pos <= region.min && click_mouse_pos >= region.max; }
+	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos <= min && mouse_pos >= max; }
+	bool mouse_in_region(rect region) { return mouse_pos <= region.min && mouse_pos >= region.max; }
+	input_key* get_key(std::string name) { return &key_list[key_name::get_array_id(name)]; }
+	input_key* get_key(int id) { return &key_list[key_name::get_array_id(id)]; }
 
 	void create_bind(bool can_show, bind_key* bind);
 
