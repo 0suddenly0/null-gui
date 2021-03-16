@@ -10,7 +10,7 @@ static int vertex_buffer_size = 5000, index_buffer_size = 10000;
 
 struct CUSTOMVERTEX {
     float    pos[3];
-    D3DCOLOR col;
+    D3DCOLOR clr;
     float    uv[2];
 };
 
@@ -77,7 +77,7 @@ namespace null_render {
                     vtx_dst->pos[0] = vtx_src->pos.x;
                     vtx_dst->pos[1] = vtx_src->pos.y;
                     vtx_dst->pos[2] = 0.0f;
-                    vtx_dst->col = (vtx_src->col.to_unsigned() & 0xFF00FF00) | ((vtx_src->col.to_unsigned() & 0xFF0000) >> 16) | ((vtx_src->col.to_unsigned() & 0xFF) << 16);
+                    vtx_dst->clr = (vtx_src->clr.to_unsigned() & 0xFF00FF00) | ((vtx_src->clr.to_unsigned() & 0xFF0000) >> 16) | ((vtx_src->clr.to_unsigned() & 0xFF) << 16);
                     vtx_dst->uv[0] = vtx_src->uv.x;
                     vtx_dst->uv[1] = vtx_src->uv.y;
                     vtx_dst++;

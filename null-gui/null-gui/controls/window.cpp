@@ -35,10 +35,13 @@ namespace null_gui {
 
 		if (this_window->flags.contains(window_flags::popup) || this_window->close_call) { //logic for popups
 			if (((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && !this_window->in_popup_region()) || this_window->close_call) {
-				this_window->parent_window->child_popup_window.erase(this_window->parent_window->child_popup_window.begin() + std::distance(this_window->parent_window->child_popup_window.begin(), std::find_if(this_window->parent_window->child_popup_window.begin(), this_window->parent_window->child_popup_window.end(), [=](window* wnd) { return wnd->name == this_window->name; })));
-				deeps::windows.erase(deeps::windows.begin() + this_window->idx);
-				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
-				return false;
+				int window_id = std::distance(this_window->parent_window->child_popup_window.begin(), std::find_if(this_window->parent_window->child_popup_window.begin(), this_window->parent_window->child_popup_window.end(), [=](window* wnd) { return wnd->name == this_window->name; }));
+				if (window_id < this_window->parent_window->child_popup_window.size()) {
+					this_window->parent_window->child_popup_window.erase(this_window->parent_window->child_popup_window.begin() + window_id);
+					deeps::windows.erase(deeps::windows.begin() + this_window->idx);
+					if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
+					return false;
+				}
 			}
 		}
 
@@ -74,7 +77,7 @@ namespace null_gui {
 				this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), this_window->flags.contains(window_flags::group)); {
 					this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), true); {
 						this_window->draw_list->draw_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
-						this_window->draw_list->draw_rect_filled_multi_color(this_window->pos + vec2(this_window->size.x - 45 - gui_settings::window_title_size, 0.f), this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
+						this_window->draw_list->draw_rect_filled_multicolor(this_window->pos + vec2(this_window->size.x - 45 - gui_settings::window_title_size, 0.f), this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
 					} this_window->draw_list->pop_clip_rect();
 
 					deeps::push_var(&this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - (gui_settings::window_title_size / 2) - (null_font::text_size("x").x / 2), (gui_settings::window_title_size / 2) - (null_font::text_size("x").y / 2))); {

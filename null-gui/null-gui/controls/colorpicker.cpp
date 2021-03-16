@@ -1,72 +1,88 @@
 #include "../null-gui.h"
 
 std::vector<color> colors = { { 255, 0, 0, 255 }, {255, 255, 0, 255}, {0, 255, 0, 255}, {0, 255, 255, 255}, {0, 0, 255, 255}, {255, 0, 255, 255}, {255, 0, 0, 255} };
-static color coped;
+color temp_copy_of_color;
+
+//rgb - hsv
+std::map<std::string, color> colorpicker_list;
+
 namespace null_gui {
 	color colorpicker_sv(color clr, std::string name) {
 		window* wnd = deeps::current_window;
 		if (!wnd) return clr;
 
-		color ret = clr;
+		std::string item_name = utils::format("##%s colorpicker_slider_sv", name.c_str());
+		float s = clr.g() == 0 ? colorpicker_list[name].g() : clr.g();
+		float v = clr.b() == 0 ? colorpicker_list[name].b() : clr.b();
 		vec2 draw_pos = wnd->draw_item_pos;
-		vec2 dot_pos = vec2(math::clamp(round(draw_pos.x + math::clamp(ret.g(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.x + 2, draw_pos.x + gui_settings::colorpicker_size - 2), math::clamp(round(draw_pos.y + math::clamp(1 - ret.b(), 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.y + 2, draw_pos.y + gui_settings::colorpicker_size - 2));
-		rect size(draw_pos, draw_pos + vec2(gui_settings::colorpicker_size, gui_settings::colorpicker_size));
-		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
+		vec2 dot_pos = vec2(math::clamp(round(draw_pos.x + math::clamp(s, 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.x + 2, draw_pos.x + gui_settings::colorpicker_size - 2), math::clamp(round(draw_pos.y + math::clamp(1 - v, 0.f, 1.f) * gui_settings::colorpicker_size), draw_pos.y + 2, draw_pos.y + gui_settings::colorpicker_size - 2));
+		rect item_rect(draw_pos, draw_pos + vec2(gui_settings::colorpicker_size, gui_settings::colorpicker_size));
+		bool pressed = deeps::colorpicker_sliders_behavior(item_rect, item_name);
 
 		if (pressed) {
-			ret.g() = math::clamp((null_input::mouse_pos.x - size.min.x) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
-			ret.b() = 1.0f - math::clamp((null_input::mouse_pos.y - size.min.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
+			s = math::clamp((null_input::mouse_pos.x - item_rect.min.x) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
+			v = 1.0f - math::clamp((null_input::mouse_pos.y - item_rect.min.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f);
+
+			colorpicker_list[name].g() = s;
+			colorpicker_list[name].b() = v;
 		}
 
-		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() }, { color(255, 255, 255, 255), color(clr.r(), 1.f, 1.f).hsv_to_rgb() });
-		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(0, 0, 0, 0), color(0, 0, 0, 0) }, { color(0, 0, 0, 255), color(0, 0, 0, 255) });
+		wnd->draw_list->draw_rect_filled_multicolor_horizontal(item_rect.min, item_rect.max, color(255, 255, 255, 255), color(clr.r() == 0.f ? colorpicker_list[name].r() : clr.r(), 1.f, 1.f).hsv_to_rgb(), gui_settings::colorpicker_rounding);
+		wnd->draw_list->draw_rect_filled_multicolor_vertical(item_rect.min, item_rect.max, color(0, 0, 0, 0), color(0, 0, 0, 255), gui_settings::colorpicker_rounding);
 
 		wnd->draw_list->draw_circle_filled(dot_pos, color(45, 45, 45, 100), 5.f);
 		wnd->draw_list->draw_circle_filled(dot_pos, color(clr.hsv_to_rgb(), 1.f), 3.f);
 
-		deeps::add_item(size.size(), name);
-		return ret;
+		deeps::add_item(item_rect.size(), item_name);
+		return color(clr.r(), s, v);
 	}
 
 	float colorpicker_slider_h(color clr, std::string name) {
 		window* wnd = deeps::current_window;
 		if (!wnd) return clr.r();
 
+		std::string item_name = utils::format("##%s colorpicker_slider_h", name.c_str());
 		vec2 draw_pos = wnd->draw_item_pos;
-		rect size(draw_pos, draw_pos + vec2(gui_settings::colorpicker_thickness, gui_settings::colorpicker_size));
-		float ret = clr.r();
-		float calc_pos = round(draw_pos.y + (ret / 360.f) * size.size().y);
-		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
+		rect item_rect(draw_pos, draw_pos + vec2(gui_settings::colorpicker_thickness, gui_settings::colorpicker_size));
+		float h = clr.r() == 0.f ? colorpicker_list[name].r() : clr.r();
+		float calc_pos = round(draw_pos.y + (h / 360.f) * item_rect.size().y);
+		bool pressed = deeps::colorpicker_sliders_behavior(item_rect, item_name);
 
-		if (pressed) ret = math::clamp((null_input::mouse_pos.y - draw_pos.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f) * 360.f;
-
-		for (int i = 0; i < 6; i++) {
-			rect size_temp(vec2(draw_pos.x, draw_pos.y + (i * (size.size().y / 6))), vec2(size.max.x, draw_pos.y + ((i + 1) * (size.size().y / 6))));
-			wnd->draw_list->draw_rect_filled_multi_color(size_temp.min, size_temp.max, { colors[i], colors[i] }, { colors[i + 1], colors[i + 1] });
+		if (pressed) {
+			h = math::clamp((null_input::mouse_pos.y - draw_pos.y) / (gui_settings::colorpicker_size - 1), 0.f, 1.f) * 360.f;
+			
+			colorpicker_list[name].r() = h;
 		}
 
-		wnd->draw_list->draw_rect_filled(vec2(size.min.x - 2, calc_pos - 1), vec2(size.max.x + 2, calc_pos + 1), color(255, 255, 255));
+		for (int i = 0; i < 6; i++) {
+			rect segment_size(vec2(draw_pos.x, draw_pos.y + (i * (item_rect.size().y / 6))) - vec2(0.f, i == 5 ? 1.f : 0.f), vec2(item_rect.max.x, draw_pos.y + ((i + 1) * (item_rect.size().y / 6))) + vec2(0.f, i == 0 ? 1.f : 0.f));
+			if(i == 0 || i == 5) wnd->draw_list->draw_rect_filled_multicolor_vertical(segment_size.min, segment_size.max, colors[i], colors[i + 1], gui_settings::colorpicker_rounding, i == 0 ? null_render::corner_flags::top : null_render::corner_flags::bot);
+			else wnd->draw_list->draw_rect_filled_multicolor(segment_size.min, segment_size.max, { colors[i], colors[i] }, { colors[i + 1], colors[i + 1] });
+		}
 
-		deeps::add_item(size.size(), name);
-		return ret;
+		wnd->draw_list->draw_rect_filled(vec2(item_rect.min.x - 2, calc_pos - 1), vec2(item_rect.max.x + 2, calc_pos + 1), color(255, 255, 255));
+
+		deeps::add_item(item_rect.size(), item_name);
+		return h;
 	}
 
 	float colorpicker_slider_alpha(color clr, std::string name) {
 		window* wnd = deeps::current_window;
 		if (!wnd) return clr.a();
 
+		std::string item_name = utils::format("##%s colorpicker_slider_alpha", name.c_str());
 		vec2 draw_pos = wnd->draw_item_pos;
-		rect size(draw_pos, vec2(draw_pos.x + wnd->size.x - (gui_settings::window_padding.x * 2), draw_pos.y + gui_settings::colorpicker_thickness));
+		rect item_rect(draw_pos, vec2(draw_pos.x + wnd->size.x - (gui_settings::window_padding.x * 2), draw_pos.y + gui_settings::colorpicker_thickness));
 		float ret = clr.a();
-		float calc_pos = round(draw_pos.x + ret * size.size().x);
-		bool pressed = deeps::colorpicker_sliders_behavior(size, name);
+		float calc_pos = round(draw_pos.x + ret * item_rect.size().x);
+		bool pressed = deeps::colorpicker_sliders_behavior(item_rect, item_name);
 
-		if (pressed) ret = math::clamp((null_input::mouse_pos.x - draw_pos.x) / (size.size().x - 1), 0.f, 1.f);
+		if (pressed) ret = math::clamp((null_input::mouse_pos.x - draw_pos.x) / (item_rect.size().x - 1), 0.f, 1.f);
 
-		wnd->draw_list->draw_rect_filled_multi_color(size.min, size.max, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) }, { color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f) });
-		wnd->draw_list->draw_rect_filled(vec2(calc_pos - 1.f, size.min.y - 2), vec2(calc_pos + 1.f, size.max.y + 2), color(255, 255, 255));
+		wnd->draw_list->draw_rect_filled_multicolor_horizontal(item_rect.min, item_rect.max, color(255, 255, 255, 10), color(clr.hsv_to_rgb(), 1.f), gui_settings::colorpicker_rounding);
+		wnd->draw_list->draw_rect_filled(vec2(calc_pos - 1.f, item_rect.min.y - 2), vec2(calc_pos + 1.f, item_rect.max.y + 2), color(255, 255, 255), gui_settings::colorpicker_rounding);
 
-		deeps::add_item(size.size(), name);
+		deeps::add_item(item_rect.size(), item_name);
 		return ret;
 	}
 
@@ -79,38 +95,37 @@ namespace null_gui {
 		std::string draw_text = deeps::format_item(name);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
-		rect size(draw_pos, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (wnd->get_scroll_thickness() + gui_settings::window_padding.x), draw_pos.y + text_size.y + gui_settings::text_spacing));
-		rect size_open(size.max - (size.max.y - size.min.y), size.max);
+		rect item_rect(draw_pos, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (wnd->get_scroll_thickness() + gui_settings::window_padding.x), draw_pos.y + gui_settings::checkbox_size));
+		rect button_rect(item_rect.max - vec2(item_rect.size().y * 2, item_rect.size().y), item_rect.max);
 		std::vector<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
 
-		deeps::colorpicker_behavior(clr, size_open, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
-		deeps::add_item(size.size(), name);
+		deeps::colorpicker_behavior(clr, button_rect, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
 
-		null_gui::tooltip([=]() {
-			/*if (alpha_bar) null_gui::text(utils::format("r: %.0f; g: %.0f; g: %.0f; a: %.0f", clr->r() * 255.f, clr->g() * 255.f, clr->b() * 255.f, clr->a() * 255.f));
-			else null_gui::text(utils::format("r: %.0f; g: %.0f; b: %.0f", clr->r() * 255.f, clr->g() * 255.f, clr->b() * 255.f));*/
-			clr->to_int();
-			if (alpha_bar) null_gui::text(utils::format("r: %.0f; g: %.0f; g: %.0f; a: %.0f", clr->r(), clr->g(), clr->b(), clr->a()));
-			else null_gui::text(utils::format("r: %.0f; g: %.0f; b: %.0f", clr->r(), clr->g(), clr->b()));
-			clr->to_float();
-			});
+		deeps::add_item(item_rect.size(), name);
 
-		wnd->draw_list->draw_rect_filled(size.max - size.size().y, size.max, gui_settings::button_bg);	
-		wnd->draw_list->draw_rect_filled(size.max - size.size().y, size.max - size.size().y / 2, gui_settings::button_bg_active);
-		wnd->draw_list->draw_rect_filled(size.max - size.size().y / 2, size.max, gui_settings::button_bg_active);
-		wnd->draw_list->draw_rect_filled(size.max - size.size().y, size.max, *clr);
-		wnd->draw_list->draw_text(deeps::format_item(name), vec2(size.min.x, size.max.y - (size.max.y - size.min.y) / 2), gui_settings::text, false, { false , true });
+		color clr_draw = clr->get_convert_to_int();
+		std::string tooltip_text = alpha_bar ? "r: %.0f; g: %.0f; g: %.0f; a: %.0f" : "r: %.0f; g: %.0f; g: %.0f";
+		null_gui::tooltip(utils::format(tooltip_text.c_str(), clr_draw.r(), clr_draw.g(), clr_draw.b(), clr_draw.a()));
+
+		wnd->draw_list->draw_rect_filled(button_rect.min, button_rect.max, color(*clr, 1.f), gui_settings::colorpicker_rounding);
+
+		wnd->draw_list->draw_text(deeps::format_item(name), vec2(item_rect.min.x, item_rect.max.y - (item_rect.max.y - item_rect.min.y) / 2), gui_settings::text, false, { false , true });
 
 		if (deeps::window_exist(utils::format("##%s colorpicker", text.c_str()))) {
 			deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
-				if (begin_window(utils::format("##%s colorpicker", text.c_str()), vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags, nullptr)) {
-					color sv = colorpicker_sv(ret, utils::format("##%s colorpicker_slider_sv", text.c_str()));
+				if (begin_window(utils::format("##%s colorpicker", text.c_str()), vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
+					
+					if (colorpicker_list.count(name) == 0) //if this item not exists -initialization
+						colorpicker_list.insert(std::pair<std::string, color>(name, ret ));
+
+					color sv = colorpicker_sv(ret, name);
 					deeps::push_var(&gui_settings::item_spacing, 0.f); {
 						same_line();
 					} deeps::pop_var();
-					float h = colorpicker_slider_h(ret, utils::format("##%s colorpicker_slider_h", text.c_str()));
-					float alpha = alpha_bar ? colorpicker_slider_alpha(ret, utils::format("##%s colorpicker_slider_alpha", text.c_str())) : ret.a();
+					float h = colorpicker_slider_h(ret, name);
+					float alpha = alpha_bar ? colorpicker_slider_alpha(ret, name) : ret.a();
 					ret = color(h, sv.g(), sv.b(), alpha);
+
 					end_window();
 				}
 			} deeps::pop_var();
@@ -119,13 +134,13 @@ namespace null_gui {
 		if (deeps::window_exist(utils::format("##%s colorpicker tooltip", text.c_str()))) {
 			deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
 				deeps::push_var(&gui_settings::items_size_full_window, true); {
-					if (begin_window(utils::format("##%s colorpicker tooltip", text.c_str()), vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags, nullptr)) {
+					if (begin_window(utils::format("##%s colorpicker tooltip", text.c_str()), vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
 						if (button("copy")) {
-							coped = ret;
+							temp_copy_of_color = ret;
 							deeps::close_current_window();
 						}
 						if (button("paste")) {
-							ret = coped;
+							ret = temp_copy_of_color;
 							deeps::close_current_window();
 						}
 						end_window();

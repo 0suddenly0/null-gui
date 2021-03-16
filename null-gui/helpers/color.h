@@ -19,11 +19,14 @@ public:
     color() { inalizate(255, 255, 255, 255); }
 	color(int r, int g, int b, int a = 255) { inalizate(r, g, b, a); }
 	color(float r, float g, float b, float a = 1.f) { inalizate(r, g, b, a); }
-	color(color clr, int a) { clr.to_int(); inalizate((int)clr.r(), (int)clr.g(), (int)clr.b(), a); }
+	color(color clr, int a) { clr.convert_to_int(); inalizate((int)clr.r(), (int)clr.g(), (int)clr.b(), a); }
 	color(color clr, float a) { inalizate(clr.r(), clr.g(), clr.b(), a); }
 
-    void to_int() { source[0] *= 255.f; source[1] *= 255.f; source[2] *= 255.f; source[3] *= 255.f; }
-    void to_float() { source[0] /= 255.f; source[1] /= 255.f; source[2] /= 255.f; source[3] /= 255.f; }
+    void convert_to_int() { source[0] *= 255.f; source[1] *= 255.f; source[2] *= 255.f; source[3] *= 255.f; }
+    void convert_to_float() { source[0] /= 255.f; source[1] /= 255.f; source[2] /= 255.f; source[3] /= 255.f; }
+
+	color get_convert_to_int() { return color(source[0] * 255.f, source[1] * 255.f, source[2] * 255.f, source[3] * 255.f); }
+	color get_convert_to_float() { return color(source[0] / 255.f, source[1] / 255.f, source[2] / 255.f, source[3] / 255.f); }
 
 	color rgb_to_hsv() {
 		color out;
@@ -43,6 +46,7 @@ public:
 			out.r() = 0;
 			return out;
 		}
+
 		if (max > 0.0) {
 			out.g() = (delta / max);
 		} else {
@@ -50,6 +54,7 @@ public:
 			out.r() = NAN;
 			return out;
 		}
+
 		if (r() >= max) out.r() = (g() - b()) / delta;
 		else {
 			if (g() >= max) out.r() = 2.0 + (b() - r()) / delta;
@@ -96,9 +101,9 @@ public:
 	}
 
 	unsigned int to_unsigned() {
-		to_int();
+		convert_to_int();
 		unsigned int temp = COL32((int)source[0], (int)source[1], (int)source[2], (int)source[3]);
-		to_float();
+		convert_to_float();
 		return temp;
 	}
 

@@ -149,15 +149,12 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		null_gui::begin_gui();
 
 		null_render::draw_rect_filled(vec2(10, 10), vec2(10, 10) + null_font::text_size("example text"), color(255, 255, 255, 100));
-		null_render::background_draw_list.draw_text("example text", vec2(10, 10), color(255, 255, 255, 255));
+		null_render::draw_text("example text", vec2(10, 10), color(255, 255, 255, 255));
 
-		null_render::background_draw_list.draw_rect_filled_multi_color(vec2(200, 200), vec2(500, 300), { color(255, 255, 255), color(255, 0, 0) }, { color(0, 255, 0), color(0, 0, 255) }, null_gui::gui_settings::button_rounding);
-
-		null_render::background_draw_list.draw_rect_filled_multi_color(vec2(10, 10), vec2(50, 50), { color(255, 255, 255), color(255, 0, 0) }, { color(0, 255, 0), color(0, 0, 255) }, 0.f);
-
-		/*null_render::push_clip_rect(vec2(200, 200), vec2(500, 500)); {
-			null_render::draw_rect_filled(vec2(0, 0), vec2(1000, 1000), color(255, 255, 255, 255));
-		} null_render::pop_clip_rect();*/
+		null_render::draw_rect_filled_multicolor_vertical(vec2(100, 200), vec2(200, 500), null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg, null_gui::gui_settings::button_rounding);
+		null_render::draw_rect_filled_multicolor(vec2(300, 100), vec2(600, 200), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, null_gui::gui_settings::button_rounding);
+		null_render::draw_rect_filled_multicolor(vec2(300, 300), vec2(600, 400), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, null_gui::gui_settings::button_rounding);
+		null_render::draw_rect_filled_multicolor(vec2(300, 500), vec2(600, 600), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, 0.f);
 
 		static bool test_bool_bind;
 		static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold_on);
@@ -184,13 +181,16 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			null_gui::end_window();
 		}
 
-		if (null_gui::begin_window("test size", vec2(0, 0), vec2(0, 80), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size })) {
+		if (null_gui::begin_window("test size", vec2(0, 0), vec2(0, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size })) {
 			static float asdint = 0;
-			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
-				null_gui::button("we");
-				null_gui::same_line();
-				null_gui::button("aye");
-			} null_gui::deeps::pop_var();
+			/*null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
+				//null_gui::button("we");
+				//null_gui::same_line();
+				//null_gui::button("aye");
+			} null_gui::deeps::pop_var();*/
+			//null_gui::slider_float("we", &test_float, 0.f, 10.f);
+			null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
+			null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 			null_gui::end_window();
 		}
 
@@ -205,7 +205,9 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("check_mark_size", &null_gui::gui_settings::check_mark_size, 1, 10, "%.0f", 1, 5);
 					null_gui::slider_float("checkbox_body_offset", &null_gui::gui_settings::checkbox_body_offset, 0, 50, "%.0f", 1, 5);
 					null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f", 1, 5);
-					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%0.2f", 0.1f, 0.5f);
+					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%.2f", 0.1f, 0.5f);
+					null_gui::slider_float("combo_window_padding", &null_gui::gui_settings::combo_window_padding, 0.f, 20.f, "%.0f", 1, 5);
+					null_gui::slider_int("max_auto_size_combo", &null_gui::gui_settings::max_auto_size_combo, 1, 10);
 					null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1, 5);
 					null_gui::slider_float("selectable_offset", &null_gui::gui_settings::selectable_offset, 0, 20, "%.0f", 1, 5);
 					null_gui::slider_float("selectable_active_offset", &null_gui::gui_settings::selectable_active_offset, 3, 20, "%.0f", 1, 5);
@@ -220,21 +222,39 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("checkbox_rounding", &null_gui::gui_settings::checkbox_rounding, 0, 20, "%.1f", 1, 5);
 					null_gui::slider_float("button_rounding", &null_gui::gui_settings::button_rounding, 0, 20, "%.1f", 1, 5);
 					null_gui::slider_float("combo_rounding", &null_gui::gui_settings::combo_rounding, 0, 20, "%.1f", 1, 5);
+					null_gui::slider_float("scrollbar_rounding", &null_gui::gui_settings::scrollbar_rounding, 0, 20, "%.1f", 1, 5);
+					null_gui::slider_float("colorpicker_rounding", &null_gui::gui_settings::colorpicker_rounding, 0, 20, "%.1f", 1, 5);
+					null_gui::slider_float("key_bind_rounding", &null_gui::gui_settings::key_bind_rounding, 0, 20, "%.1f", 1, 5);
 				} null_gui::end_group();
 				null_gui::begin_group("bools", vec2(0.f, 200.f)); {
 					null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
 					null_gui::checkbox("checkbox_hovered_with_text", &null_gui::gui_settings::checkbox_hovered_with_text);
 					null_gui::checkbox("clamp_window_on_screen", &null_gui::gui_settings::clamp_window_on_screen);
 					null_gui::checkbox("move_window_on_title_bar", &null_gui::gui_settings::move_window_on_title_bar);
+					null_gui::checkbox("show_scrollbar_background", &null_gui::gui_settings::show_scrollbar_background);
 				} null_gui::end_group();
 				null_gui::next_column();
 				null_gui::begin_group("vectors", vec2(0.f, 200.f)); {
-					null_gui::slider_float("button_padding_x", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f", 1, 5);
-					null_gui::slider_float("button_padding_y", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f", 1, 5);
-					null_gui::slider_float("window_padding_x", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f", 1, 5);
-					null_gui::slider_float("window_padding_y", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f", 1, 5);
-					null_gui::slider_float("scrollbar_padding_x", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1, 5);
-					null_gui::slider_float("scrollbar_padding_y", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1, 5);
+					null_gui::text("button_padding");
+					null_gui::begin_columns(2); {
+						null_gui::slider_float("x##button_padding", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::next_column();
+						null_gui::slider_float("y##button_padding", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f", 1, 5);
+					} null_gui::end_columns();
+
+					null_gui::text("window_padding");
+					null_gui::begin_columns(2); {
+						null_gui::slider_float("x##window_padding", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::next_column();
+						null_gui::slider_float("y##window_padding", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f", 1, 5);
+					} null_gui::end_columns();
+
+					null_gui::text("scrollbar_padding");
+					null_gui::begin_columns(2); {
+						null_gui::slider_float("x##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1, 5);
+						null_gui::next_column();
+						null_gui::slider_float("y##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1, 5);
+					} null_gui::end_columns();
 				} null_gui::end_group();
 				null_gui::begin_group("colors", vec2(0.f, 200.f)); {
 					null_gui::colorpicker("main_color", &null_gui::gui_settings::main_color);
@@ -271,10 +291,14 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_gui::slider_float("slider2323 float", &test_float, 0, 100);
 			} null_gui::deeps::pop_var();
 
-			null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
-			null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
-			null_gui::checkbox("show debug window", &debug_window);
-			null_gui::tooltip([]() { null_gui::text("test tooltip"); });
+			//null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
+			static bool a1 = false;
+			static bool a2 = false;
+			static bool a3 = false;
+			static bool a4 = false;
+			//null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
+			null_gui::checkbox("show debug window", &a1);
+			null_gui::tooltip("test tooltip");
 			null_gui::checkbox("show settings window", &settings_window);
 			//null_gui::same_line()
 			null_gui::text_input("text input", &test_string);

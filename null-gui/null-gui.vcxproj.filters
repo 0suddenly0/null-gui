@@ -29,6 +29,9 @@
     <Filter Include="source\null-input">
       <UniqueIdentifier>{b7c36ea2-7c58-4ead-b53f-7f18021c0441}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\null-gui\utilites">
+      <UniqueIdentifier>{6c30497c-73bc-4199-a3eb-6d4923dc9e9e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

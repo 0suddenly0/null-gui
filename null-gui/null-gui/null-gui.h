@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stack>
 #include <vector>
+#include <map>
 #include "../helpers/math.h"
 #include "../null-render/null-render.h"
 #include "../null-input/null-input.h"
@@ -197,19 +198,23 @@ namespace null_gui {
 		float checkbox_body_offset = 2.f;
 		float combo_size = 16.f;
 		float combo_arrow_size = 1.f;
+		float combo_window_padding = 0.f;
+		int max_auto_size_combo = 5;
 		float slider_size = 5.f;
 		float selectable_offset = 4.f;
 		float selectable_active_offset = 10.f;
 		float colorpicker_size = 100.f;
 		float colorpicker_thickness = 9.f;
 		float scrollbar_thickness = 2.f;
-
 		float window_rounding = 0.f;
 		float window_title_rounding = 0.f;
 		float slider_rounding = 0.f;
 		float checkbox_rounding = 0.f;
 		float button_rounding = 0.f;
 		float combo_rounding = 0.f;
+		float scrollbar_rounding = 0.f;
+		float colorpicker_rounding = 0.f;
+		float key_bind_rounding = 0.f;
 
 		float double_click_time = 0.30f;
 		float double_click_max_dist = 6.f;
@@ -223,6 +228,7 @@ namespace null_gui {
 		bool checkbox_hovered_with_text = false;
 		bool clamp_window_on_screen = true;
 		bool move_window_on_title_bar = true;
+		bool show_scrollbar_background = true;
 	}
 
 	void pre_begin_gui(HWND hwnd);
@@ -260,5 +266,6 @@ namespace null_gui {
 	void end_columns();
 
 	void same_line();
-	void tooltip(std::function<void()> func, std::string need_name = "");
+	void tooltip(std::string tooltip_text);
+	void functional_tooltip(std::function<void()> func);
 }

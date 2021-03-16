@@ -665,13 +665,17 @@ namespace null_gui {
 		wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(gui_settings::item_spacing, 0.f);
 	}
 
-	void tooltip(std::function<void()> func, std::string need_name) {
+	void tooltip(std::string tooltip_text) {
+		functional_tooltip([=]() { text(tooltip_text); });
+	}
+
+	void functional_tooltip(std::function<void()> func) {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 		if (deeps::active_window_name != "" || deeps::active_name != "" || !wnd->can_open_tooltip()) return;
 		bool close = deeps::hovered_name == deeps::last_item_name;
 		deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
-			if (begin_window("##tooltip", null_input::mouse_pos + vec2(10, 10), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size }, &close)) {
+ 			if (begin_window("##tooltip", null_input::mouse_pos + vec2(10, 10), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size }, &close)) {
 				deeps::focus_current_window();
 				func();
 				end_window();

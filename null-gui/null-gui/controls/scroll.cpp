@@ -48,8 +48,8 @@ namespace null_gui {
 			float size_bar, pos;
 			calc_scroll(size, draw_size, size_bar, pos);
 
-			wnd->draw_list->draw_rect_filled(size.min, size.max, gui_settings::button_bg);
-			wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), gui_settings::main_color);
+			wnd->draw_list->draw_rect_filled(size.min, size.max, gui_settings::button_bg, gui_settings::scrollbar_rounding);
+			wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), gui_settings::main_color, gui_settings::scrollbar_rounding);
 		}
 
 		bool can_scroll = wnd->max_size.y > wnd->size.y && wnd->flags.contains(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : deeps::hovered_window == wnd;
