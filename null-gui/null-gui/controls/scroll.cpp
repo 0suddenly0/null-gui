@@ -48,7 +48,7 @@ namespace null_gui {
 			float size_bar, pos;
 			calc_scroll(size, draw_size, size_bar, pos);
 
-			wnd->draw_list->draw_rect_filled(size.min, size.max, gui_settings::button_bg, gui_settings::scrollbar_rounding);
+			if(gui_settings::show_scrollbar_background) wnd->draw_list->draw_rect_filled(size.min, size.max, gui_settings::button_bg, gui_settings::scrollbar_rounding);
 			wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), gui_settings::main_color, gui_settings::scrollbar_rounding);
 		}
 

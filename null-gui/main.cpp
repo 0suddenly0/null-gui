@@ -10,10 +10,29 @@
 #include <iomanip>
 #include <regex>
 #include <tchar.h>
+#include <chrono>
 
 #include "null-gui/null-gui.h"
 #include "null-render/null-render.h"
 #include "null-render/directx9/null-render-dx9.h"
+
+int fps() {
+	using namespace std::chrono;
+	static int count = 0;
+	static auto last = high_resolution_clock::now();
+	auto now = high_resolution_clock::now();
+	static int fps = 0;
+
+	count++;
+
+	if (duration_cast<milliseconds>(now - last).count() > 1000) {
+		fps = count;
+		count = 0;
+		last = now;
+	}
+
+	return fps;
+}
 
 #define VAR_TO_STRING(VAR) #VAR
 
@@ -134,7 +153,6 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	null_render::directx9::init(d3d_device);
 
 	null_gui::pre_begin_gui(window);
-
 	
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
 
@@ -175,22 +193,23 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			null_render::draw_text("test bind", vec2(10, 40), color(255, 255, 255));
 
 		if (null_gui::begin_window("debug window [ window with debug informa1231231132tion ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
-			null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
+			null_gui::text(utils::format(u8"ывactive item name - '%s'", null_gui::deeps::active_name.c_str()));
 			null_gui::text(utils::format("active window name - '%s'", null_gui::deeps::active_window_name.c_str()));
 			if (null_gui::deeps::hovered_window) null_gui::text(utils::format("hovered window name - '%s'", null_gui::deeps::hovered_window->name.c_str()));
 			null_gui::end_window();
 		}
 
 		if (null_gui::begin_window("test size", vec2(0, 0), vec2(0, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size })) {
-			static float asdint = 0;
-			/*null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
-				//null_gui::button("we");
-				//null_gui::same_line();
-				//null_gui::button("aye");
-			} null_gui::deeps::pop_var();*/
+			//null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
+			//	//null_gui::button("we");
+			//	//null_gui::same_line();
+			//	//null_gui::button("aye");
+			//} null_gui::deeps::pop_var();
 			//null_gui::slider_float("we", &test_float, 0.f, 10.f);
 			null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 			null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
+			null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
+			//null_gui::text_input("text input", &test_string);
 			null_gui::end_window();
 		}
 
@@ -214,6 +233,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f", 1, 5);
 					null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f", 1, 5);
 					null_gui::slider_float("scrollbar_thickness", &null_gui::gui_settings::scrollbar_thickness, 1, 10, "%.0f", 1, 5);
+					null_gui::slider_float("text_input_line_size", &null_gui::gui_settings::text_input_line_size, 1, 10, "%.0f", 1, 5);
 
 					null_gui::text("roundings");
 					null_gui::slider_float("window_rounding", &null_gui::gui_settings::window_rounding, 0, 20, "%.1f", 1, 5);
@@ -225,6 +245,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("scrollbar_rounding", &null_gui::gui_settings::scrollbar_rounding, 0, 20, "%.1f", 1, 5);
 					null_gui::slider_float("colorpicker_rounding", &null_gui::gui_settings::colorpicker_rounding, 0, 20, "%.1f", 1, 5);
 					null_gui::slider_float("key_bind_rounding", &null_gui::gui_settings::key_bind_rounding, 0, 20, "%.1f", 1, 5);
+					null_gui::slider_float("text_input_roundig", &null_gui::gui_settings::text_input_rounding, 0, 20, "%.1f", 1, 5);
 				} null_gui::end_group();
 				null_gui::begin_group("bools", vec2(0.f, 200.f)); {
 					null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
@@ -254,6 +275,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 						null_gui::slider_float("x##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1, 5);
 						null_gui::next_column();
 						null_gui::slider_float("y##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1, 5);
+					} null_gui::end_columns();
+
+					null_gui::text("text_input_padding");
+					null_gui::begin_columns(2); {
+						null_gui::slider_float("x##text_input_padding", &null_gui::gui_settings::text_input_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::next_column();
+						null_gui::slider_float("y##text_input_padding", &null_gui::gui_settings::text_input_padding.y, 0, 50, "%.0f", 1, 5);
 					} null_gui::end_columns();
 				} null_gui::end_group();
 				null_gui::begin_group("colors", vec2(0.f, 200.f)); {
@@ -297,14 +325,15 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			static bool a3 = false;
 			static bool a4 = false;
 			//null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
-			null_gui::checkbox("show debug window", &a1);
+			null_gui::checkbox("show debug window##23123", &debug_window);
 			null_gui::tooltip("test tooltip");
 			null_gui::checkbox("show settings window", &settings_window);
 			//null_gui::same_line()
 			null_gui::text_input("text input", &test_string);
 			null_gui::key_bind("test key bind", &bind);
-			null_gui::text(null_input::key_name::get_name(null_input::last_press_key, true));
-			null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
+			null_gui::text(utils::format("fps : %d", fps()));
+			null_gui::text(std::string(null_font::helpers::convert_utf8(null_input::key_name::get_name(null_input::last_press_key, true)) + " " + std::to_string(null_input::last_press_key)).c_str());
+			//null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
 			null_gui::end_window();
 		}
 

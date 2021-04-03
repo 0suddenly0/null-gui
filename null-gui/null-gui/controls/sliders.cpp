@@ -14,11 +14,14 @@ namespace null_gui {
 		vec2 minus_size = null_font::text_size("- ");
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 min = text_size + gui_settings::text_spacing + vec2(plus_size.x + minus_size.x + null_font::text_size(utils::format(format.c_str(), max_value)).x, gui_settings::slider_size);
-		float full_size = wnd->size.x - (null_gui::gui_settings::window_padding.x * 2) - wnd->get_scroll_thickness();
-		rect item_rect = rect(draw_pos, draw_pos + vec2(null_gui::gui_settings::items_size_full_window ? math::max(min.x, full_size) : min.x, min.y));
-		rect body_rect(vec2(item_rect.min.x, item_rect.max.y - gui_settings::slider_size), item_rect.max);
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect body_rect = rect(vec2(item_rect.min.x, item_rect.max.y - gui_settings::slider_size), item_rect.max);
 		int new_value = math::clamp(min_value + (max_value - min_value) * (null_input::mouse_pos.x - item_rect.min.x) / item_rect.size().x, (float)min_value, (float)max_value);
 		int clamped_value = math::clamp(*value, min_value, max_value);
+
+		deeps::add_item(item_rect.size(), name);
+		if (!wnd->can_draw_item(item_rect))
+			return;
 
 		bool hovered, pressed;
 		deeps::slider_behavior(body_rect, &hovered, &pressed, name);
@@ -63,8 +66,6 @@ namespace null_gui {
 		wnd->draw_list->push_clip_rect(body_rect.min, vec2(body_rect.min.x + slider_size, body_rect.max.y), true); {
 			wnd->draw_list->draw_rect_filled(body_rect.min, body_rect.max, gui_settings::main_color, gui_settings::slider_rounding);
 		} wnd->draw_list->pop_clip_rect();
-
-		deeps::add_item(item_rect.size(), name);
 	}
 
 	void slider_float(std::string text, float* value, float min_value, float max_value, std::string format, float step, float ctrl_step) {
@@ -80,11 +81,14 @@ namespace null_gui {
 		vec2 minus_size = null_font::text_size("- ");
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 min = text_size + gui_settings::text_spacing + vec2(plus_size.x + minus_size.x + null_font::text_size(utils::format(format.c_str(), max_value)).x, gui_settings::slider_size);
-		float full_size = wnd->size.x - (gui_settings::window_padding.x * 2) - wnd->get_scroll_thickness();
-		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, full_size) : min.x, min.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.max.y - gui_settings::slider_size), item_rect.max);
 		float new_value = math::clamp(min_value + (max_value - min_value) * (null_input::mouse_pos.x - item_rect.min.x) / item_rect.size().x, min_value, max_value);
 		float clamped_value = math::clamp(*value, min_value, max_value);
+
+		deeps::add_item(item_rect.size(), name);
+		if (!wnd->can_draw_item(item_rect))
+			return;
 
 		bool hovered, pressed;
 		deeps::slider_behavior(body_rect, &hovered, &pressed, name);
@@ -129,7 +133,5 @@ namespace null_gui {
 		wnd->draw_list->push_clip_rect(body_rect.min, vec2(body_rect.min.x + slider_size, body_rect.max.y), true); {
 			wnd->draw_list->draw_rect_filled(body_rect.min, body_rect.max, gui_settings::main_color, gui_settings::slider_rounding);
 		} wnd->draw_list->pop_clip_rect();
-
-		deeps::add_item(item_rect.size(), name);
 	}
 }

@@ -22,7 +22,6 @@ namespace null_gui {
 
 		deeps::push_var(&wnd->draw_item_pos_prev, vec2(wnd->pos.x + first_size + gui_settings::window_padding.x, y_on_start)); {
 			deeps::push_var(&gui_settings::item_spacing, 0.f); {
-				//same_line();
 				wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(gui_settings::item_spacing, 0.f);
 			} deeps::pop_var();
 		} deeps::pop_var();

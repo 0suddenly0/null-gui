@@ -1,6 +1,8 @@
 #define NOMINMAX
 #define _CRT_SECURE_NO_WARNINGS
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #include <stdio.h>
+#include <codecvt>
 #include "../utils/utils.h"
 #include "../helpers/math.h"
 #include "null-render.h"
@@ -928,12 +930,34 @@ namespace null_font {
                     data[i] = table[data[i]];
         }
 
-        std::string convert_utf8(std::string text) {
-            int size = MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS | MB_PRECOMPOSED | MB_USEGLYPHCHARS, text.data(),
-                text.length(), nullptr, 0);
-            std::wstring utf16_str(size, '\0');
+        std::wstring convert_wstring(std::string text) {
+            //return text;
+            std::wstring utf16_str(text.length(), '\0');
             MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS | MB_PRECOMPOSED | MB_USEGLYPHCHARS, text.data(),
-                text.length(), &utf16_str[0], size);
+                text.length(), &utf16_str[0], text.length());
+
+            return utf16_str;
+        }
+
+        std::string convert_string(std::wstring text) {
+            int utf8_size = WideCharToMultiByte(CP_UTF8, WC_COMPOSITECHECK | WC_ERR_INVALID_CHARS | WC_NO_BEST_FIT_CHARS, text.data(),
+                text.length(), nullptr, 0,
+                nullptr, nullptr);
+            std::string utf8_str(utf8_size, '\0');
+            WideCharToMultiByte(CP_UTF8, WC_COMPOSITECHECK | WC_ERR_INVALID_CHARS | WC_NO_BEST_FIT_CHARS, text.data(),
+                text.length(), &utf8_str[0], utf8_size,
+                nullptr, nullptr);
+
+            return utf8_str;
+        }
+
+        std::string convert_utf8(std::string text) {
+            //return text;
+            std::wstring utf16_str(text.length(), '\0');
+            MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS | MB_PRECOMPOSED | MB_USEGLYPHCHARS, text.data(),
+                text.length(), &utf16_str[0], text.length());
+
+            int aue = utf16_str.length();
 
             int utf8_size = WideCharToMultiByte(CP_UTF8, WC_COMPOSITECHECK | WC_ERR_INVALID_CHARS | WC_NO_BEST_FIT_CHARS, utf16_str.data(),
                 utf16_str.length(), nullptr, 0,
@@ -996,10 +1020,10 @@ namespace null_font {
         return &glyphs.data()[i];
     }
 
-    vec2 font::calc_text_size(std::string text, float size) const {
-        text = helpers::convert_utf8(text);
+    vec2 font::calc_text_size_w(std::wstring text, float size) const {
+        const wchar_t* wchar_text = text.c_str();
         size = size < 0.f ? font_size : size;
-        const char* text_end = text.c_str() + strlen(text.c_str());
+        const wchar_t* text_end = wchar_text + wcslen(wchar_text);
 
         const float line_height = size;
         const float scale = size / font_size;
@@ -1007,9 +1031,43 @@ namespace null_font {
         vec2 text_size = vec2(0, 0);
         float line_width = 0.0f;
 
-        const char* s = text.c_str();
+        const wchar_t* s = wchar_text;
         while (s < text_end) {
-            const char* prev_s = s;
+            wchar_t c = (wchar_t)(*s++);
+
+            if (c == '\n')
+            {
+                text_size.x = math::max(text_size.x, line_width);
+                text_size.y += line_height;
+                line_width = 0.0f;
+                continue;
+            }
+            if (c == '\r')
+                continue;
+
+            const float char_width = get_char_advance((wchar_t)c) * scale;
+            line_width += char_width;
+        }
+
+        if (text_size.x < line_width) text_size.x = line_width;
+        if (line_width > 0 || text_size.y == 0.0f) text_size.y += line_height;
+
+        return text_size;
+    }
+
+    vec2 font::calc_text_size(std::string text, float size) const {
+        const char* char_text = text.c_str();
+        size = size < 0.f ? font_size : size;
+        const char* text_end = char_text + strlen(char_text);
+
+        const float line_height = size;
+        const float scale = size / font_size;
+
+        vec2 text_size = vec2(0, 0);
+        float line_width = 0.0f;
+
+        const char* s = char_text;
+        while (s < text_end) {
             unsigned int c = (unsigned int)*s;
             if (c < 0x80) {
                 s += 1;
@@ -1030,7 +1088,6 @@ namespace null_font {
             }
 
             const float char_width = ((int)c < index_advance_x.size() ? index_advance_x.data()[c] : fallback_advance_x) * scale;
-
             line_width += char_width;
         }
 
@@ -1242,6 +1299,14 @@ namespace null_font {
         null_render::shared_data.tex_uv_lines = atlas->tex_uv_lines;
         null_render::shared_data.font = vars::main_font;
         null_render::shared_data.font_size = vars::font_size;
+    }
+
+    vec2 text_size_w(std::wstring text) {
+        font* font = vars::main_font;
+        vec2 text_size = font->calc_text_size_w(text);
+        text_size.x = floor(text_size.x + 0.95f);
+
+        return text_size;
     }
 
     vec2 text_size(std::string text) {
@@ -1570,8 +1635,9 @@ namespace null_render {
     void draw_list::draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, null_font::font* font, float size) {
         if(font == NULL) font = _data->font;
         if(size == 0.f) size = _data->font_size;
-        if (centered[0]) pos.x -= font->calc_text_size(text).x / 2;
-        if (centered[1]) pos.y -= font->calc_text_size(text).y / 2;
+        vec2 text_size = font->calc_text_size(text, size);
+        if (centered[0]) pos.x -= text_size.x / 2;
+        if (centered[1]) pos.y -= text_size.y / 2;
 
         if (outline) {
             draw_text(text, pos + vec2(1.f, 0.f), color(0.f, 0.f, 0.f, clr.a()), font, size);
@@ -1584,8 +1650,6 @@ namespace null_render {
     }
 
     void draw_list::draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* _clip_rect, bool cpu_fine_clip) {
-        text = null_font::helpers::convert_utf8(text);
-
         if (clr.a() == 0.f) return;
         if (font == NULL) font = _data->font;
         if (size == 0.0f) size = _data->font_size;
@@ -1600,7 +1664,8 @@ namespace null_render {
             clip_rect.max.y = math::min(clip_rect.max.y, _clip_rect->max.y);
         }
 
-        const char* text_end = text.c_str() + strlen(text.c_str());
+        const char* char_text = text.c_str();
+        const char* text_end = char_text + strlen(char_text);
 
         pos.x = floor(pos.x);
         pos.y = floor(pos.y);
@@ -1611,7 +1676,7 @@ namespace null_render {
         const float scale = size / font->font_size;
         const float line_height = font->font_size * scale;
 
-        const char* s = text.c_str();
+        const char* s = char_text;
         if (y + line_height < clip_rect.min.y)
             while (y + line_height < clip_rect.min.y && s < text_end) {
                 s = (const char*)memchr(s, '\n', text_end - s);

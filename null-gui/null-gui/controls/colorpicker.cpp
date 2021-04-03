@@ -94,14 +94,17 @@ namespace null_gui {
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
-		vec2 text_size = null_font::text_size(draw_text);
-		rect item_rect(draw_pos, vec2(draw_pos.x + wnd->size.x - gui_settings::window_padding.x - (wnd->get_scroll_thickness() + gui_settings::window_padding.x), draw_pos.y + gui_settings::checkbox_size));
-		rect button_rect(item_rect.max - vec2(item_rect.size().y * 2, item_rect.size().y), item_rect.max);
+		vec2 text_size = null_font::text_size(draw_text.c_str());
+		vec2 min = vec2(text_size.x + gui_settings::text_spacing + gui_settings::checkbox_size * 2, math::max(gui_settings::checkbox_size, text_size.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect button_rect = rect(item_rect.max - vec2(item_rect.size().y * 2, item_rect.size().y), item_rect.max);
 		std::vector<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
 
-		deeps::colorpicker_behavior(clr, button_rect, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
-
 		deeps::add_item(item_rect.size(), name);
+		if (!wnd->can_draw_item(item_rect))
+			return;
+
+		deeps::colorpicker_behavior(button_rect, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
 
 		color clr_draw = clr->get_convert_to_int();
 		std::string tooltip_text = alpha_bar ? "r: %.0f; g: %.0f; g: %.0f; a: %.0f" : "r: %.0f; g: %.0f; g: %.0f";
@@ -115,7 +118,7 @@ namespace null_gui {
 			deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
 				if (begin_window(utils::format("##%s colorpicker", text.c_str()), vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
 					
-					if (colorpicker_list.count(name) == 0) //if this item not exists -initialization
+					if (colorpicker_list.count(name) == 0) //if this item not exists - initialization
 						colorpicker_list.insert(std::pair<std::string, color>(name, ret ));
 
 					color sv = colorpicker_sv(ret, name);
@@ -124,7 +127,9 @@ namespace null_gui {
 					} deeps::pop_var();
 					float h = colorpicker_slider_h(ret, name);
 					float alpha = alpha_bar ? colorpicker_slider_alpha(ret, name) : ret.a();
-					ret = color(h, sv.g(), sv.b(), alpha);
+					color result = color(h, sv.g(), sv.b(), alpha);
+
+					if (result != ret) ret = result;
 
 					end_window();
 				}

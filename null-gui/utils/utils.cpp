@@ -3,7 +3,7 @@
 #include <assert.h>
 
 namespace utils {
-	std::string format(const char* text, ...) {
+    std::string format(const char* text, ...) {
 		char buf[1024];
 		va_list va;
 

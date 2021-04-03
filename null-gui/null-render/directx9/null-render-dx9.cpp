@@ -77,7 +77,8 @@ namespace null_render {
                     vtx_dst->pos[0] = vtx_src->pos.x;
                     vtx_dst->pos[1] = vtx_src->pos.y;
                     vtx_dst->pos[2] = 0.0f;
-                    vtx_dst->clr = (vtx_src->clr.to_unsigned() & 0xFF00FF00) | ((vtx_src->clr.to_unsigned() & 0xFF0000) >> 16) | ((vtx_src->clr.to_unsigned() & 0xFF) << 16);
+                    unsigned int clr = vtx_src->clr.to_unsigned();
+                    vtx_dst->clr = (clr & 0xFF00FF00) | ((clr & 0xFF0000) >> 16) | ((clr & 0xFF) << 16);
                     vtx_dst->uv[0] = vtx_src->uv.x;
                     vtx_dst->uv[1] = vtx_src->uv.y;
                     vtx_dst++;
@@ -99,8 +100,7 @@ namespace null_render {
             vec2 clip_off = _draw_data->display_pos;
             for (int n = 0; n < _draw_data->cmd_lists_count; n++) {
                 const draw_list* cmd_list = _draw_data->cmd_lists[n];
-                for (int cmd_i = 0; cmd_i < cmd_list->cmd_buffer.size(); cmd_i++)
-                {
+                for (int cmd_i = 0; cmd_i < cmd_list->cmd_buffer.size(); cmd_i++) {
                     const helpers::cmd* pcmd = &cmd_list->cmd_buffer[cmd_i];
 
                     const RECT r = { (LONG)(pcmd->clip_rect.min.x - clip_off.x), (LONG)(pcmd->clip_rect.min.y - clip_off.y), (LONG)(pcmd->clip_rect.max.x - clip_off.x), (LONG)(pcmd->clip_rect.max.y - clip_off.y) };

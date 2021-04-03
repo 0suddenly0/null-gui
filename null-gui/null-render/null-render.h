@@ -219,6 +219,8 @@ namespace null_font {
         void atlas_build_multiply_calc_lookup_table(unsigned char out_table[256], float in_multiply_factor);
         void atlas_build_multiply_rect_alpha8(const unsigned char table[256], unsigned char* pixels, int x, int y, int w, int h, int stride);
 
+        std::wstring convert_wstring(std::string text);
+        std::string convert_string(std::wstring text);
         std::string convert_utf8(std::string text);
         std::string erase_utf8(std::string text);
     }
@@ -250,6 +252,7 @@ namespace null_font {
         helpers::glyph* find_glyph_no_fallback(unsigned short c);
         float get_char_advance(unsigned short c) const { return ((int)c < index_advance_x.size()) ? index_advance_x[(int)c] : fallback_advance_x; }
         bool is_loaded() const { return container_atlas != NULL; }
+        vec2 calc_text_size_w(std::wstring text, float size = -1.f) const;
         vec2 calc_text_size(std::string text, float size = -1.f) const;
         const char* calc_word_wrap_position_a(float scale, const char* text, const char* text_end, float wrap_width) const;
 
@@ -274,6 +277,7 @@ namespace null_font {
     }
 
     void set_current_font(font* font);
+    vec2 text_size_w(std::wstring text);
     vec2 text_size(std::string text);
     font* get_default_font() { return vars::main_font ? vars::main_font : vars::font_atlas->fonts[0]; }
 

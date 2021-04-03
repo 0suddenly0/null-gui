@@ -9,16 +9,18 @@ namespace null_gui {
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 min = text_size + (gui_settings::button_padding * 2);
-		float full_size = wnd->size.x - (gui_settings::window_padding.x * 2) - wnd->get_scroll_thickness();
-		rect button_rect = rect(draw_pos, draw_pos + math::max(vec2(gui_settings::items_size_full_window ? math::max(min.x + wnd->get_scroll_thickness(), full_size) : min.x + wnd->get_scroll_thickness(), min.y), size_arg));
+		rect button_rect = rect(draw_pos, draw_pos + math::max(vec2(gui_settings::items_size_full_window ? math::max(min.x + wnd->get_scroll_thickness(), wnd->get_window_size_with_padding()) : min.x + wnd->get_scroll_thickness(), min.y), size_arg));
+
+		deeps::add_item(button_rect.size(), name);
+		if (!wnd->can_draw_item(button_rect))
+			return false;
 
 		bool hovered, pressed;
 		bool active = deeps::button_behavior(button_rect, &hovered, &pressed, name);
 
 		wnd->draw_list->draw_rect_filled(button_rect.min, button_rect.max, hovered || pressed ? pressed ? gui_settings::main_color : gui_settings::button_bg_hovered : gui_settings::button_bg, gui_settings::button_rounding);
-		wnd->draw_list->draw_text(deeps::format_item(draw_text), button_rect.centre(), gui_settings::text, false, { true , true });
-		
-		deeps::add_item(button_rect.size(), name);
+		wnd->draw_list->draw_text(draw_text, button_rect.centre(), gui_settings::text, false, { true , true });
+
 		return active;
 	}
 }

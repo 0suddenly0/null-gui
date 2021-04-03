@@ -265,6 +265,7 @@ std::vector<null_input::input_key> null_input::key_list = {
 	(null_input::key_name{ "unkown key", 184 }),
 	(null_input::key_name{ "unkown key", 185 }),
 	(null_input::key_name{ "unkown key", 186 }),*/
+	(null_input::key_name{ ";", "æ", ":", 186 }),
 	(null_input::key_name{ "=", "", "+", 187 }),
 	(null_input::key_name{ ",", "á", "<", 188 }),
 	(null_input::key_name{ "-", "", "_", "_", 189 }),

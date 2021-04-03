@@ -28,10 +28,7 @@ namespace null_gui {
 			if (size.y > 1.f) this_window->size.y = size.y;
 		}
 
-		if (gui_settings::clamp_window_on_screen && !this_window->flags.contains(window_flags::group)) { //pohui, potom fixanu
-			this_window->pos.x = math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-			this_window->pos.y = math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
-		}
+		this_window->clamp_on_screen();
 
 		if (this_window->flags.contains(window_flags::popup) || this_window->close_call) { //logic for popups
 			if (((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && !this_window->in_popup_region()) || this_window->close_call) {
@@ -56,10 +53,7 @@ namespace null_gui {
 			else {
 				this_window->pos = null_input::mouse_pos - this_window->drag_offset;
 
-				if (gui_settings::clamp_window_on_screen && !this_window->flags.contains(window_flags::group)) { //pohui, potom fixanu
-					this_window->pos.x = math::clamp(this_window->pos.x, 0.f, deeps::display_size.x - this_window->size.x);
-					this_window->pos.y = math::clamp(this_window->pos.y, 0.f, deeps::display_size.y - this_window->size.y);
-				}
+				this_window->clamp_on_screen();
 			}
 		}
 
@@ -76,7 +70,7 @@ namespace null_gui {
 
 				this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), this_window->flags.contains(window_flags::group)); {
 					this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), true); {
-						this_window->draw_list->draw_text(formated_name.c_str(), this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
+						this_window->draw_list->draw_text(this_window->name, this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
 						this_window->draw_list->draw_rect_filled_multicolor(this_window->pos + vec2(this_window->size.x - 45 - gui_settings::window_title_size, 0.f), this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
 					} this_window->draw_list->pop_clip_rect();
 

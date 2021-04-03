@@ -112,7 +112,7 @@ namespace null_input {
 	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos <= min && mouse_pos >= max; }
 	bool mouse_in_region(rect region) { return mouse_pos <= region.min && mouse_pos >= region.max; }
 	input_key* get_key(std::string name) { return &key_list[key_name::get_array_id(name)]; }
-	input_key* get_key(int id) { return &key_list[key_name::get_array_id(id)]; }
+	input_key* get_key(int id) { return &key_list[id]; }
 
 	void create_bind(bool can_show, bind_key* bind);
 

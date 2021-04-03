@@ -101,10 +101,8 @@ public:
 	}
 
 	unsigned int to_unsigned() {
-		convert_to_int();
-		unsigned int temp = COL32((int)source[0], (int)source[1], (int)source[2], (int)source[3]);
-		convert_to_float();
-		return temp;
+		color clr = get_convert_to_int();
+		return COL32((int)clr.source[0], (int)clr.source[1], (int)clr.source[2], (int)clr.source[3]);
 	}
 
 	color operator+(color _color) {
@@ -132,7 +130,7 @@ public:
 	}
 
     bool operator==(const color& rhs) const {
-		return (*((int*)this) == *((int*)&rhs));
+		return rhs.source[0] == source[0] && rhs.source[1] == source[1] && rhs.source[2] == source[2] && rhs.source[3] == source[3];
 	}
 
     bool operator!=(const color& rhs) const {

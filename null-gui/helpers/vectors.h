@@ -208,6 +208,14 @@ public:
         max.y = max_y;
     }
 
+    template <typename T>
+    rect(T value) {
+        min.x = value;
+        min.y = value;
+        max.x = value;
+        max.y = value;
+    }
+
     rect(vec2 _min, vec2 _max) {
         min.x = _min.x;
         min.y = _min.y;
@@ -233,6 +241,10 @@ public:
 
     bool operator==(const rect& src) {
         return (src.min.x == min.x) && (src.min.y == min.y) && (src.max.x == max.x) && (src.max.y == max.y);
+    }
+
+    bool operator==(float fl) {
+        return (min.x == fl) && (min.y == fl) && (max.x == fl) && (max.y == fl);
     }
 
     bool operator!=(const rect& src) {

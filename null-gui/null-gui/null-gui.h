@@ -27,12 +27,16 @@ namespace null_gui {
 		window* in_popup_region();
 		window* get_hovered_group();
 		window* get_main_window();
+		void focus_window();
+		void clamp_on_screen();
+
 		bool can_scroll() { return max_scroll != 0; }
 		float get_scroll_offset() { return ignore_scroll ? 0.f : scroll_offset; }
-		float get_scroll_thickness();
-		bool can_open_tooltip();
+		float get_scroll_thickness();	
+		float get_window_size_with_padding();
 		float get_title_size();
-		void focus_window();
+		bool can_open_tooltip();
+		bool can_draw_item(rect item_rect);
 		rect get_draw_pos(rect value);
 
 		std::string name;
@@ -103,30 +107,33 @@ namespace null_gui {
 	namespace deeps {
 		class text_input_info {
 		public:
+			text_input_info(std::string _name, std::string* _value, rect _working_rect) : name(_name), value(_value), working_rect(_working_rect) { }
 			static text_input_info* add(text_input_info* input);
 			static text_input_info* get_input(std::string name);
 			static void win_poc(int id);
 			static void control();
 
+			void update_utf_text();
 			void get_pos_on_cursor();
 			void select_text();
 			void clamp(int start = 0) {
-				pos_in_text = math::clamp(pos_in_text, start, (int)value->size());
-				select_max = math::clamp(select_max, start, (int)value->size());
-				select_min = math::clamp(select_min, start, (int)value->size());
+				pos_in_text = math::clamp(pos_in_text, start, (int)converted_value.size());
+				select_max = math::clamp(select_max, start, (int)converted_value.size());
+				select_min = math::clamp(select_min, start, (int)converted_value.size());
 			}
 			void reset_select() { selecting = select_type::none; select_max = 0; select_min = 0; };
 
 			int get_id_under_cursor();
 			float get_text_offset(int offset);
-			float get_size_select();
 
 			std::string name;
 			std::string* value;
-			std::string visible_text;
-			rect work_rect;
+			std::string value_for_render;
+			std::string last_value; // for optimization
+			std::wstring converted_value; //text after null_font::helpers::convert_utf8
+			rect working_rect;
 			int pos_in_text;
-			
+
 			bool show_pos;
 			float show_time;
 
@@ -161,8 +168,8 @@ namespace null_gui {
 		bool key_bind_behavior(null_input::bind_key* bind, rect size, bool* hovered, std::string name);
 		bool button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
-		bool combo_behavior(rect size, int item_count, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags);
-		void colorpicker_behavior(color* clr, rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
+		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags);
+		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
 		bool colorpicker_sliders_behavior(rect size, std::string name);
 		void add_item(vec2 size, std::string name); 
 		bool mouse_in_current_windows();
@@ -206,6 +213,7 @@ namespace null_gui {
 		float colorpicker_size = 100.f;
 		float colorpicker_thickness = 9.f;
 		float scrollbar_thickness = 2.f;
+		float text_input_line_size = 2.f;
 		float window_rounding = 0.f;
 		float window_title_rounding = 0.f;
 		float slider_rounding = 0.f;
@@ -215,11 +223,13 @@ namespace null_gui {
 		float scrollbar_rounding = 0.f;
 		float colorpicker_rounding = 0.f;
 		float key_bind_rounding = 0.f;
+		float text_input_rounding = 0.f;
 
 		float double_click_time = 0.30f;
 		float double_click_max_dist = 6.f;
 		float show_pos_in_text_cooldown = 0.7f;
 
+		vec2 text_input_padding = vec2(3, 0);
 		vec2 button_padding = vec2(5, 1);
 		vec2 window_padding = vec2(10, 10);
 		vec2 scrollbar_padding = vec2(2, 2);
