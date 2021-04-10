@@ -1,24 +1,23 @@
 #include "../null-gui.h"
 
 namespace null_gui {
-	bool text_input(std::string text, std::string* value, bool password) {
+	bool text_input(std::string text, void* value, bool password, var_type type, std::string format) {
 		window* wnd = deeps::current_window;
 		if (!wnd) return false;
 
-		std::string value_text = *value;
-		if (password) std::fill(value_text.begin(), value_text.end(), '*');
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
-		vec2 value_size = null_font::text_size(value_text);
 		vec2 min = text_size + gui_settings::text_spacing + gui_settings::combo_size + vec2(0.f, gui_settings::text_input_line_size);
 		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.min.y + text_size.y + gui_settings::text_spacing), item_rect.max);
 		rect working_rect = rect(body_rect.min + gui_settings::text_input_padding, body_rect.max - vec2(gui_settings::text_input_padding.x, gui_settings::text_input_padding.y + gui_settings::text_input_line_size));
-		deeps::text_input_info* input = deeps::text_input_info::add(new deeps::text_input_info(name, value, working_rect));
+		deeps::text_input_info* input = deeps::text_input_info::add(new deeps::text_input_info(name, value, working_rect, type, format));
 
 		if (!input) return false;
+
+		vec2 value_size = null_font::text_size_w(input->converted_value);
 
 		deeps::add_item(item_rect.size(), name);
 		if (!wnd->can_draw_item(item_rect))
@@ -43,5 +42,17 @@ namespace null_gui {
 		wnd->draw_list->draw_rect_filled(vec2(body_rect.min.x, body_rect.max.y - gui_settings::text_input_line_size), body_rect.max, gui_settings::main_color, gui_settings::text_input_rounding, { null_render::corner_flags::bot });
 
 		return active;
+	}
+
+	bool text_input(std::string text, std::string* value, bool password) {
+		return text_input(text, value, password, var_type::type_string, "%s");
+	}
+
+	bool text_input(std::string text, int* value) {
+		return text_input(text, value, false, var_type::type_int, "%d");
+	}
+
+	bool text_input(std::string text, float* value, std::string format) {
+		return text_input(text, value, false, var_type::type_float, format);
 	}
 }

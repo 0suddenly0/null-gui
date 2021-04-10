@@ -26,7 +26,6 @@ namespace null_input {
 
 	class key_name {
 	public:
-		//удалить этот говнокод нахуй
 		key_name() {}
 		key_name(std::string _us, int _id) : us(_us), id(_id) {};
 		key_name(std::string _us, std::string _rus, int _id) : us(_us), rus(_rus), id(_id) {};

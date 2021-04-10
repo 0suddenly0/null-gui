@@ -216,36 +216,36 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		if (null_gui::begin_window("settings window", vec2(600, 20), vec2(500, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, &settings_window)) {
 			null_gui::begin_columns(2); {
 				null_gui::begin_group("floats", vec2(0.f, 200.f)); {
-					null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f", 1, 5);
-					null_gui::slider_float("window_title_line_size", &null_gui::gui_settings::window_title_line_size, 0, 10, "%.0f", 1, 2);
-					null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f", 1, 5);
-					null_gui::slider_float("text_spacing", &null_gui::gui_settings::text_spacing, 1, 20, "%.0f", 1, 5);
-					null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f", 1, 5);
-					null_gui::slider_float("check_mark_size", &null_gui::gui_settings::check_mark_size, 1, 10, "%.0f", 1, 5);
-					null_gui::slider_float("checkbox_body_offset", &null_gui::gui_settings::checkbox_body_offset, 0, 50, "%.0f", 1, 5);
-					null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f", 1, 5);
-					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%.2f", 0.1f, 0.5f);
-					null_gui::slider_float("combo_window_padding", &null_gui::gui_settings::combo_window_padding, 0.f, 20.f, "%.0f", 1, 5);
+					null_gui::slider_float("window_title_size", &null_gui::gui_settings::window_title_size, 0, 100, "%.0f", 1);
+					null_gui::slider_float("window_title_line_size", &null_gui::gui_settings::window_title_line_size, 0, 10, "%.0f", 1);
+					null_gui::slider_float("item_spacing", &null_gui::gui_settings::item_spacing, 1, 20, "%.0f", 1);
+					null_gui::slider_float("text_spacing", &null_gui::gui_settings::text_spacing, 1, 20, "%.0f", 1);
+					null_gui::slider_float("checkbox_size", &null_gui::gui_settings::checkbox_size, 1, 50, "%.0f", 1);
+					null_gui::slider_float("check_mark_size", &null_gui::gui_settings::check_mark_size, 1, 10, "%.0f", 1);
+					null_gui::slider_float("checkbox_body_offset", &null_gui::gui_settings::checkbox_body_offset, 0, 50, "%.0f", 1);
+					null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f", 1);
+					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%.2f", 0.1f);
+					null_gui::slider_float("combo_window_padding", &null_gui::gui_settings::combo_window_padding, 0.f, 20.f, "%.0f", 1);
 					null_gui::slider_int("max_auto_size_combo", &null_gui::gui_settings::max_auto_size_combo, 1, 10);
-					null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1, 5);
-					null_gui::slider_float("selectable_offset", &null_gui::gui_settings::selectable_offset, 0, 20, "%.0f", 1, 5);
-					null_gui::slider_float("selectable_active_offset", &null_gui::gui_settings::selectable_active_offset, 3, 20, "%.0f", 1, 5);
-					null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f", 1, 5);
-					null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f", 1, 5);
-					null_gui::slider_float("scrollbar_thickness", &null_gui::gui_settings::scrollbar_thickness, 1, 10, "%.0f", 1, 5);
-					null_gui::slider_float("text_input_line_size", &null_gui::gui_settings::text_input_line_size, 1, 10, "%.0f", 1, 5);
+					null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1);
+					null_gui::slider_float("selectable_offset", &null_gui::gui_settings::selectable_offset, 0, 20, "%.0f", 1);
+					null_gui::slider_float("selectable_active_offset", &null_gui::gui_settings::selectable_active_offset, 3, 20, "%.0f", 1);
+					null_gui::slider_float("colorpicker_size", &null_gui::gui_settings::colorpicker_size, 1, 200, "%.0f", 1);
+					null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f", 1);
+					null_gui::slider_float("scrollbar_thickness", &null_gui::gui_settings::scrollbar_thickness, 1, 10, "%.0f", 1);
+					null_gui::slider_float("text_input_line_size", &null_gui::gui_settings::text_input_line_size, 1, 10, "%.0f", 1);
 
 					null_gui::text("roundings");
-					null_gui::slider_float("window_rounding", &null_gui::gui_settings::window_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("window_title_rounding", &null_gui::gui_settings::window_title_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("slider_rounding", &null_gui::gui_settings::slider_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("checkbox_rounding", &null_gui::gui_settings::checkbox_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("button_rounding", &null_gui::gui_settings::button_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("combo_rounding", &null_gui::gui_settings::combo_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("scrollbar_rounding", &null_gui::gui_settings::scrollbar_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("colorpicker_rounding", &null_gui::gui_settings::colorpicker_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("key_bind_rounding", &null_gui::gui_settings::key_bind_rounding, 0, 20, "%.1f", 1, 5);
-					null_gui::slider_float("text_input_roundig", &null_gui::gui_settings::text_input_rounding, 0, 20, "%.1f", 1, 5);
+					null_gui::slider_float("window_rounding", &null_gui::gui_settings::window_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("window_title_rounding", &null_gui::gui_settings::window_title_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("slider_rounding", &null_gui::gui_settings::slider_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("checkbox_rounding", &null_gui::gui_settings::checkbox_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("button_rounding", &null_gui::gui_settings::button_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("combo_rounding", &null_gui::gui_settings::combo_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("scrollbar_rounding", &null_gui::gui_settings::scrollbar_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("colorpicker_rounding", &null_gui::gui_settings::colorpicker_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("key_bind_rounding", &null_gui::gui_settings::key_bind_rounding, 0, 20, "%.0f", 1);
+					null_gui::slider_float("text_input_roundig", &null_gui::gui_settings::text_input_rounding, 0, 20, "%.0f", 1);
 				} null_gui::end_group();
 				null_gui::begin_group("bools", vec2(0.f, 200.f)); {
 					null_gui::checkbox("items_size_full_window", &null_gui::gui_settings::items_size_full_window);
@@ -258,30 +258,30 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 				null_gui::begin_group("vectors", vec2(0.f, 200.f)); {
 					null_gui::text("button_padding");
 					null_gui::begin_columns(2); {
-						null_gui::slider_float("x##button_padding", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("x##button_padding", &null_gui::gui_settings::button_padding.x, 0, 50, "%.0f", 1);
 						null_gui::next_column();
-						null_gui::slider_float("y##button_padding", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("y##button_padding", &null_gui::gui_settings::button_padding.y, 0, 50, "%.0f", 1);
 					} null_gui::end_columns();
 
 					null_gui::text("window_padding");
 					null_gui::begin_columns(2); {
-						null_gui::slider_float("x##window_padding", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("x##window_padding", &null_gui::gui_settings::window_padding.x, 0, 50, "%.0f", 1);
 						null_gui::next_column();
-						null_gui::slider_float("y##window_padding", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("y##window_padding", &null_gui::gui_settings::window_padding.y, 0, 50, "%.0f", 1);
 					} null_gui::end_columns();
 
 					null_gui::text("scrollbar_padding");
 					null_gui::begin_columns(2); {
-						null_gui::slider_float("x##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1, 5);
+						null_gui::slider_float("x##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.x, 0, 10, "%.0f", 1);
 						null_gui::next_column();
-						null_gui::slider_float("y##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1, 5);
+						null_gui::slider_float("y##scrollbar_padding", &null_gui::gui_settings::scrollbar_padding.y, 0, 10, "%.0f", 1);
 					} null_gui::end_columns();
 
 					null_gui::text("text_input_padding");
 					null_gui::begin_columns(2); {
-						null_gui::slider_float("x##text_input_padding", &null_gui::gui_settings::text_input_padding.x, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("x##text_input_padding", &null_gui::gui_settings::text_input_padding.x, 0, 50, "%.0f", 1);
 						null_gui::next_column();
-						null_gui::slider_float("y##text_input_padding", &null_gui::gui_settings::text_input_padding.y, 0, 50, "%.0f", 1, 5);
+						null_gui::slider_float("y##text_input_padding", &null_gui::gui_settings::text_input_padding.y, 0, 50, "%.0f", 1);
 					} null_gui::end_columns();
 				} null_gui::end_group();
 				null_gui::begin_group("colors", vec2(0.f, 200.f)); {
@@ -315,8 +315,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
 				null_gui::slider_int("asd123123131ew", &test_int, 0, 500);
-				null_gui::same_line();
-				null_gui::slider_float("slider2323 float", &test_float, 0, 100);
+				//null_gui::same_line();
+				//null_gui::slider_float("slider2323 float", &test_float, 0, 100);
 			} null_gui::deeps::pop_var();
 
 			//null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
@@ -329,7 +329,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			null_gui::tooltip("test tooltip");
 			null_gui::checkbox("show settings window", &settings_window);
 			//null_gui::same_line()
-			null_gui::text_input("text input", &test_string);
+			null_gui::text(utils::format("%.6f", test_float));
+			null_gui::text_input("text input", &test_float/*&test_string*/);
 			null_gui::key_bind("test key bind", &bind);
 			null_gui::text(utils::format("fps : %d", fps()));
 			null_gui::text(std::string(null_font::helpers::convert_utf8(null_input::key_name::get_name(null_input::last_press_key, true)) + " " + std::to_string(null_input::last_press_key)).c_str());

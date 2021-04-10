@@ -9,6 +9,12 @@
 #include "../utils/utils.h"
 
 namespace null_gui {
+	enum class var_type {
+		type_int = 0,
+		type_string,
+		type_float
+	};
+
 	enum class window_flags {
 		standart = 0,
 		group,
@@ -29,6 +35,7 @@ namespace null_gui {
 		window* get_main_window();
 		void focus_window();
 		void clamp_on_screen();
+		void change_current_item() { draw_item_pos = last_draw_item_pos; }
 
 		bool can_scroll() { return max_scroll != 0; }
 		float get_scroll_offset() { return ignore_scroll ? 0.f : scroll_offset; }
@@ -52,6 +59,7 @@ namespace null_gui {
 
 		vec2 draw_item_pos_same_line;
 		vec2 draw_item_pos_prev;
+		vec2 last_draw_item_pos;
 		vec2 draw_item_pos;
 
 		bool ignore_scroll;
@@ -65,6 +73,7 @@ namespace null_gui {
 		int idx;
 		bool visible = true;
 		bool close_call;
+		bool dont_add_item;
 
 		window* parent_window = nullptr;
 		std::vector<window*> child_popup_window;
@@ -105,21 +114,34 @@ namespace null_gui {
 	};
 
 	namespace deeps {
+		std::string parse_format(std::string format);
+
 		class text_input_info {
 		public:
-			text_input_info(std::string _name, std::string* _value, rect _working_rect) : name(_name), value(_value), working_rect(_working_rect) { }
+			text_input_info(std::string _name, void* _value, rect _working_rect, var_type _type = var_type::type_string, std::string _format = "%.3f") : name(_name), value(_value), working_rect(_working_rect), type(_type) {
+				format = deeps::parse_format(_format);
+				update_string_value();
+				pos_in_text = string_value.size();
+			}
+
 			static text_input_info* add(text_input_info* input);
 			static text_input_info* get_input(std::string name);
 			static void win_poc(int id);
 			static void control();
 
+			void set_value(std::string new_value);
+			std::string convert_value_to_string();
+
+			void update_string_value();
+			void update_value();
+
 			void update_utf_text();
 			void get_pos_on_cursor();
 			void select_text();
 			void clamp(int start = 0) {
-				pos_in_text = math::clamp(pos_in_text, start, (int)converted_value.size());
-				select_max = math::clamp(select_max, start, (int)converted_value.size());
-				select_min = math::clamp(select_min, start, (int)converted_value.size());
+				pos_in_text = math::clamp(pos_in_text, start, (int)string_value.size());
+				select_max = math::clamp(select_max, start, (int)string_value.size());
+				select_min = math::clamp(select_min, start, (int)string_value.size());
 			}
 			void reset_select() { selecting = select_type::none; select_max = 0; select_min = 0; };
 
@@ -127,12 +149,16 @@ namespace null_gui {
 			float get_text_offset(int offset);
 
 			std::string name;
-			std::string* value;
+			void* value;
+			std::string last_value;
+			std::string string_value;
 			std::string value_for_render;
-			std::string last_value; // for optimization
-			std::wstring converted_value; //text after null_font::helpers::convert_utf8
+			std::wstring converted_value;
 			rect working_rect;
 			int pos_in_text;
+
+			var_type type;
+			std::string format; //format for convert float to string
 
 			bool show_pos;
 			float show_time;
@@ -163,6 +189,7 @@ namespace null_gui {
 		window* find_window(std::string name);
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags);
 
+		bool can_use_item(rect item_size, std::string item_name);
 		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void scroll_behavior(rect size, bool* hovered, bool* pressed);
 		bool key_bind_behavior(null_input::bind_key* bind, rect size, bool* hovered, std::string name);
@@ -170,17 +197,21 @@ namespace null_gui {
 		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags);
 		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
-		bool colorpicker_sliders_behavior(rect size, std::string name);
+		bool colorpicker_sliders_behavior(rect size, std::string name);	
 		void add_item(vec2 size, std::string name); 
-		bool mouse_in_current_windows();
 		std::string format_item(std::string text);
+
+		void set_active_item(std::string item_name);
+		
+		bool mouse_in_current_windows();
 		void focus_current_window();
 		void close_current_window();
+		void window_control();
+		void popups_control();
+
 		template <typename t>
 		void push_var(t* var, t new_value) { pushed_vars.push_back((abstract_pushed_var*)(new pushed_var<t>(var, new_value))); }
 		void pop_var() { pushed_vars.back()->reset(); pushed_vars.pop_back(); }
-		void window_control();
-		void popups_control();
 	}
 
 	namespace gui_settings {
@@ -254,9 +285,10 @@ namespace null_gui {
 	void text(std::string text);
 	bool button(std::string text, vec2 size_arg = vec2(0, 0));
 	bool clickable_text(std::string text);
-	void checkbox(std::string text, bool* value);
-	void slider_int(std::string text, int* value, int min, int max, std::string format = "%d", int step = 1, int ctrl_step = 5);
-	void slider_float(std::string text, float* value, float min, float max, std::string format = "%.2f", float step = 0.1f, float ctrl_step = 0.5f);
+	void checkbox(std::string text, bool* value);	
+	void slider_int(std::string text, int* value, int min_value, int max_value, std::string format = "%d");
+	void slider_float(std::string text, float* value, float min_value, float max_value, std::string format = "%.2f", int round = 0);
+	void slider(std::string text, void* value, void* min_value, void* max_value, std::string format, int round, var_type type);
 	void combo(std::string text, int* value, std::vector<std::string> items);
 	void multicombo(std::string text, std::vector<bool>* values, std::vector<std::string> items);
 	void multicombo(std::string text, std::vector<bool*> values, std::vector<std::string> items);
@@ -265,7 +297,10 @@ namespace null_gui {
 	float colorpicker_slider_h(color clr, std::string name);
 	float colorpicker_slider_alpha(color clr, std::string name);
 	void colorpicker(std::string text, color* clr, bool alpha_bar = true);
+	bool text_input(std::string text, void* value, bool password, var_type type, std::string format);
 	bool text_input(std::string text, std::string* value, bool password = false);
+	bool text_input(std::string text, int* value);
+	bool text_input(std::string text, float* value, std::string format = "%.3f");
 	void key_bind(std::string text, null_input::bind_key* bind);
 	
 	bool begin_group(std::string name, vec2 arg_size = vec2(0, 0));
