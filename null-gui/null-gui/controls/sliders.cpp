@@ -1,7 +1,7 @@
 #include "../null-gui.h"
 
 void local_text_input(rect item_rect, std::string item_name) {
-	if (null_input::get_key("ctrl")->down() && null_input::click_mouse_in_region(item_rect) && null_input::mouse_in_region(item_rect) && null_input::get_key("mouse left")->pressed() && null_gui::deeps::can_use_item(item_rect, item_name))
+	if (null_input::get_key(null_input::key_id::ctrl)->down() && null_input::click_mouse_in_region(item_rect) && null_input::mouse_in_region(item_rect) && null_input::get_key(null_input::key_id::mouse_left)->pressed() && null_gui::deeps::can_use_item(item_rect, item_name))
 		null_gui::deeps::set_active_item(item_name);
 }
 
@@ -83,7 +83,7 @@ namespace null_gui {
 		if (pressed) set(value, &new_value, type);
 
 		if (hovered) {
-			float slider_size_hovered = ((new_value - *(float*)min_value) / (*(float*)max_value - *(float*)min_value)) * item_rect.size().x;
+			float slider_size_hovered = ((new_value - *(float*)min_value) / (*(float*)max_value - *(float*)min_value))* item_rect.size().x;
 			wnd->draw_list->push_clip_rect(body_rect.min, vec2(body_rect.min.x + slider_size_hovered, body_rect.max.y), true); {
 				wnd->draw_list->draw_rect_filled(body_rect.min, body_rect.max, color(gui_settings::main_color, 100), gui_settings::slider_rounding);
 			} wnd->draw_list->pop_clip_rect();

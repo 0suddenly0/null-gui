@@ -31,7 +31,7 @@ namespace null_gui {
 		this_window->clamp_on_screen();
 
 		if (this_window->flags.contains(window_flags::popup) || this_window->close_call) { //logic for popups
-			if (((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && !this_window->in_popup_region()) || this_window->close_call) {
+			if (((null_input::get_key(null_input::key_id::mouse_left)->clicked() || null_input::get_key(null_input::key_id::mouse_right)->clicked()) && !this_window->in_popup_region()) || this_window->close_call) {
 				int window_id = std::distance(this_window->parent_window->child_popup_window.begin(), std::find_if(this_window->parent_window->child_popup_window.begin(), this_window->parent_window->child_popup_window.end(), [=](window* wnd) { return wnd->name == this_window->name; }));
 				if (window_id < this_window->parent_window->child_popup_window.size()) {
 					this_window->parent_window->child_popup_window.erase(this_window->parent_window->child_popup_window.begin() + window_id);
@@ -45,7 +45,7 @@ namespace null_gui {
 		deeps::current_window = this_window;
 
 		if (this_window->dragging && deeps::active_name == "") {
-			if (!null_input::get_key("mouse left")->down() || deeps::active_window_name != this_window->name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() || deeps::active_window_name != this_window->name) {
 				this_window->drag_offset = vec2(0.f, 0.f);
 				this_window->dragging = false;
 				if (deeps::active_window_name == this_window->name) deeps::active_window_name = "";
@@ -57,7 +57,7 @@ namespace null_gui {
 			}
 		}
 
-		if (deeps::active_window_name == this_window->name || ((null_input::get_key("mouse left")->clicked() || null_input::get_key("mouse right")->clicked()) && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
+		if (deeps::active_window_name == this_window->name || ((null_input::get_key(null_input::key_id::mouse_left)->clicked() || null_input::get_key(null_input::key_id::mouse_right)->clicked()) && null_input::mouse_in_region(this_window->pos, this_window->pos + this_window->size) && deeps::mouse_in_current_windows())) {
 			deeps::focus_current_window();
 		}
 

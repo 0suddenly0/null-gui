@@ -127,13 +127,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	ShowWindow(GetConsoleWindow(), SW_SHOWDEFAULT);
 	setlocale(LC_ALL, "Russian");
 
-	LPCTSTR lpzClass = L"nullgui";
-	if (!my_register_class(hInstance, lpzClass)) return 0;
-	if (!init_window(hInstance, lpzClass, L"nullgui")) return 0;
+	//LPCTSTR lpzClass = "nullgui";
+	if (!my_register_class(hInstance, L"nullgui")) return 0;
+	if (!init_window(hInstance, L"nullgui", L"nullgui")) return 0;
 
 	if (!create_device_d3d(window)) {
 		cleanup_device_d3d();
-		UnregisterClass(lpzClass, hInstance);
+		UnregisterClass(L"nullgui", hInstance);
 		return 0;
 	}
 
@@ -144,7 +144,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	ZeroMemory(&msg, sizeof(msg));
 	static int test_int = 0;
 
-	null_input::get_key("insert")->set_callback(null_input::key_state::double_clicked, []() {
+	null_input::get_key(null_input::key_id::insert)->set_callback(null_input::key_state::double_clicked, []() {
 		printf("test hotkey callback\n");
 		test_int = 100;
 		});
@@ -327,13 +327,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			//null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 			null_gui::checkbox("show debug window##23123", &debug_window);
 			null_gui::tooltip("test tooltip");
-			null_gui::checkbox("show settings window", &settings_window);
 			//null_gui::same_line()
 			null_gui::text(utils::format("%.6f", test_float));
-			null_gui::text_input("text input", &test_float/*&test_string*/);
+			null_gui::text_input("text input", &test_string);
 			null_gui::key_bind("test key bind", &bind);
+			null_gui::checkbox("show settings window", &settings_window);
 			null_gui::text(utils::format("fps : %d", fps()));
-			null_gui::text(std::string(null_font::helpers::convert_utf8(null_input::key_name::get_name(null_input::last_press_key, true)) + " " + std::to_string(null_input::last_press_key)).c_str());
+			null_gui::text(std::to_string(null_input::last_press_key) +  " " + std::to_string(null_input::last_press_key));
 			//null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
 			null_gui::end_window();
 		}
@@ -359,7 +359,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	cleanup_device_d3d();
 
 	DestroyWindow(window);
-	UnregisterClass(lpzClass, hInstance);
+	UnregisterClass(L"nullgui", hInstance);
 
 	return 0;
 }

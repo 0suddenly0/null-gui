@@ -930,8 +930,15 @@ namespace null_font {
                     data[i] = table[data[i]];
         }
 
+        char utf8_to_ascii(wchar_t utf8_char) {
+            if (utf8_char <= 0x44F && utf8_char >= 0x410) return (char)(utf8_char - 0x350);
+            else if (utf8_char == 0x451) return (char)(utf8_char - 0x399);
+            else if (utf8_char == 0x401) return (char)(utf8_char - 0x359);
+
+            return (char)utf8_char;
+        }
+
         std::wstring convert_wstring(std::string text) {
-            //return text;
             std::wstring utf16_str(text.length(), '\0');
             MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS | MB_PRECOMPOSED | MB_USEGLYPHCHARS, text.data(),
                 text.length(), &utf16_str[0], text.length());
@@ -952,7 +959,6 @@ namespace null_font {
         }
 
         std::string convert_utf8(std::string text) {
-            //return text;
             std::wstring utf16_str(text.length(), '\0');
             MultiByteToWideChar(CP_ACP, MB_ERR_INVALID_CHARS | MB_PRECOMPOSED | MB_USEGLYPHCHARS, text.data(),
                 text.length(), &utf16_str[0], text.length());
@@ -2348,8 +2354,6 @@ namespace null_render {
         draw_cmd.texture_id = _cmd_header.texture_id;
         draw_cmd.vtx_offset = _cmd_header.vtx_offset;
         draw_cmd.idx_offset = idx_buffer.size();
-
-        assert(draw_cmd.clip_rect.min.x <= draw_cmd.clip_rect.max.x && draw_cmd.clip_rect.min.y <= draw_cmd.clip_rect.max.y);
 
         cmd_buffer.push_back(draw_cmd);
     }

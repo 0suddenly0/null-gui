@@ -117,27 +117,7 @@ namespace null_gui {
 			text_input_info* active = get_input(active_name);
 			if (!active) return;
 
-			bool ctrl = null_input::get_key("ctrl")->down();
-			
-			if (null_input::key_name::for_input(null_input::key_list[id].data.id) && !ctrl) {
-				std::string value_for_check = active->string_value;
-				value_for_check.insert(value_for_check.begin() + active->pos_in_text, null_input::key_name::get_name(id, true).back());
-				bool can_write = null_font::text_size(null_font::helpers::convert_utf8(value_for_check).c_str()).x < active->working_rect.size().x;
-
-				if (!active->is_selecting()) {
-					if (can_write) { active->string_value = value_for_check; }
-				} else {
-					active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
-					active->string_value.insert(active->string_value.begin() + active->select_min, null_input::key_name::get_name(id, true).back());
-					active->pos_in_text = active->select_min;
-					active->reset_select();
-				}
-
-				if (!active->is_selecting() && can_write) active->pos_in_text++;
-				active->clamp();
-			}
-
-			if (null_input::get_key("backspace")->down()) {
+			if (null_input::get_key(null_input::key_id::backspace)->down()) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text > 0) {
 						active->string_value.erase(active->string_value.begin() + active->pos_in_text - 1, active->string_value.begin() + active->pos_in_text);
@@ -151,7 +131,7 @@ namespace null_gui {
 				}
 			}
 			
-			if (null_input::get_key("del")->down()) {
+			if (null_input::get_key(null_input::key_id::del)->down()) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text < active->string_value.size()) {
 						active->string_value.erase(active->string_value.begin() + active->pos_in_text, active->string_value.begin() + active->pos_in_text + 1);
@@ -163,17 +143,17 @@ namespace null_gui {
 				}
 			}
 
-			if (ctrl) {
-				if (null_input::get_key("left")->down() || null_input::get_key("right")->down()) {
-					active->pos_in_text = null_input::get_key("left")->down() ? 0 : null_input::get_key("right")->down() ? active->string_value.size() : 0;
+			if (null_input::get_key(null_input::key_id::ctrl)->down()) {
+				if (null_input::get_key(null_input::key_id::left)->down() || null_input::get_key(null_input::key_id::right)->down()) {
+					active->pos_in_text = null_input::get_key(null_input::key_id::left)->down() ? 0 : null_input::get_key(null_input::key_id::right)->down() ? active->string_value.size() : 0;
 				}
 
-				if (null_input::get_key("c")->down()) {
+				if (null_input::get_key(null_input::key_id::c)->down()) {
 					null_input::write_clipboard(std::string(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max));
 					active->reset_select();
 				}
 
-				if (null_input::get_key("v")->down()) {
+				if (null_input::get_key(null_input::key_id::v)->down()) {
 					if (active->is_selecting()) {
 						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
 						active->pos_in_text = active->select_min;
@@ -185,11 +165,39 @@ namespace null_gui {
 				}
 			} else {
 				if (!active->is_selecting()) {
-					active->pos_in_text += null_input::get_key("left")->down() ? -1 : null_input::get_key("right")->down() ? 1 : 0;
+					active->pos_in_text += null_input::get_key(null_input::key_id::left)->down() ? -1 : null_input::get_key(null_input::key_id::right)->down() ? 1 : 0;
 				} else {
-					active->pos_in_text = null_input::get_key("left")->down() ? active->select_min : null_input::get_key("right")->down() ? active->select_max : active->pos_in_text;
+					active->pos_in_text = null_input::get_key(null_input::key_id::left)->down() ? active->select_min : null_input::get_key(null_input::key_id::right)->down() ? active->select_max : active->pos_in_text;
 					active->reset_select();
 				}
+			}
+
+			active->update_value();
+			active->update_utf_text();
+			active->clamp();
+		}
+
+		void text_input_info::add_char() {
+			text_input_info* active = get_input(active_name);
+			if (!active) return;
+			
+			if (null_input::key_data::char_allowed(null_input::last_symbol) && !null_input::get_key(null_input::key_id::ctrl)->down()) {
+				std::string value_for_check = active->string_value;
+				char ascii_char = null_font::helpers::utf8_to_ascii(null_input::last_symbol);
+				value_for_check.insert(value_for_check.begin() + active->pos_in_text, ascii_char);
+				bool can_write = null_font::text_size(null_font::helpers::convert_utf8(value_for_check).c_str()).x < active->working_rect.size().x;
+
+				if (!active->is_selecting()) {
+					if (can_write) active->string_value = value_for_check;
+				} else {
+					active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
+					active->string_value.insert(value_for_check.begin() + active->select_min, ascii_char);
+					active->pos_in_text = active->select_min;
+					active->reset_select();
+				}
+
+				if (!active->is_selecting() && can_write) active->pos_in_text++;
+				active->clamp();
 			}
 
 			active->update_value();
@@ -255,14 +263,13 @@ namespace null_gui {
 		void text_input_info::update_utf_text() {
 			if (string_value != last_value) {
 				last_value = string_value;
-				//update_string_value();
 				converted_value = null_font::helpers::convert_wstring(string_value);
 				value_for_render = null_font::helpers::convert_string(converted_value);
 			}
 		}
 
 		void text_input_info::get_pos_on_cursor() {
-			if (null_input::get_key("mouse left")->clicked() && converted_value.size() > 0) {
+			if (null_input::get_key(null_input::key_id::mouse_left)->clicked() && converted_value.size() > 0) {
 				vec2 size = null_font::text_size_w(converted_value);
 				if (!null_input::click_mouse_in_region(working_rect.min, working_rect.min + size)) {
 					if (null_input::mouse_in_region(working_rect)) pos_in_text = converted_value.size();
@@ -279,22 +286,22 @@ namespace null_gui {
 
 		void text_input_info::select_text() {
 			vec2 text_size = null_font::text_size_w(converted_value);
-			if (null_input::get_key("mouse left")->down() && !null_input::click_mouse_in_region(working_rect.min, working_rect.max)) {
+			if (null_input::get_key(null_input::key_id::mouse_left)->down() && !null_input::click_mouse_in_region(working_rect.min, working_rect.max)) {
 				reset_select();
 				return;
 			}
 
-			if (null_input::get_key("mouse left")->clicked() && null_input::mouse_in_region(working_rect.min, working_rect.max)) {
+			if (null_input::get_key(null_input::key_id::mouse_left)->clicked() && null_input::mouse_in_region(working_rect.min, working_rect.max)) {
 				reset_select();
 			}
 
-			if (null_input::get_key("mouse left")->double_clicked() || (null_input::get_key("ctrl")->down() && null_input::get_key("a")->down())) {
+			if (null_input::get_key(null_input::key_id::mouse_left)->double_clicked() || (null_input::get_key(null_input::key_id::ctrl)->down() && null_input::get_key(null_input::key_id::a)->down())) {
 				select_min = 0;
 				select_max = converted_value.size();
 				selecting = select_type::all;
 			}
 
-			if (null_input::get_key("mouse left")->down() &&  selecting != select_type::all && converted_value.size() > 0) {
+			if (null_input::get_key(null_input::key_id::mouse_left)->down() &&  selecting != select_type::all && converted_value.size() > 0) {
 				std::wstring a_t = L""; a_t += converted_value[get_id_under_cursor()];
 				float last_size = null_font::text_size_w(a_t).x;
 				float centre_pos = working_rect.min.x + get_text_offset(get_id_under_cursor()) + (last_size / 2.f);
@@ -397,22 +404,18 @@ namespace null_gui {
 			bool _hovered = false;
 			bool _pressed = false;
 
-			//if (hovered_name == "" || hovered_name == name) {
-			//	if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
 			if (can_use_item(size, name)) {
 				hovered_name = name;
 
-				if (!null_input::get_key("mouse left")->down()) _hovered = true;
-				if (null_input::get_key("mouse left")->clicked()) active_name = name;
+				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 			}
-			//}
-			//}
 
 			if (active_name == name) {
-				if (null_input::get_key("mouse left")->down()) _pressed = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
 			}
 
-			if ((null_input::get_key("mouse left")->down() && !null_input::click_mouse_in_region(size) && active_name == name) || (null_input::get_key("enter")->down() && active_name == name)) {
+			if ((null_input::get_key(null_input::key_id::mouse_left)->down() && !null_input::click_mouse_in_region(size) && active_name == name) || (null_input::get_key(null_input::key_id::enter)->down() && active_name == name)) {
 				active_name = "";
 			}
 
@@ -427,20 +430,18 @@ namespace null_gui {
 			bool _pressed = false;
 			std::string name = utils::format("scrollbar##%s", wnd->name.c_str());
 
-			if ((hovered_name == "" || hovered_name == name)) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-					if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect())) {
-						if (!null_input::get_key("mouse left")->down()) _hovered = true;
-						if (null_input::get_key("mouse left")->clicked()) active_name = name;
-					}
-
-					if (active_name == name && null_input::get_key("mouse left")->down()) _pressed = true;
+				if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect())) {
+					if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+					if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 				}
+
+				if (active_name == name && null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
 			}
 
-			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -452,37 +453,35 @@ namespace null_gui {
 			window* wnd = deeps::current_window;
 			bool _hovered = false;
 
-			if ((hovered_name == "" || hovered_name == name)) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-					if (bind->binding) {
-						if (!null_input::get_key("mouse left")->down()) _hovered = true;
-						if (null_input::get_key("mouse right")->clicked()) active_name = name;
-						if (null_input::get_key("mouse left")->clicked()) {
-							active_name = name;
-							bind->binding = true;
-							null_input::last_press_key = 0;
-						}
+				if (!bind->binding) {
+					if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+					if (null_input::get_key(null_input::key_id::mouse_right)->clicked()) active_name = name;
+					if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) {
+						active_name = name;
+						bind->binding = true;
+						null_input::last_press_key = 0;
 					}
 				}
 			}
 
-			if (active_name == name && null_input::get_key("mouse right")->pressed() && null_input::click_mouse_in_region(size) && wnd->can_open_tooltip()) {
+			if (active_name == name && null_input::get_key(null_input::key_id::mouse_right)->pressed() && null_input::click_mouse_in_region(size) && wnd->can_open_tooltip()) {
 				deeps::add_window(utils::format("##%s keybind tooltip", name.c_str()), vec2(size.max.x, size.min.y), vec2(0.f, 0.f), { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size });
 			}
 
 			if (bind->binding) {
-				if ((!null_input::mouse_in_region(wnd->get_draw_pos(size)) || !deeps::mouse_in_current_windows()) && null_input::get_key("mouse left")->clicked()) {
+				if ((!null_input::mouse_in_region(size) || !deeps::mouse_in_current_windows()) && null_input::get_key(null_input::key_id::mouse_left)->clicked()) {
 					active_name = "";
 					bind->binding = false;
 				}
-			} else if(active_name == name && !null_input::get_key("mouse right")->down()) {
+			} else if(active_name == name && !null_input::get_key(null_input::key_id::mouse_right)->down()) {
 				active_name = "";
 			}
 
 			if (bind->binding && active_name == name) {
-				if (null_input::get_key("escape")->clicked()) {
+				if (null_input::get_key(null_input::key_id::escape)->clicked()) {
 					bind->key = null_input::get_key(0);
 					active_name = "";
 					bind->binding = false;
@@ -505,21 +504,19 @@ namespace null_gui {
 			bool _hovered = false;
 			bool _pressed = false;
 
-			if ((hovered_name == "" || hovered_name == name)) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-					if (!null_input::get_key("mouse left")->down()) _hovered = true;
-					if (null_input::get_key("mouse left")->clicked()) active_name = name;
-				}
+				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 			}
 
 			if (active_name == name) {
-				if (null_input::get_key("mouse left")->down()) _pressed = true;
-				if (null_input::mouse_in_region(size) && deeps::mouse_in_current_windows() && null_input::get_key("mouse left")->pressed()) _active = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
+				if (null_input::mouse_in_region(size) && deeps::mouse_in_current_windows() && null_input::get_key(null_input::key_id::mouse_left)->pressed()) _active = true;
 			}
 
-			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -531,17 +528,15 @@ namespace null_gui {
 		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
 			window* wnd = deeps::current_window;
 			bool _hovered = false;
+			
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-			if (hovered_name == "" || hovered_name == name) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
-
-					if (!null_input::get_key("mouse left")->down()) _hovered = true;
-					if (null_input::get_key("mouse left")->clicked()) active_name = name;
-				}
+				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 			}
 
-			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -554,21 +549,19 @@ namespace null_gui {
 			bool _active = false;
 			bool _hovered = false;
 
-			if (hovered_name == "" || hovered_name == name) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-					if (!null_input::get_key("mouse left")->down()) _hovered = true;
-					if (null_input::get_key("mouse left")->clicked()) active_name = name;
+				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 
-					if (null_input::get_key("mouse left")->pressed() && null_input::click_mouse_in_region(size) && null_input::mouse_in_region(size) && wnd->can_open_tooltip()) {
-						deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
-						_active = true;
-					}
+				if (null_input::get_key(null_input::key_id::mouse_left)->pressed() && null_input::click_mouse_in_region(size) && null_input::mouse_in_region(size) && wnd->can_open_tooltip()) {
+					deeps::add_window(name, vec2(size.min.x, size.max.y), vec2(size.max.x - size.min.x, 0.f), flags);
+					_active = true;
 				}
 			}
 
-			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -580,23 +573,23 @@ namespace null_gui {
 		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar) {
 			window* wnd = deeps::current_window;
 
-			if (hovered_name == "" || hovered_name == name_item) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name_item;
+			if (can_use_item(size, name)) {
+				hovered_name = name_item;
 
-					if (null_input::click_mouse_in_region(size)) {
-						if (null_input::get_key("mouse left")->down() || null_input::get_key("mouse right")->down()) active_name = name_item;
-						if (null_input::get_key("mouse left")->pressed() && wnd->can_open_tooltip()) {
-							flags.push_back(window_flags::no_title_line);
-							deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
-						} else if (null_input::get_key("mouse right")->pressed() && wnd->can_open_tooltip()) {
-							deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
-						}
+				if (null_input::click_mouse_in_region(size)) {
+					if (null_input::get_key(null_input::key_id::mouse_left)->down() || null_input::get_key(null_input::key_id::mouse_right)->down()) active_name = name_item;
+					if (null_input::get_key(null_input::key_id::mouse_left)->pressed() && wnd->can_open_tooltip()) {
+						flags.push_back(window_flags::no_title_line);
+						deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
+					}
+					else if (null_input::get_key(null_input::key_id::mouse_right)->pressed() && wnd->can_open_tooltip()) {
+						deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
 					}
 				}
 			}
+			
 
-			if (!null_input::get_key("mouse left")->down() && !null_input::get_key("mouse right")->down() && active_name == name_item) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && !null_input::get_key(null_input::key_id::mouse_right)->down() && active_name == name_item) {
 				active_name = "";
 			}
 		}
@@ -605,17 +598,15 @@ namespace null_gui {
 			window* wnd = deeps::current_window;
 			bool _pressed = false;
 
-			if (hovered_name == "" || hovered_name == name) {
-				if ((null_input::mouse_in_region(size) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == name) {
-					hovered_name = name;
+			if (can_use_item(size, name)) {
+				hovered_name = name;
 
-					if (null_input::get_key("mouse left")->clicked() && active_name == "") active_name = name;
-				}
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked() && active_name == "") active_name = name;
 			}
 
 			if (active_name == name) _pressed = true;
 
-			if (!null_input::get_key("mouse left")->down() && active_name == name) {
+			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
 				active_name = "";
 			}
 
@@ -688,7 +679,7 @@ namespace null_gui {
 				}
 			}
 
-			if (null_input::get_key("mouse left")->clicked() && (active_name.empty() && active_window_name.empty())) { //window moving
+			if (null_input::get_key(null_input::key_id::mouse_left)->clicked() && (active_name.empty() && active_window_name.empty())) { //window moving
 				for (int i = windows.size() - 1; i >= 0; --i) {
 					window* wnd = windows[i];
 

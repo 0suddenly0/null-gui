@@ -7,7 +7,7 @@ namespace null_gui{
 
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
-		std::string bind_text = bind->key->data.us;
+		std::string bind_text = bind->key->data.name;
 
 		if (bind->binding) bind_text = "...";
 		else if (bind->key->data.id == 0) bind_text = "-";

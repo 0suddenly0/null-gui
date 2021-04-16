@@ -219,6 +219,7 @@ namespace null_font {
         void atlas_build_multiply_calc_lookup_table(unsigned char out_table[256], float in_multiply_factor);
         void atlas_build_multiply_rect_alpha8(const unsigned char table[256], unsigned char* pixels, int x, int y, int w, int h, int stride);
 
+        char utf8_to_ascii(wchar_t utf8_char);
         std::wstring convert_wstring(std::string text);
         std::string convert_string(std::wstring text);
         std::string convert_utf8(std::string text);
