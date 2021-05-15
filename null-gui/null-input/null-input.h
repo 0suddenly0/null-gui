@@ -5,6 +5,7 @@
 #include <array>
 #include <string>
 #include <vector>
+
 #include "../helpers/vectors.h"
 
 namespace null_input {

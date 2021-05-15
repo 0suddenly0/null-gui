@@ -1,4 +1,5 @@
 #include "../null-gui.h"
+#include "../../null-render/directx9/null-render-dx9.h"
 
 namespace null_gui {
 	bool begin_window(std::string name, vec2 pos, vec2 size, bool* open) {
@@ -71,7 +72,7 @@ namespace null_gui {
 				this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x, gui_settings::window_title_size), this_window->flags.contains(window_flags::group)); {
 					this_window->draw_list->push_clip_rect(this_window->pos, this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), true); {
 						this_window->draw_list->draw_text(this_window->name, this_window->pos + vec2(5.f, gui_settings::window_title_size / 2), color(255, 255, 255, 255), false, { false, true });
-						this_window->draw_list->draw_rect_filled_multicolor(this_window->pos + vec2(this_window->size.x - 45 - gui_settings::window_title_size, 0.f), this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) }, { color(gui_settings::window_title_bg, 0.f), color(gui_settings::window_title_bg, 1.f) });
+						this_window->draw_list->draw_rect_filled_multicolor(this_window->pos + vec2(this_window->size.x - 45 - gui_settings::window_title_size, 0.f), this_window->pos + vec2(this_window->size.x - gui_settings::window_title_size, gui_settings::window_title_size), { color(gui_settings::window_title_bg, 0.f), gui_settings::window_title_bg }, { color(gui_settings::window_title_bg, 0.f), gui_settings::window_title_bg });
 					} this_window->draw_list->pop_clip_rect();
 
 					deeps::push_var(&this_window->draw_item_pos, this_window->pos + vec2(this_window->size.x - (gui_settings::window_title_size / 2) - (null_font::text_size("x").x / 2), (gui_settings::window_title_size / 2) - (null_font::text_size("x").y / 2))); {

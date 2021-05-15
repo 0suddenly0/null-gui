@@ -3,6 +3,8 @@
 #define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #include <stdio.h>
 #include <codecvt>
+#include <numeric>
+
 #include "../utils/utils.h"
 #include "../helpers/math.h"
 #include "null-render.h"
@@ -1638,6 +1640,187 @@ namespace null_render {
         prim_rect_uv(vec2(pos.x + glyph->x0 * scale, pos.y + glyph->y0 * scale), vec2(pos.x + glyph->x1 * scale, pos.y + glyph->y1 * scale), vec2(glyph->u0, glyph->v0), vec2(glyph->u1, glyph->v1), clr);
     }
 
+    void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline, std::array<bool, 2> centered, null_font::font* font, float size) {
+        if (font == NULL) font = _data->font;
+        if (size == 0.f) size = _data->font_size;
+
+        std::string text = std::accumulate(text_list.begin(), text_list.end(), std::make_pair<std::string, color>("", color(0, 0, 0)), [](std::pair<std::string, color> a, std::pair<std::string, color> b) {
+            return std::make_pair(a.first + b.first, a.second);
+            }).first;
+
+        vec2 text_size = font->calc_text_size(text, size);
+        if (centered[0]) pos.x -= text_size.x / 2;
+        if (centered[1]) pos.y -= text_size.y / 2;
+
+        if (outline) {
+            draw_text(text, pos + vec2(1.f, 0.f), color(0.f, 0.f, 0.f, 1.f), font, size);
+            draw_text(text, pos - vec2(1.f, 0.f), color(0.f, 0.f, 0.f, 1.f), font, size);
+            draw_text(text, pos + vec2(0.f, 1.f), color(0.f, 0.f, 0.f, 1.f), font, size);
+            draw_text(text, pos - vec2(0.f, 1.f), color(0.f, 0.f, 0.f, 1.f), font, size);
+        }
+
+        draw_text_multicolor(text_list, pos, font, size);
+    }
+
+    void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* _clip_rect, bool cpu_fine_clip) {
+        if (font == NULL) font = _data->font;
+        if (size == 0.0f) size = _data->font_size;
+
+        assert(font->container_atlas->tex_id == _cmd_header.texture_id);
+
+        rect clip_rect = _cmd_header.clip_rect;
+        if (cpu_fine_clip) {
+            clip_rect.min.x = math::max(clip_rect.min.x, _clip_rect->min.x);
+            clip_rect.min.y = math::max(clip_rect.min.y, _clip_rect->min.y);
+            clip_rect.max.x = math::min(clip_rect.max.x, _clip_rect->max.x);
+            clip_rect.max.y = math::min(clip_rect.max.y, _clip_rect->max.y);
+        }
+
+        std::string text = std::accumulate(text_list.begin(), text_list.end(), std::make_pair<std::string, color>("", color(0, 0, 0)), [](std::pair<std::string, color> a, std::pair<std::string, color> b) {
+            return std::make_pair(a.first + b.first, a.second);
+            }).first;
+
+        const char* char_text = text.c_str();
+        const char* text_end = char_text + strlen(char_text);
+
+        pos.x = floor(pos.x);
+        pos.y = floor(pos.y);
+        float x = pos.x;
+        float y = pos.y;
+        if (y > clip_rect.max.y) return;
+
+        const float scale = size / font->font_size;
+        const float line_height = font->font_size * scale;
+
+        const char* s = char_text;
+        if (y + line_height < clip_rect.min.y)
+            while (y + line_height < clip_rect.min.y && s < text_end) {
+                s = (const char*)memchr(s, '\n', text_end - s);
+                s = s ? s + 1 : text_end;
+                y += line_height;
+            }
+
+        if (text_end - s > 10000) {
+            const char* s_end = s;
+            float y_end = y;
+            while (y_end < clip_rect.max.y && s_end < text_end) {
+                s_end = (const char*)memchr(s_end, '\n', text_end - s_end);
+                s_end = s_end ? s_end + 1 : text_end;
+                y_end += line_height;
+            }
+            text_end = s_end;
+        }
+        if (s == text_end) return;
+
+        int vtx_count_max = (int)(text_end - s) * 4;
+        int idx_count_max = (int)(text_end - s) * 6;
+        const int idx_expected_size = idx_buffer.size() + idx_count_max;
+        prim_reserve(idx_count_max, vtx_count_max);
+
+        helpers::vertex* vtx_write = _vtx_write_ptr;
+        unsigned short* idx_write = _idx_write_ptr;
+        unsigned int vtx_current_idx = _vtx_current_idx;
+
+        int current_id = 0;
+        int last_size = 0;
+        while (s < text_end) {
+            if (last_size >= text_list[math::clamp(current_id, 0, (int)text_list.size() - 1)].first.size()) {
+                last_size = 0;
+                current_id += 1;
+            }
+
+            last_size += 1;
+
+            unsigned int c = (unsigned int)*s;
+            if (c < 0x80) {
+                s += 1;
+            }
+            else {
+                s += null_font::helpers::get_char_from_utf8(&c, s, text_end);
+                if (c == 0)
+                    break;
+            }
+
+            if (c < 32) {
+                if (c == '\n') {
+                    x = pos.x;
+                    y += line_height;
+                    if (y > clip_rect.max.y)
+                        break;
+                    continue;
+                }
+                if (c == '\r')
+                    continue;
+            }
+
+            const null_font::helpers::glyph* glyph = font->find_glyph((unsigned short)c);
+            if (glyph == NULL)
+                continue;
+
+            color clr = text_list[math::clamp(current_id, 0, (int)text_list.size() - 1)].second;
+            float char_width = glyph->advance_x * scale;
+            if (glyph->visible && clr.a() > 0.f) {
+                float x1 = x + glyph->x0 * scale;
+                float x2 = x + glyph->x1 * scale;
+                float y1 = y + glyph->y0 * scale;
+                float y2 = y + glyph->y1 * scale;
+                if (x1 <= clip_rect.max.x && x2 >= clip_rect.min.x) {
+                    float u1 = glyph->u0;
+                    float v1 = glyph->v0;
+                    float u2 = glyph->u1;
+                    float v2 = glyph->v1;
+
+                    if (cpu_fine_clip) {
+                        if (x1 < clip_rect.min.x) {
+                            u1 = u1 + (1.0f - (x2 - clip_rect.min.x) / (x2 - x1)) * (u2 - u1);
+                            x1 = clip_rect.min.x;
+                        }
+
+                        if (y1 < clip_rect.min.y) {
+                            v1 = v1 + (1.0f - (y2 - clip_rect.min.y) / (y2 - y1)) * (v2 - v1);
+                            y1 = clip_rect.min.y;
+                        }
+
+                        if (x2 > clip_rect.max.x) {
+                            u2 = u1 + ((clip_rect.max.x - x1) / (x2 - x1)) * (u2 - u1);
+                            x2 = clip_rect.max.x;
+                        }
+
+                        if (y2 > clip_rect.max.y) {
+                            v2 = v1 + ((clip_rect.max.y - y1) / (y2 - y1)) * (v2 - v1);
+                            y2 = clip_rect.max.y;
+                        }
+
+                        if (y1 >= y2) {
+                            x += char_width;
+                            continue;
+                        }
+                    }
+
+                    {
+                        idx_write[0] = (unsigned short)(vtx_current_idx); idx_write[1] = (unsigned short)(vtx_current_idx + 1); idx_write[2] = (unsigned short)(vtx_current_idx + 2);
+                        idx_write[3] = (unsigned short)(vtx_current_idx); idx_write[4] = (unsigned short)(vtx_current_idx + 2); idx_write[5] = (unsigned short)(vtx_current_idx + 3);
+                        vtx_write[0].pos.x = x1; vtx_write[0].pos.y = y1; vtx_write[0].clr = clr; vtx_write[0].uv.x = u1; vtx_write[0].uv.y = v1;
+                        vtx_write[1].pos.x = x2; vtx_write[1].pos.y = y1; vtx_write[1].clr = clr; vtx_write[1].uv.x = u2; vtx_write[1].uv.y = v1;
+                        vtx_write[2].pos.x = x2; vtx_write[2].pos.y = y2; vtx_write[2].clr = clr; vtx_write[2].uv.x = u2; vtx_write[2].uv.y = v2;
+                        vtx_write[3].pos.x = x1; vtx_write[3].pos.y = y2; vtx_write[3].clr = clr; vtx_write[3].uv.x = u1; vtx_write[3].uv.y = v2;
+                        vtx_write += 4;
+                        vtx_current_idx += 4;
+                        idx_write += 6;
+                    }
+                }
+            }
+            x += char_width;
+        }
+
+        vtx_buffer.resize((int)(vtx_write - vtx_buffer.data()));
+        idx_buffer.resize((int)(idx_write - idx_buffer.data()));
+        cmd_buffer[cmd_buffer.size() - 1].elem_count -= (idx_expected_size - idx_buffer.size());
+        _vtx_write_ptr = vtx_write;
+        _idx_write_ptr = idx_write;
+        _vtx_current_idx = vtx_current_idx;
+    }
+
     void draw_list::draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, null_font::font* font, float size) {
         if(font == NULL) font = _data->font;
         if(size == 0.f) size = _data->font_size;
@@ -2230,7 +2413,7 @@ namespace null_render {
     void draw_list::draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners) {
         if (clr.a() == 0.f) return;
 
-        if (rounding <= 0.0f || rounding_corners.contains(corner_flags::all)) {
+        if (rounding <= 0.0f || rounding_corners.empty()) {
             draw_image(user_texture_id, min, max, uv_min, uv_max, clr);
             return;
         }
@@ -2346,6 +2529,20 @@ namespace null_render {
             path_bezier_to_casteljau(path, { vec2(points[0].x, points[0].y), vec2(x12, y12), vec2(x123, y123), vec2(x1234, y123) }, tess_tol, level + 1);
             path_bezier_to_casteljau(path, { vec2(x1234, y1234), vec2(x234, y234), vec2(x34, y34), vec2(points[3].x, points[3].y) }, tess_tol, level + 1);
         }
+    }
+
+    void draw_list::add_callback(std::function<void(helpers::cmd*)> callback, bool update_render_state) {
+        helpers::cmd* cur_cmd = &cmd_buffer.back();
+
+        if (cur_cmd->elem_count != 0) {
+            add_draw_cmd();
+            cur_cmd = &cmd_buffer.back();
+        }
+
+        cur_cmd->setup_render_state_update_call = update_render_state;
+        cur_cmd->callback = callback;
+
+        add_draw_cmd();
     }
 
     void draw_list::add_draw_cmd() {

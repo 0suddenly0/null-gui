@@ -1,18 +1,19 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include "utils.h"
 #include <assert.h>
+
+#include "utils.h"
 
 namespace utils {
     std::string format(const char* text, ...) {
-		char buf[1024];
-		va_list va;
+        char buf[1024];
+        va_list va;
 
-		va_start(va, text);
-		_vsnprintf_s(buf, 1024, text, va);
-		va_end(va);
+        va_start(va, text);
+        _vsnprintf_s(buf, 1024, text, va);
+        va_end(va);
 
-		return std::string(buf);
-	}
+        return std::string(buf);
+    }
 
     FILE* file_open(const char* filename, const char* mode) {
         const int filename_wsize = ::MultiByteToWideChar(CP_UTF8, 0, filename, -1, NULL, 0);

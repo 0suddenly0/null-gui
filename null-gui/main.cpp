@@ -5,27 +5,26 @@
 #include <locale> 
 #include <codecvt>
 #include <fstream>
-#include "utils/utils.h"
 #include <stdio.h>
 #include <iomanip>
 #include <regex>
 #include <tchar.h>
 #include <chrono>
 
+#include "utils/utils.h"
 #include "null-gui/null-gui.h"
 #include "null-render/null-render.h"
 #include "null-render/directx9/null-render-dx9.h"
 
 int fps() {
-	using namespace std::chrono;
 	static int count = 0;
-	static auto last = high_resolution_clock::now();
-	auto now = high_resolution_clock::now();
+	static auto last = std::chrono::high_resolution_clock::now();
+	auto now = std::chrono::high_resolution_clock::now();
 	static int fps = 0;
 
 	count++;
 
-	if (duration_cast<milliseconds>(now - last).count() > 1000) {
+	if (std::chrono::duration_cast<std::chrono::milliseconds>(now - last).count() > 1000) {
 		fps = count;
 		count = 0;
 		last = now;
@@ -153,7 +152,6 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 	null_render::directx9::init(d3d_device);
 
 	null_gui::pre_begin_gui(window);
-	
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
 
 	while (msg.message != WM_QUIT) {
@@ -166,13 +164,13 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		null_render::begin_render(window);
 		null_gui::begin_gui();
 
-		null_render::draw_rect_filled(vec2(10, 10), vec2(10, 10) + null_font::text_size("example text"), color(255, 255, 255, 100));
-		null_render::draw_text("example text", vec2(10, 10), color(255, 255, 255, 255));
-
+		null_render::draw_rect_filled(vec2(25, 25), vec2(75, 75), color(255, 255, 255, 100));
 		null_render::draw_rect_filled_multicolor_vertical(vec2(100, 200), vec2(200, 500), null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg, null_gui::gui_settings::button_rounding);
 		null_render::draw_rect_filled_multicolor(vec2(300, 100), vec2(600, 200), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, null_gui::gui_settings::button_rounding);
 		null_render::draw_rect_filled_multicolor(vec2(300, 300), vec2(600, 400), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, null_gui::gui_settings::button_rounding);
 		null_render::draw_rect_filled_multicolor(vec2(300, 500), vec2(600, 600), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, 0.f);
+
+		null_render::background_draw_list.draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
 
 		static bool test_bool_bind;
 		static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold_on);
@@ -183,7 +181,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		static bool debug_window = true;
 
 		static float test_float = 0.f;
-		static int test_int = 500;
+		static int test_int = 0;
 		static color test_color(255, 255, 255, 255);
 		static float size_window = 150.f;
 		static std::vector<bool> test_bools = { false, false, false, false };
@@ -200,16 +198,9 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		}
 
 		if (null_gui::begin_window("test size", vec2(0, 0), vec2(0, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size })) {
-			//null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
-			//	//null_gui::button("we");
-			//	//null_gui::same_line();
-			//	//null_gui::button("aye");
-			//} null_gui::deeps::pop_var();
-			//null_gui::slider_float("we", &test_float, 0.f, 10.f);
 			null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 			null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 			null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
-			//null_gui::text_input("text input", &test_string);
 			null_gui::end_window();
 		}
 
@@ -234,6 +225,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("colorpicker_thickness", &null_gui::gui_settings::colorpicker_thickness, 3, 20, "%.0f", 1);
 					null_gui::slider_float("scrollbar_thickness", &null_gui::gui_settings::scrollbar_thickness, 1, 10, "%.0f", 1);
 					null_gui::slider_float("text_input_line_size", &null_gui::gui_settings::text_input_line_size, 1, 10, "%.0f", 1);
+					null_gui::slider_float("new_line_size", &null_gui::gui_settings::new_line_size, 0, 30, "%.0f", 1);
 
 					null_gui::text("roundings");
 					null_gui::slider_float("window_rounding", &null_gui::gui_settings::window_rounding, 0, 20, "%.0f", 1);
@@ -300,6 +292,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			} null_gui::end_columns();
 			null_gui::end_window();
 		}
+		
 		if (null_gui::begin_window("window", vec2(290, 330), vec2(200.f, 0.f), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 			null_gui::text(utils::format("%d", test_int));
 			null_gui::same_line();
@@ -331,13 +324,14 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			null_gui::text(utils::format("%.6f", test_float));
 			null_gui::text_input("text input", &test_string);
 			null_gui::key_bind("test key bind", &bind);
+			null_gui::new_line();
 			null_gui::checkbox("show settings window", &settings_window);
 			null_gui::text(utils::format("fps : %d", fps()));
 			null_gui::text(std::to_string(null_input::last_press_key) +  " " + std::to_string(null_input::last_press_key));
 			//null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
 			null_gui::end_window();
 		}
-
+		/**/
 		null_render::end_render();
 		d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
 		d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);

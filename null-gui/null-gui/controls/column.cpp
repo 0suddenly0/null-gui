@@ -1,7 +1,7 @@
 #include "../null-gui.h"
 
-float y_on_start = 0.f;
-float first_size = 0.f;
+float draw_item_pos_before = 0.f;
+float current_offset = 0.f;
 
 namespace null_gui {
 	void begin_columns(int count) {
@@ -10,32 +10,33 @@ namespace null_gui {
 
 		deeps::push_var(&wnd->size.x, wnd->size.x / count);
 		deeps::push_var(&wnd->draw_item_pos.x, wnd->draw_item_pos.x);
-		y_on_start = wnd->draw_item_pos.y;
-		first_size = wnd->size.x;
+		deeps::push_var(&draw_item_pos_before, wnd->draw_item_pos.y);
+		deeps::push_var(&current_offset, wnd->size.x);
 	}
 
 	void next_column() {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		wnd->column_offset = first_size + gui_settings::window_padding.x;
+		deeps::push_var(&wnd->column_offset, current_offset + gui_settings::window_padding.x);
 
-		deeps::push_var(&wnd->draw_item_pos_prev, vec2(wnd->pos.x + first_size + gui_settings::window_padding.x, y_on_start)); {
+		deeps::push_var(&wnd->draw_item_pos_prev, vec2(wnd->pos.x + current_offset + gui_settings::window_padding.x, draw_item_pos_before)); {
 			deeps::push_var(&gui_settings::item_spacing, 0.f); {
 				wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(gui_settings::item_spacing, 0.f);
 			} deeps::pop_var();
 		} deeps::pop_var();
 
-		first_size += first_size;
+		current_offset += current_offset;
 	}
 
 	void end_columns() {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		wnd->column_offset = 0.f;
-
-		deeps::pop_var();
-		deeps::pop_var();
+		deeps::pop_var(); //wnd->column_offset
+		deeps::pop_var(); //current_offset
+		deeps::pop_var(); //draw_item_pos_before
+		deeps::pop_var(); //wnd->draw_item_pos.x
+		deeps::pop_var(); //wnd->size.x
 	}
 }

@@ -96,20 +96,21 @@ namespace null_gui {
 	}
 
 	namespace deeps {
-		text_input_info* text_input_info::add(text_input_info* input) {
-			text_input_info* finded = get_input(input->name);
+		text_input_info* text_input_info::add(text_input_info input) {
+			text_input_info* finded = get_input(input.name);
 
 			if (finded) {
-				finded->name = input->name;
-				finded->working_rect = input->working_rect;
+				finded->name = input.name;
+				finded->working_rect = input.working_rect;
 				return finded;
-			} else text_inputs.push_back(input);
+			} else
+				text_inputs.push_back(input);
 
-			return input;
+			return &text_inputs.back();
 		}
 
 		text_input_info* text_input_info::get_input(std::string name) {
-			for (text_input_info* a : text_inputs) if (a->name == name) return a;
+			for (text_input_info& a : text_inputs) if (a.name == name) return &a;
 			return nullptr;
 		}
 
@@ -209,11 +210,11 @@ namespace null_gui {
 			text_input_info* active_info = get_input(active_name);
 
 			if (!active_info) {
-				for (text_input_info* info : text_inputs) {
-					info->update_string_value();
-					info->update_utf_text();
-					info->get_pos_on_cursor();
-					info->show_time = 0.f;
+				for (text_input_info& info : text_inputs) {
+					info.update_string_value();
+					info.update_utf_text();
+					info.get_pos_on_cursor();
+					info.show_time = 0.f;
 				}
 			} else {
 				if (deeps::real_time == 0.f) active_info->show_time = deeps::real_time;
@@ -408,14 +409,14 @@ namespace null_gui {
 				hovered_name = name;
 
 				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
-				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
+				if (null_input::click_mouse_in_region(size) && null_input::get_key(null_input::key_id::mouse_left)->pressed()) active_name = name;
 			}
 
 			if (active_name == name) {
 				if (null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
 			}
 
-			if ((null_input::get_key(null_input::key_id::mouse_left)->down() && !null_input::click_mouse_in_region(size) && active_name == name) || (null_input::get_key(null_input::key_id::enter)->down() && active_name == name)) {
+			if (((null_input::get_key(null_input::key_id::mouse_left)->down() && !null_input::click_mouse_in_region(size)) || null_input::get_key(null_input::key_id::enter)->down()) && active_name == name) {
 				active_name = "";
 			}
 
@@ -433,10 +434,8 @@ namespace null_gui {
 			if (can_use_item(size, name)) {
 				hovered_name = name;
 
-				if (null_input::mouse_in_region(wnd->draw_list->get_clip_rect())) {
-					if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
-					if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
-				}
+				if (!null_input::get_key(null_input::key_id::mouse_left)->down()) _hovered = true;
+				if (null_input::get_key(null_input::key_id::mouse_left)->clicked()) active_name = name;
 
 				if (active_name == name && null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
 			}
@@ -581,8 +580,7 @@ namespace null_gui {
 					if (null_input::get_key(null_input::key_id::mouse_left)->pressed() && wnd->can_open_tooltip()) {
 						flags.push_back(window_flags::no_title_line);
 						deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
-					}
-					else if (null_input::get_key(null_input::key_id::mouse_right)->pressed() && wnd->can_open_tooltip()) {
+					} else if (null_input::get_key(null_input::key_id::mouse_right)->pressed() && wnd->can_open_tooltip()) {
 						deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
 					}
 				}
@@ -632,7 +630,7 @@ namespace null_gui {
 			if (wnd->max_size.y < wnd->draw_item_pos.y - deeps::current_window->pos.y) wnd->max_size.y = wnd->draw_item_pos.y - deeps::current_window->pos.y;
 
 			wnd->draw_item_pos_same_line = vec2(0, 0);
-			last_item_name = name;
+			if(!name.empty()) last_item_name = name;
 		}
 
 		std::string format_item(std::string text) {
@@ -738,8 +736,14 @@ namespace null_gui {
 		deeps::text_input_info::control();
 	}
 
+	void new_line() {
+		deeps::add_item(vec2(0.f, gui_settings::new_line_size), "");
+	}
+
 	void same_line() {
 		window* wnd = deeps::current_window;
+		if (!wnd) return;
+
 		wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(gui_settings::item_spacing, 0.f);
 	}
 

@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 #include <windowsx.h>
+
 #include "null-input.h"
 #include "../null-gui/null-gui.h"
 
@@ -35,7 +36,7 @@ bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
 
 	null_input::input_key* key = &null_input::key_list[id];
 
-	if (key->callback && (key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false))
+	if (key->callback && ((key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false)))
 		key->callback();
 
 	key->state_down = state;
@@ -63,7 +64,7 @@ bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
         break;
     }
 
-	if (key->callback != nullptr && (key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false))
+	if (key->callback != nullptr && ((key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false)))
 		key->callback();
 
 	key->state_down = state;
@@ -260,7 +261,7 @@ namespace null_input {
 			key.state_clicked = key.down() && key.down_duration < 0.0f;
 			key.state_pressed = !key.down() && key.down_duration >= 0.f;
 
-			if (key.callback && (key.callback_state == null_input::key_state::clicked && key.state_clicked) || (key.callback_state == null_input::key_state::pressed && key.state_pressed))
+			if (key.callback && ((key.callback_state == null_input::key_state::clicked && key.state_clicked) || (key.callback_state == null_input::key_state::pressed && key.state_pressed)))
 				key.callback();
 
 			key.update_duration();

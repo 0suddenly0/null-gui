@@ -3,6 +3,7 @@
 #include <stack>
 #include <vector>
 #include <map>
+
 #include "../helpers/math.h"
 #include "../null-render/null-render.h"
 #include "../null-input/null-input.h"
@@ -124,7 +125,7 @@ namespace null_gui {
 				pos_in_text = string_value.size();
 			}
 
-			static text_input_info* add(text_input_info* input);
+			static text_input_info* add(text_input_info input);
 			static text_input_info* get_input(std::string name);
 			static void win_poc(int id);
 			static void add_char();
@@ -184,7 +185,7 @@ namespace null_gui {
 		std::string last_item_name;
 		std::vector<window*> windows;
 		std::vector<abstract_pushed_var*> pushed_vars;
-		std::vector<text_input_info*> text_inputs;
+		std::vector<text_input_info> text_inputs;
 
 		bool window_exist(std::string name);
 		window* find_window(std::string name);
@@ -212,7 +213,7 @@ namespace null_gui {
 
 		template <typename t>
 		void push_var(t* var, t new_value) { pushed_vars.push_back((abstract_pushed_var*)(new pushed_var<t>(var, new_value))); }
-		void pop_var() { pushed_vars.back()->reset(); pushed_vars.pop_back(); }
+		void pop_var() { pushed_vars.back()->reset(); delete pushed_vars.back(); pushed_vars.pop_back(); }
 	}
 
 	namespace gui_settings {
@@ -246,6 +247,7 @@ namespace null_gui {
 		float colorpicker_thickness = 9.f;
 		float scrollbar_thickness = 2.f;
 		float text_input_line_size = 2.f;
+		float new_line_size = 16.f;
 		float window_rounding = 0.f;
 		float window_title_rounding = 0.f;
 		float slider_rounding = 0.f;
@@ -311,6 +313,7 @@ namespace null_gui {
 	void next_column();
 	void end_columns();
 
+	void new_line();
 	void same_line();
 	void tooltip(std::string tooltip_text);
 	void functional_tooltip(std::function<void()> func);

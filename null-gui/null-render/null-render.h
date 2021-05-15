@@ -1,7 +1,8 @@
 // Imgui version - 1.80 WIP (https://github.com/ocornut/imgui)
 // To render utf-8 text correctly you need to convert it to plain text first - null_font::helpers::erase_utf8. Maybe later I will add more convenient draw_text/text_size interaction with utf-8
-
 #pragma once
+#define STB_TRUETYPE_IMPLEMENTATION
+#define STB_RECT_PACK_IMPLEMENTATION
 #include <float.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -10,14 +11,14 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <functional>
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h> 
+
 #include "../helpers//flags_list.h"
 #include "../helpers/vectors.h"
 #include "../helpers/color.h"
-#define STB_TRUETYPE_IMPLEMENTATION
-#define STB_RECT_PACK_IMPLEMENTATION
 #include "stb/rectpack.h"
 #include "stb/truetype.h"
 
@@ -292,6 +293,12 @@ namespace null_font {
 }
 
 namespace null_render {
+    namespace shaders {
+        namespace blur {
+            class shader;
+        }
+    }
+
     class draw_list;
 
     enum class draw_list_flags {
@@ -377,6 +384,8 @@ namespace null_render {
             unsigned int vtx_offset;
             unsigned int idx_offset;
             unsigned int elem_count;
+            bool setup_render_state_update_call;
+            std::function<void(cmd*)> callback;
 
             cmd() { memset(this, 0, sizeof(*this)); }
         };
@@ -415,6 +424,7 @@ namespace null_render {
         vec2 get_clip_rect_min() { return get_clip_rect().min; }
         vec2 get_clip_rect_max() { return get_clip_rect().max; }
 
+        void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f);
         void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f);
         void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f);
         void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
@@ -430,6 +440,8 @@ namespace null_render {
         void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f);
         void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments);
         void draw_char(null_font::font* font, float size, vec2 pos, color clr, unsigned short c);
+        void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, null_font::font* font = NULL, float size = 0.f);
+        void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false);
         void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, null_font::font* font = NULL, float size = 0.f);
         void draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false);
         void draw_poly_line(std::vector<vec2> points, color clr, bool closed, float thickness);
@@ -454,6 +466,7 @@ namespace null_render {
         void path_rect(vec2 rect_min, vec2 rect_max, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
         void path_bezier_to_casteljau(std::vector<vec2>* path, std::array<vec2, 4> points, float tess_tol, int level);
 
+        void add_callback(std::function<void(helpers::cmd*)> callback, bool update_render_state = false);
         void add_draw_cmd();
         draw_list* clone_output() const;
 
@@ -483,7 +496,7 @@ namespace null_render {
 
     namespace settings {
         bool initialized;
-        bool renderer_has_vtx_offset;
+        bool renderer_has_vtx_offset = true;
         vec2 display_size;
     }
 
@@ -495,7 +508,7 @@ namespace null_render {
         null_font::vars::main_font = NULL;
         null_font::vars::font_size = null_font::vars::font_base_size = 0.0f;
         null_font::vars::font_atlas = shared_font_atlas ? shared_font_atlas : new null_font::helpers::atlas();
-        settings::renderer_has_vtx_offset = false;
+        //settings::renderer_has_vtx_offset = false;
         settings::display_size = vec2(0.f, 0.f);
     }
 
@@ -509,6 +522,7 @@ namespace null_render {
     void push_clip_rect(vec2 min, vec2 max, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(min, max, intersect_with_current_clip_rect); }
     void pop_clip_rect(draw_list* list = &background_draw_list) { list->pop_clip_rect(); }
 
+    void draw_blur(vec2 start, vec2 end, float amount, float alpha, float rounding, draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding); }
     void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_line(start_point, end_point, clr, thickness); }
     void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_rect(min, max, clr, rounding, rounding_corners, thickness); }
     void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled(min, max, clr, rounding, rounding_corners); }
@@ -524,6 +538,8 @@ namespace null_render {
     void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_ngon(center, radius, clr, num_segments, thickness); }
     void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments, draw_list* list = &background_draw_list) { list->draw_ngon_filled(center, radius, clr, num_segments); }
     void draw_char(null_font::font* font, float size, vec2 pos, color clr, unsigned short c, draw_list* list = &background_draw_list) { list->draw_char(font, size, pos, clr, c); }
+    void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, outline, centered); }
+    void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, font, size, clip_rect, cpu_fine_clip); }
     void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, outline, centered); }
     void draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, font, size, clip_rect, cpu_fine_clip); }
     void draw_polyline(std::vector<vec2> points, color clr, bool closed, float thickness, draw_list* list = &background_draw_list) { list->draw_poly_line(points, clr, closed, thickness); }

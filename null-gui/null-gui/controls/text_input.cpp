@@ -13,7 +13,7 @@ namespace null_gui {
 		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.min.y + text_size.y + gui_settings::text_spacing), item_rect.max);
 		rect working_rect = rect(body_rect.min + gui_settings::text_input_padding, body_rect.max - vec2(gui_settings::text_input_padding.x, gui_settings::text_input_padding.y + gui_settings::text_input_line_size));
-		deeps::text_input_info* input = deeps::text_input_info::add(new deeps::text_input_info(name, value, working_rect, type, format));
+		deeps::text_input_info* input = deeps::text_input_info::add(deeps::text_input_info(name, value, working_rect, type, format));
 
 		if (!input) return false;
 
@@ -40,7 +40,7 @@ namespace null_gui {
 			if (active && !input->is_selecting() && input->show_pos) wnd->draw_list->draw_text("|", working_rect.min + vec2(input->get_text_offset(input->pos_in_text) - 2.f, working_rect.size().y / 2), gui_settings::text, false, { false, true });
 		} wnd->draw_list->pop_clip_rect();
 		wnd->draw_list->draw_rect_filled(vec2(body_rect.min.x, body_rect.max.y - gui_settings::text_input_line_size), body_rect.max, gui_settings::main_color, gui_settings::text_input_rounding, { null_render::corner_flags::bot });
-
+		
 		return active;
 	}
 

@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <windows.h>
+
 #include "color.h"
 #include "vectors.h"
 

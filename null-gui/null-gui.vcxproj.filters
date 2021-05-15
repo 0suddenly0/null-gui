@@ -29,8 +29,14 @@
     <Filter Include="source\null-input">
       <UniqueIdentifier>{b7c36ea2-7c58-4ead-b53f-7f18021c0441}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\null-gui\utilites">
-      <UniqueIdentifier>{6c30497c-73bc-4199-a3eb-6d4923dc9e9e}</UniqueIdentifier>
+    <Filter Include="source\null-render\directx9\shaders">
+      <UniqueIdentifier>{9a6e6403-263e-4e1b-8d8d-be1e763839b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9\shaders\blur">
+      <UniqueIdentifier>{dc064ba5-3711-4fc3-9a2e-807b72a5d665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9\shaders\vertex">
+      <UniqueIdentifier>{ccd43bf9-b0ef-408b-a6b0-f144c33f1e96}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +106,9 @@
     <ClCompile Include="null-input\null-input.cpp">
       <Filter>source\null-input</Filter>
     </ClCompile>
+    <ClCompile Include="null-render\directx9\shaders\blur\blur.cpp">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="null-gui\null-gui.h">
@@ -135,5 +144,16 @@
     <ClInclude Include="helpers\flags_list.h">
       <Filter>source\helpers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="null-render\directx9\shaders\vertex\hlsl\vertex.hlsl">
+      <Filter>source\null-render\directx9\shaders\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="null-render\directx9\shaders\blur\hlsl\blur_x.hlsl">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </FxCompile>
+    <FxCompile Include="null-render\directx9\shaders\blur\hlsl\blur_y.hlsl">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
