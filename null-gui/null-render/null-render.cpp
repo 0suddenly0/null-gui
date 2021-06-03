@@ -2267,7 +2267,7 @@ namespace null_render {
                 dm_y *= AA_SIZE * 0.5f;
 
                 color clr;
-                float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length_sqr()), 0.0f, 1.0f);
+                float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length()), 0.0f, 1.0f);
                 if (i1 < points.size() / 2) clr = color(upper_colors[0] + (upper_colors[1] - upper_colors[0]) * t);
                 else clr = color(bottom_colors[0] + (bottom_colors[1] - bottom_colors[0]) * t);
 
@@ -2286,7 +2286,7 @@ namespace null_render {
             prim_reserve(idx_count, vtx_count);
             for (int i = 0; i < vtx_count; i++) {      
                 color clr;
-                float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length_sqr()), 0.0f, 1.0f);
+                float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length()), 0.0f, 1.0f);
                 if (i < points.size() / 2) clr = color(upper_colors[0] + (upper_colors[1] - upper_colors[0]) * t);
                 else clr = color(bottom_colors[0] + (bottom_colors[1] - bottom_colors[0]) * t);
 
@@ -2341,7 +2341,7 @@ namespace null_render {
                 dm_y *= AA_SIZE * 0.5f;
 
                 color clr;
-                float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length_sqr()), 0.0f, 1.0f);
+                float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length()), 0.0f, 1.0f);
                 clr = first_color + (second_color - first_color) * t;
 
                 _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
@@ -2359,7 +2359,7 @@ namespace null_render {
             prim_reserve(idx_count, vtx_count);
             for (int i = 0; i < vtx_count; i++) {
                 color clr;
-                float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length_sqr()), 0.0f, 1.0f);
+                float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length()), 0.0f, 1.0f);
                 clr = first_color + (second_color - first_color) * t;
 
                 _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;

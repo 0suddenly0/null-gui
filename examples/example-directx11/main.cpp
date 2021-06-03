@@ -11,10 +11,11 @@
 #include <tchar.h>
 #include <chrono>
 
-#include "utils/utils.h"
-#include "null-gui/null-gui.h"
-#include "null-render/null-render.h"
-#include "null-render/directx9/null-render-dx9.h"
+#include "../../null-gui/utils/utils.h"
+#include "../../null-gui/null-gui/null-gui.h"
+#include "../../null-gui/null-render/null-render.h"
+#include "../../null-gui/null-render/directx11/null-render-dx11.h"
+#include "../../null-gui/null-render/directx11/shaders/shaders.h"
 
 int fps() {
 	static int count = 0;
@@ -35,44 +36,46 @@ int fps() {
 
 #define VAR_TO_STRING(VAR) #VAR
 
-static LPDIRECT3D9 d3d = NULL;
-static LPDIRECT3DDEVICE9 d3d_device = NULL;
-static D3DPRESENT_PARAMETERS d3dp = {};
-static HWND window;
-
-void reset_device_d3d() {
-	null_render::directx9::invalidate_device_objects();
-	HRESULT hr = d3d_device->Reset(&d3dp);
-	if (hr == D3DERR_INVALIDCALL)
-		assert(0);
-	null_render::directx9::create_device_objects();
-}
+//ID3D11Device* device;
+//ID3D11DeviceContext* context;
+HWND window;
 
 void cleanup_device_d3d() {
-	if (d3d_device) {
-		d3d_device->Release();
-		d3d_device = NULL;
-	}
-
-	if (d3d) {
-		d3d->Release();
-		d3d = NULL;
-	}
+	//if (device) { device->Release(); device = nullptr; }
+	//if (context) { context->Release(); context = nullptr; }
 }
 
 BOOL create_device_d3d(HWND hwnd) {
-	if ((d3d = Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
-		return FALSE;
+	DXGI_SWAP_CHAIN_DESC sd;
+	ZeroMemory(&sd, sizeof(sd));
+	sd.BufferCount = 2;
+	sd.BufferDesc.Width = 0;
+	sd.BufferDesc.Height = 0;
+	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	sd.BufferDesc.RefreshRate.Numerator = 60;
+	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH | DXGI_SWAP_CHAIN_FLAG_RESTRICT_SHARED_RESOURCE_DRIVER;
 
-	ZeroMemory(&d3dp, sizeof(d3dp));
-	d3dp.Windowed = TRUE;
-	d3dp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dp.BackBufferFormat = D3DFMT_UNKNOWN;
-	d3dp.EnableAutoDepthStencil = TRUE;
-	d3dp.AutoDepthStencilFormat = D3DFMT_D16;
-	d3dp.PresentationInterval = D3DPRESENT_INTERVAL_ONE;
-	if (d3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hwnd, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dp, &d3d_device) < 0)
-		return FALSE;
+	//if BufferUsage dont have DXGI_USAGE_SHADER_INPUT flag, blur will not work
+	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
+	sd.OutputWindow = hwnd;
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
+	sd.Windowed = TRUE;
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+	UINT create_device_flags = 0;
+	D3D_FEATURE_LEVEL feature_level;
+	const D3D_FEATURE_LEVEL feature_level_array[2] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
+	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, create_device_flags, feature_level_array, 2, D3D11_SDK_VERSION, &sd, &null_render::directx11::swap_chain, &null_render::directx11::device, &feature_level, &null_render::directx11::context) != S_OK)
+		return false;
+
+	ID3D11Texture2D* back_buffer = nullptr;
+	null_render::directx11::swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer));
+	null_render::directx11::device->CreateRenderTargetView(back_buffer, NULL, &null_render::directx11::main_render_target_view);
+
+	back_buffer->Release();
+
 	return TRUE;
 }
 
@@ -82,10 +85,17 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_para
 
 	switch (message) {
 	case WM_SIZE:
-		if (d3d_device != NULL && w_param != SIZE_MINIMIZED) {
-			d3dp.BackBufferWidth = LOWORD(l_param);
-			d3dp.BackBufferHeight = HIWORD(l_param);
-			reset_device_d3d();
+		if (null_render::directx11::device != NULL && w_param != SIZE_MINIMIZED) {
+			null_render::shaders::win_proc();
+
+			if (null_render::directx11::main_render_target_view) { null_render::directx11::main_render_target_view->Release(); null_render::directx11::main_render_target_view = NULL; }
+
+			HRESULT res = null_render::directx11::swap_chain->ResizeBuffers(0, (UINT)LOWORD(l_param), (UINT)HIWORD(l_param), DXGI_FORMAT_UNKNOWN, 0);
+
+			ID3D11Texture2D* back_buffer;
+			null_render::directx11::swap_chain->GetBuffer(0, IID_PPV_ARGS(&back_buffer));
+			null_render::directx11::device->CreateRenderTargetView(back_buffer, NULL, &null_render::directx11::main_render_target_view);
+			back_buffer->Release();
 		}
 		return false;
 	}
@@ -93,7 +103,7 @@ LRESULT CALLBACK wnd_proc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_para
 	return DefWindowProcA(hwnd, message, w_param, l_param);
 }
 
-ATOM my_register_class(HINSTANCE instance, LPCTSTR class_name) {
+ATOM my_register_class(HINSTANCE instance, LPCSTR class_name) {
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -112,7 +122,7 @@ ATOM my_register_class(HINSTANCE instance, LPCTSTR class_name) {
 	return RegisterClassEx(&wcex);
 }
 
-BOOL init_window(HINSTANCE instance, LPCTSTR class_name, LPCTSTR title) {
+BOOL init_window(HINSTANCE instance, LPCSTR class_name, LPCSTR title) {
 	RECT screen_rect;
 	GetWindowRect(GetDesktopWindow(), &screen_rect);
 
@@ -122,17 +132,17 @@ BOOL init_window(HINSTANCE instance, LPCTSTR class_name, LPCTSTR title) {
 	return TRUE;
 }
 
-int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow) {
+int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_show) {
 	ShowWindow(GetConsoleWindow(), SW_SHOWDEFAULT);
 	setlocale(LC_ALL, "Russian");
 
-	//LPCTSTR lpzClass = "nullgui";
-	if (!my_register_class(hInstance, L"nullgui")) return 0;
-	if (!init_window(hInstance, L"nullgui", L"nullgui")) return 0;
+	LPCSTR wnd_name = "null-gui | directx11";
+	if (!my_register_class(instance, wnd_name)) return 0;
+	if (!init_window(instance, wnd_name, wnd_name)) return 0;
 
 	if (!create_device_d3d(window)) {
 		cleanup_device_d3d();
-		UnregisterClass(L"nullgui", hInstance);
+		UnregisterClass(wnd_name, instance);
 		return 0;
 	}
 
@@ -149,7 +159,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 		});
 
 	null_render::initialize();
-	null_render::directx9::init(d3d_device);
+	null_render::directx11::init(nullptr, nullptr);
 
 	null_gui::pre_begin_gui(window);
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
@@ -160,7 +170,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			DispatchMessage(&msg);
 			continue;
 		}
-		null_render::directx9::begin();
+		null_render::directx11::begin_frame();
 		null_render::begin_render(window);
 		null_gui::begin_gui();
 
@@ -215,7 +225,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 					null_gui::slider_float("check_mark_size", &null_gui::gui_settings::check_mark_size, 1, 10, "%.0f", 1);
 					null_gui::slider_float("checkbox_body_offset", &null_gui::gui_settings::checkbox_body_offset, 0, 50, "%.0f", 1);
 					null_gui::slider_float("combo_size", &null_gui::gui_settings::combo_size, 1, 50, "%.0f", 1);
-					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%.2f", 0.1f);
+					null_gui::slider_float("combo_arrow_size", &null_gui::gui_settings::combo_arrow_size, 0.f, 1.f, "%.2f", 100);
 					null_gui::slider_float("combo_window_padding", &null_gui::gui_settings::combo_window_padding, 0.f, 20.f, "%.0f", 1);
 					null_gui::slider_int("max_auto_size_combo", &null_gui::gui_settings::max_auto_size_combo, 1, 10);
 					null_gui::slider_float("slider_size", &null_gui::gui_settings::slider_size, 3, 20, "%.0f", 1);
@@ -292,7 +302,7 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 			} null_gui::end_columns();
 			null_gui::end_window();
 		}
-		
+
 		if (null_gui::begin_window("window", vec2(290, 330), vec2(200.f, 0.f), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size }, nullptr)) {
 			null_gui::text(utils::format("%d", test_int));
 			null_gui::same_line();
@@ -308,52 +318,36 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCm
 
 			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
 				null_gui::slider_int("asd123123131ew", &test_int, 0, 500);
-				//null_gui::same_line();
-				//null_gui::slider_float("slider2323 float", &test_float, 0, 100);
 			} null_gui::deeps::pop_var();
 
-			//null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
-			static bool a1 = false;
-			static bool a2 = false;
-			static bool a3 = false;
-			static bool a4 = false;
-			//null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
 			null_gui::checkbox("show debug window##23123", &debug_window);
 			null_gui::tooltip("test tooltip");
-			//null_gui::same_line()
-			null_gui::text(utils::format("%.6f", test_float));
+			if(vec2(0, 0) <= vec2(100, 100))
+				null_gui::text(utils::format("%.6f", test_float));
 			null_gui::text_input("text input", &test_string);
 			null_gui::key_bind("test key bind", &bind);
 			null_gui::new_line();
 			null_gui::checkbox("show settings window", &settings_window);
 			null_gui::text(utils::format("fps : %d", fps()));
-			null_gui::text(std::to_string(null_input::last_press_key) +  " " + std::to_string(null_input::last_press_key));
-			//null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
+			null_gui::text(std::to_string(null_input::last_press_key) + " " + std::to_string(null_input::last_press_key));
 			null_gui::end_window();
 		}
-		/**/
-		null_render::end_render();
-		d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
-		d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-		d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-		D3DCOLOR clear_col_dx = D3DCOLOR_RGBA(20, 20, 20, 100);
-		d3d_device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
-		if (d3d_device->BeginScene() >= 0)
-		{
-			null_render::render();
-			null_render::directx9::render_draw_data();
-			d3d_device->EndScene();
-		}
-		HRESULT result = d3d_device->Present(NULL, NULL, NULL, NULL);
 
-		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
-			reset_device_d3d();
-		}
+		null_render::end_render();
+
+		const float clear_color_with_alpha[4] = { 0.07f, 0.07f, 0.07f, 1.f };
+		null_render::directx11::context->OMSetRenderTargets(1, &null_render::directx11::main_render_target_view, nullptr);
+		null_render::directx11::context->ClearRenderTargetView(null_render::directx11::main_render_target_view, clear_color_with_alpha);
+
+		null_render::render();
+		null_render::directx11::render_draw_data();
+
+		null_render::directx11::swap_chain->Present(1, 0);
 	}
 	cleanup_device_d3d();
 
 	DestroyWindow(window);
-	UnregisterClass(L"nullgui", hInstance);
+	UnregisterClass(wnd_name, instance);
 
 	return 0;
 }

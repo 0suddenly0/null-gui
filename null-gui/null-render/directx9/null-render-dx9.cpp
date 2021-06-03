@@ -1,12 +1,9 @@
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#include <d3dx9math.h>
-
 #include "null-render-dx9.h"
+#include "shaders/shaders.h"
 
 static int vertex_buffer_size = 5000, index_buffer_size = 10000;
 
-struct CUSTOMVERTEX {
+struct vertex {
     float    pos[3];
     D3DCOLOR clr;
     float    uv[2];
@@ -15,58 +12,6 @@ struct CUSTOMVERTEX {
 #define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZ|D3DFVF_DIFFUSE|D3DFVF_TEX1)
 
 namespace null_render {
-    namespace shaders {
-        shader_control::shader_control(const BYTE* shader_source) {
-            init(shader_source);
-        }
-
-        void shader_control::init(const BYTE* shader_source) {
-            if (pixel_shader != nullptr) return;
-            directx9::device->CreatePixelShader(reinterpret_cast<const DWORD*>(shader_source), &pixel_shader);
-        }
-
-        void shader_control::use(float uniform, float location) {
-            directx9::device->SetPixelShader(pixel_shader);
-            const float params[4] = { uniform };
-            directx9::device->SetPixelShaderConstantF(location, params, 1);
-        }
-
-        void shader_control::clear() {
-            if (pixel_shader) { pixel_shader->Release(); pixel_shader = nullptr; }
-        }
-
-        IDirect3DTexture9* create_texture(vec2 tex_size) {
-            IDirect3DTexture9* texture;
-            directx9::device->CreateTexture(tex_size.x, tex_size.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &texture, nullptr);
-            return texture;
-        }
-
-        void backbuffer_to_texture(IDirect3DTexture9* texture, rect backbuffer_region, D3DTEXTUREFILTERTYPE filtering) {
-            if (!texture) return;
-            if (backbuffer_region.size().x == 0.f || backbuffer_region.size().y == 0.f) backbuffer_region = rect(vec2(0.f, 0.f), null_render::settings::display_size);
-
-            IDirect3DSurface9* back_buffer = nullptr;
-            IDirect3DSurface9* surface = nullptr;
-            if (directx9::device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer) == D3D_OK) {
-                if (texture->GetSurfaceLevel(0, &surface) == D3D_OK) {
-                    RECT backbuffer_rect = RECT{ (LONG)backbuffer_region.min.x, (LONG)backbuffer_region.min.y, (LONG)backbuffer_region.max.x, (LONG)backbuffer_region.max.y };
-                    directx9::device->StretchRect(back_buffer, &backbuffer_rect, surface, nullptr, filtering);
-                }
-            }
-
-            if (back_buffer) { back_buffer->Release(); back_buffer = nullptr; }
-            if (surface) { surface->Release(); surface = nullptr; }
-        }
-
-        void set_render_target(IDirect3DTexture9* texture) {
-            IDirect3DSurface9* surface = nullptr;
-            if (texture->GetSurfaceLevel(0, &surface) == D3D_OK)
-                directx9::device->SetRenderTarget(0, surface);
-
-            if (surface) { surface->Release(); surface = nullptr; }
-        }
-    }
-
     namespace directx9 {
         bool init(IDirect3DDevice9* _device) {
             device = _device;
@@ -74,8 +19,8 @@ namespace null_render {
             return true;
         }
 
-        void begin() {
-            shaders::blur::clear_all_shaders();
+        void begin_frame() {
+            shaders::begin_frame();
             if (!font_texture) create_device_objects();
         }
 
@@ -94,7 +39,7 @@ namespace null_render {
             if (!vertex_buffer || vertex_buffer_size < _draw_data->total_vtx_count) {
                 if (vertex_buffer) { vertex_buffer->Release(); vertex_buffer = NULL; }
                 vertex_buffer_size = _draw_data->total_vtx_count + 5000;
-                if (device->CreateVertexBuffer(vertex_buffer_size * sizeof(CUSTOMVERTEX), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &vertex_buffer, NULL) < 0)
+                if (device->CreateVertexBuffer(vertex_buffer_size * sizeof(vertex), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &vertex_buffer, NULL) < 0)
                     return;
             }
 
@@ -114,9 +59,9 @@ namespace null_render {
             device->GetTransform(D3DTS_VIEW, &last_view);
             device->GetTransform(D3DTS_PROJECTION, &last_projection);
 
-            CUSTOMVERTEX* vtx_dst;
+            vertex* vtx_dst;
             unsigned short* idx_dst;
-            if (vertex_buffer->Lock(0, (UINT)(_draw_data->total_vtx_count * sizeof(CUSTOMVERTEX)), (void**)&vtx_dst, D3DLOCK_DISCARD) < 0) return;
+            if (vertex_buffer->Lock(0, (UINT)(_draw_data->total_vtx_count * sizeof(vertex)), (void**)&vtx_dst, D3DLOCK_DISCARD) < 0) return;
             if (index_buffer->Lock(0, (UINT)(_draw_data->total_idx_count * sizeof(unsigned short)), (void**)&idx_dst, D3DLOCK_DISCARD) < 0) return;
 
             for (int n = 0; n < _draw_data->cmd_lists_count; n++) {
@@ -138,7 +83,7 @@ namespace null_render {
             }
             vertex_buffer->Unlock();
             index_buffer->Unlock();
-            device->SetStreamSource(0, vertex_buffer, 0, sizeof(CUSTOMVERTEX));
+            device->SetStreamSource(0, vertex_buffer, 0, sizeof(vertex));
             device->SetIndices(index_buffer);
             device->SetVertexDeclaration(vertex_declaration);
             device->SetFVF(D3DFVF_CUSTOMVERTEX);
@@ -190,8 +135,9 @@ namespace null_render {
             vp.MaxZ = 1.0f;
             device->SetViewport(&vp);
 
+            shaders::setup_render_state(_draw_data);
+
             device->SetPixelShader(NULL);
-            device->SetVertexShader(vertex_shader);
             device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
             device->SetRenderState(D3DRS_LIGHTING, FALSE);
             device->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -230,7 +176,7 @@ namespace null_render {
                 device->SetTransform(D3DTS_PROJECTION, &mat_projection);
             }
 
-            {
+            /*{
                 float L = _draw_data->display_pos.x + 0.5f;
                 float R = _draw_data->display_pos.x + _draw_data->display_size.x + 0.5f;
                 float T = _draw_data->display_pos.y + 0.5f;
@@ -242,8 +188,8 @@ namespace null_render {
                     0.0f,         0.0f,         0.5f,  0.0f,
                     (L + R) / (L - R),  (T + B) / (B - T),  0.5f,  1.0f
                 } } };
-                device->SetVertexShaderConstantF(0, &mat_projection.m[0][0], 4);
-            }
+                shaders::vertex::shader.set_constant_f(&mat_projection.m[0][0], 0, 4);
+            }*/
         }
 
         bool create_fonts_texture() {
@@ -277,10 +223,7 @@ namespace null_render {
                 device->CreateVertexDeclaration(elements, &vertex_declaration);
             }
 
-            if (!vertex_shader) device->CreateVertexShader(reinterpret_cast<const DWORD*>(shaders::shader_sources::vertex), &vertex_shader);
-
-            shaders::blur::create_shader_control();
-            shaders::blur::clear_all_shaders();
+            shaders::create_shaders();
 
             return true;
         }
@@ -288,13 +231,11 @@ namespace null_render {
         void invalidate_device_objects() {
             if (!device) return;
 
-            shaders::blur::clear_all_shaders();
-            shaders::blur::clear_shader_control();
+            shaders::clear_shaders();
 
             if (vertex_buffer) { vertex_buffer->Release(); vertex_buffer = NULL; }
             if (index_buffer) { index_buffer->Release(); index_buffer = NULL; }
             if (vertex_declaration) { vertex_declaration->Release(); vertex_declaration = nullptr; }
-            if (vertex_shader) { vertex_shader->Release(); vertex_shader = nullptr; }
             if (font_texture) { font_texture->Release(); font_texture = NULL; null_font::vars::font_atlas->tex_id = NULL; }
         }
     }

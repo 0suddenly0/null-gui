@@ -53,7 +53,7 @@ namespace null_gui {
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.max.y - gui_settings::slider_size), item_rect.max);
 		rect value_rect = rect(vec2(item_rect.max.x - value_size.x, item_rect.min.y), vec2(item_rect.max.x, item_rect.min.y + value_size.y));
 		float calced_new_value = math::clamp(*(float*)min_value + (*(float*)max_value - *(float*)min_value) * (null_input::mouse_pos.x - item_rect.min.x) / item_rect.size().x, *(float*)min_value, *(float*)max_value);
-		float new_value = round == 0 && type != var_type::type_float ? calced_new_value : floor(calced_new_value * round / (float)round);
+		float new_value = round == 0 ? calced_new_value : floor(calced_new_value * (float)round) / (float)round;
 		float clamped_value = math::clamp(*(float*)value, *(float*)min_value, *(float*)max_value);
 
 		deeps::add_item(item_rect.size(), name);

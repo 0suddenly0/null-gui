@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="source\utils">
+      <UniqueIdentifier>{10713e6b-2b48-4c77-89f4-2689ba462328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\helpers">
+      <UniqueIdentifier>{04de2c39-c178-434e-a603-ceb58c38e2e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-gui">
+      <UniqueIdentifier>{87174c17-5743-4170-ae5b-ec81e74c9b97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-gui\controls">
+      <UniqueIdentifier>{2c8ab769-c1e4-4cec-b5dc-d8c9a103fbc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-input">
+      <UniqueIdentifier>{8d1dff13-cd94-44ee-92f0-4927952aa805}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render">
+      <UniqueIdentifier>{c866b911-1f2a-4e4c-972b-7538835649e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\stb">
+      <UniqueIdentifier>{019a963f-10c1-4350-a532-cc759f13b7ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9">
+      <UniqueIdentifier>{24650184-e3ac-461f-9d9d-70d2b5fb847e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9\shaders">
+      <UniqueIdentifier>{205365bc-68cb-419b-ab4c-660c0e141a3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9\shaders\blur">
+      <UniqueIdentifier>{32f58722-b5e6-4347-afbd-01ad137731df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null-render\directx9\shaders\vertex">
+      <UniqueIdentifier>{9c83217c-90d9-4587-b3e5-5a47f924c378}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\utils\utils.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\helpers\math.cpp">
+      <Filter>source\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\null-gui.cpp">
+      <Filter>source\null-gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\button.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\checkbox.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\clickable_text.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\colorpicker.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\column.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\combo.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\group.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\key_bind.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\multicombo.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\scroll.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\selectable.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\sliders.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\text.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\text_input.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-gui\controls\window.cpp">
+      <Filter>source\null-gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-input\null-input.cpp">
+      <Filter>source\null-input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-render\null-render.cpp">
+      <Filter>source\null-render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-render\directx9\null-render-dx9.cpp">
+      <Filter>source\null-render\directx9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-render\directx9\shaders\blur\blur.cpp">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-render\directx9\shaders\vertex\vertex.cpp">
+      <Filter>source\null-render\directx9\shaders\vertex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null-render\directx9\shaders\shaders.cpp">
+      <Filter>source\null-render\directx9\shaders</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\null-gui\utils\utils.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\color.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\flags_list.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\math.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\vectors.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-gui\null-gui.h">
+      <Filter>source\null-gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-input\null-input.h">
+      <Filter>source\null-input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-render\null-render.h">
+      <Filter>source\null-render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-render\stb\rectpack.h">
+      <Filter>source\null-render\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-render\stb\truetype.h">
+      <Filter>source\null-render\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-render\directx9\null-render-dx9.h">
+      <Filter>source\null-render\directx9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null-render\directx9\shaders\shaders.h">
+      <Filter>source\null-render\directx9\shaders</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\null-gui\null-render\directx9\shaders\blur\hlsl\blur_x.hlsl">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\null-gui\null-render\directx9\shaders\blur\hlsl\blur_y.hlsl">
+      <Filter>source\null-render\directx9\shaders\blur</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\null-gui\null-render\directx9\shaders\vertex\hlsl\vertex.hlsl">
+      <Filter>source\null-render\directx9\shaders\vertex</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

@@ -293,12 +293,6 @@ namespace null_font {
 }
 
 namespace null_render {
-    namespace shaders {
-        namespace blur {
-            class shader;
-        }
-    }
-
     class draw_list;
 
     enum class draw_list_flags {

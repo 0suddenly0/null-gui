@@ -161,10 +161,10 @@ namespace null_input {
 	void bind_control();
 	void update_keys_state();
 
-	bool click_mouse_in_region(vec2 min, vec2 max) { return click_mouse_pos <= min && click_mouse_pos >= max; }
-	bool click_mouse_in_region(rect region) { return click_mouse_pos <= region.min && click_mouse_pos >= region.max; }
-	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos <= min && mouse_pos >= max; }
-	bool mouse_in_region(rect region) { return mouse_pos <= region.min && mouse_pos >= region.max; }
+	bool click_mouse_in_region(vec2 min, vec2 max) { return click_mouse_pos >= min && click_mouse_pos <= max; }
+	bool click_mouse_in_region(rect region) { return click_mouse_pos >= region.min && click_mouse_pos <= region.max; }
+	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos >= min && mouse_pos <= max; }
+	bool mouse_in_region(rect region) { return mouse_pos >= region.min && mouse_pos <= region.max; }
 	input_key* get_key(std::string name) { return &key_list[key_data::get_array_id(name)]; }
 	input_key* get_key(int id) { return &key_list[id]; }
 	input_key* get_key(key_id id) { return &key_list[(int)id]; }

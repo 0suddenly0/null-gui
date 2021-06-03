@@ -1,4 +1,4 @@
-#include "../../null-render-dx9.h"
+#include "../shaders.h"
 
 namespace null_render {
     namespace shaders {
@@ -42,7 +42,7 @@ namespace null_render {
             void shader::begin_draw() {
                 directx9::device->GetRenderTarget(0, &becup_render_targer);
 
-                backbuffer_to_texture(first_texture, region);
+                back_buffer_to_texture(first_texture, region);
 
                 directx9::device->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_CLAMP);
                 directx9::device->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP);
@@ -54,24 +54,34 @@ namespace null_render {
                     0.0f, 0.0f, 1.0f, 0.0f,
                     -1.0f / (region.size().x / amount), 1.0f / (region.size().x / amount), 0.0f, 1.0f
                 }} };
-                directx9::device->SetVertexShaderConstantF(0, &matrix.m[0][0], 4);
+                shaders::vertex::shader.set_constant_f(&matrix.m[0][0], 0, 4);
             }
 
             void shader::end_draw() {
                 directx9::device->SetRenderTarget(0, becup_render_targer);
+
                 becup_render_targer->Release();
                 becup_render_targer = nullptr;
+
                 directx9::device->SetPixelShader(nullptr);
                 directx9::device->SetRenderState(D3DRS_SCISSORTESTENABLE, true);
             }
 
             void shader::use_x_shader() {
-                shader_x.use(1.0f / (region.size().x / amount), 0);
+                shader_x.set_shader();
+
+                const float param[4] = { 1.0f / (region.size().x / amount) };
+                shader_x.set_constant_f(param, 0);
+
                 set_render_target(second_texture);
             }
 
             void shader::use_y_shader() {
-                shader_y.use(1.0f / (region.size().y / amount), 0);
+                shader_y.set_shader();
+
+                const float param[4] = { 1.0f / (region.size().y / amount) };
+                shader_y.set_constant_f(param, 0);
+
                 set_render_target(first_texture);
             }
 
@@ -94,8 +104,8 @@ namespace null_render {
             }
 
             void clear_shader_control() {
-                if (shader_x) { shader_x.clear(); }
-                if (shader_y) { shader_y.clear(); }
+                if (shader_x) shader_x.clear();
+                if (shader_y) shader_y.clear();
             }
         }
     }

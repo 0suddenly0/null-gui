@@ -4,376 +4,174 @@
 
 class vec2 {
 public:
-    vec2() {
-        x = 0.f;
-        y = 0.f;
-    }
+    vec2() { x = y = 0.f; }
 
     template <typename T>
-    vec2(T X, T Y) {
-        x = X;
-        y = Y;
-    }
-
-    float& operator[](int i) {
-        return ((float*)this)[i];
-    }
-
-    float operator[](int i) const {
-        return ((float*)this)[i];
-    }
-
-    bool operator==(const vec2& src) {
-        return (src.x == x) && (src.y == y);
-    }
-
-    bool operator!=(const vec2& src) {
-        return (src.x != x) || (src.y != y);
-    }
-
-    bool operator!=(float fl) {
-        return (fl != x) || (fl != y);
-    }
-
-    bool operator<=(const vec2& src) {
-        return (src.x <= x) && (src.y <= y);
-    }
-
-    bool operator>=(const vec2& src) {
-        return (src.x >= x) && (src.y >= y);
-    }
-
-    bool operator<(const vec2& src) {
-        return (src.x < x) && (src.y < y);
-    }
-
-    bool operator>(const vec2& src) {
-        return (src.x > x) && (src.y > y);
-    }
-
-    vec2& operator=(float fl) {
-        x = fl;
-        y = fl;
-        return *this;
-    }
-
-    vec2& operator=(const vec2& v) {
-        x = v.x;
-        y = v.y;
-        return *this;
-    }
-
-    vec2& operator*=(const vec2& v) {
-        x *= v.x;
-        y *= v.y;
-        return *this;
-    }
-
-    vec2& operator*=(float fl) {
-        x *= fl;
-        y *= fl;
-        return *this;
-    }
-
-    vec2& operator/=(const vec2& v) {
-        x /= v.x;
-        y /= v.y;
-        return *this;
-    }
-
-    vec2& operator/=(float fl) {
-        x /= fl;
-        y /= fl;
-        return *this;
-    }
-
-    vec2& operator+=(const vec2& v) {
-        x += v.x;
-        y += v.y;
-        return *this;
-    }
-
-    vec2& operator+=(float fl) {
-        x += fl;
-        y += fl;
-        return *this;
-    }
-
-    vec2& operator-=(const vec2& v) {
-        x -= v.x;
-        y -= v.y;
-        return *this;
-    }
-
-    vec2& operator-=(float fl) {
-        x -= fl;
-        y -= fl;
-        return *this;
-    }
-
-    vec2 operator-(void) const {
-        return vec2(-x, -y);
-    }
-
-    vec2 operator+(const vec2& v) {
-        return vec2(x + v.x, y + v.y);
-    }
-
-    vec2 operator+(const vec2& v) const {
-        return vec2(x + v.x, y + v.y);
-    }
-
-    vec2 operator+(const float v) {
-        return vec2(x + v, y + v);
-    }
-
-    vec2 operator-(const float v) {
-        return vec2(x - v, y - v);
-    }
-
-    vec2 operator-(const vec2& v) {
-        return vec2(x - v.x, y - v.y);
-    }
-
-    vec2 operator-(const vec2& v) const {
-        return vec2(x - v.x, y - v.y);
-    }
-
-    vec2 operator*(float fl) {
-        return vec2(x * fl, y * fl);
-    }
-
-    vec2 operator*(const vec2& v) {
-        return vec2(x * v.x, y * v.y);
-    }
-
-    vec2 operator/(float fl) {
-        return vec2(x / fl, y / fl);
-    }
-
-    vec2 operator/(const vec2& v) {
-        return vec2(x / v.x, y / v.y);
-    }
-
-    float dot(const vec2& vOther) const {
-        return (x * vOther.x + y * vOther.y);
+    vec2(T _x, T _y) {
+        x = _x;
+        y = _y;
     }
 
     vec2 normalized() {
         vec2 res = *this;
-        float l = res.length();
+        float l = res.length_sqrt();
         if (l != 0.0f) {
             res /= l;
-        }
-        else {
+        } else {
             res.x = res.y = 0.0f;
         }
         return res;
     }
 
-    float dist_to(const vec2& vOther) {
+    float dist_to(const vec2& src) {
         vec2 delta;
 
-        delta.x = x - vOther.x;
-        delta.y = y - vOther.y;
+        delta.x = x - src.x;
+        delta.y = y - src.y;
 
-        return delta.length();
+        return delta.length_sqrt();
     }
 
-    float length() {
-        return (float)sqrt(x * x + y * y);
-    }
+    float dot(const vec2& src) const { return (x * src.x + y * src.y); }
 
-    float length_sqr(void) {
-        return (float)(x * x + y * y);
-    }
+    float length() { return (float)(x * x + y * y); }
+    float length_sqrt(void) { return (float)sqrt(x * x + y * y); }
+
+    float& operator[](int i) { return ((float*)this)[i];  }
+    float operator[](int i) const { return ((float*)this)[i]; }
+
+    bool operator==(const vec2& src) { return (x == src.x) && y == src.y; }
+    bool operator==(float src) { return x == src && y == src; }
+
+    bool operator!=(const vec2& src) { return (x != src.x) || y != src.y; }
+    bool operator!=(float src) { return x != src || y != src; }
+
+    bool operator<=(const vec2& src) { return x <= src.x && y <= src.y; }
+    bool operator<=(float src) { return x <= src && y <= src; }
+
+    bool operator>=(const vec2& src) { return x >= src.x && y >= src.y; }
+    bool operator>=(float src) { return x >= src && y >= src; }
+
+    bool operator<(const vec2& src) {  return x < src.x && y < src.y; }
+    bool operator<(float src) { return x < src && y < src; }
+
+    bool operator>(const vec2& src) {  return x > src.x && y > src.y; }
+    bool operator>(float src) { return x > src && y > src; }
+
+    vec2& operator*=(const vec2& src) { x *= src.x; y *= src.y; return *this; }
+    vec2& operator*=(float src) { x *= src;  y *= src; return *this; }
+
+    vec2& operator/=(const vec2& src) { x /= src.x; y /= src.y; return *this; }
+    vec2& operator/=(float src) { x /= src; y /= src; return *this; }
+
+    vec2& operator+=(const vec2& src) { x += src.x; y += src.y; return *this; }
+    vec2& operator+=(float src) { x += src; y += src; return *this; }
+
+    vec2& operator-=(const vec2& src) { x -= src.x; y -= src.y; return *this; }
+    vec2& operator-=(float src) { x -= src; y -= src; return *this; }
+
+    vec2& operator=(const vec2& src) { x = src.x; y = src.y; return *this; }
+    vec2& operator=(float src) { x = src; y = src; return *this; }
+
+    vec2 operator+(const vec2& src) const { return vec2(x + src.x, y + src.y); }
+    vec2 operator+(const vec2& src) { return vec2(x + src.x, y + src.y); }
+    vec2 operator+(const float src) { return vec2(x + src, y + src); }
+
+    vec2 operator-(void) const { return vec2(-x, -y); }
+    vec2 operator-(const vec2& src) const { return vec2(x - src.x, y - src.y); }
+    vec2 operator-(const vec2& src) { return vec2(x - src.x, y - src.y); }
+    vec2 operator-(float src) { return vec2(x - src, y - src); }
+
+    vec2 operator*(const vec2& src) {  return vec2(x * src.x, y * src.y); }
+    vec2 operator*(float src) { return vec2(x * src, y * src); }
+
+    vec2 operator/(const vec2& src) { return vec2(x / src.x, y / src.y); }
+    vec2 operator/(float src) { return vec2(x / src, y / src); }
 
     float x, y;
 };
 
 class rect {
 public:
-    rect() {
-        min.x = 0.f;
-        min.y = 0.f;
-        max.x = 0.f;
-        max.y = 0.f;
-    }
+    rect() { min = max = 0.f; }
 
     template <typename T>
     rect(T min_x, T min_y, T max_x, T max_y) {
-        min.x = min_x;
-        min.y = min_y;
-        max.x = max_x;
-        max.y = max_y;
-    }
-
-    template <typename T>
-    rect(T value) {
-        min.x = value;
-        min.y = value;
-        max.x = value;
-        max.y = value;
+        min = vec2(min_x, min_y);
+        max = vec2(max_x, max_y);
     }
 
     rect(vec2 _min, vec2 _max) {
-        min.x = _min.x;
-        min.y = _min.y;
-        max.x = _max.x;
-        max.y = _max.y;
+        min = _min;
+        max = _max;
     }
 
-    vec2 size() {
-        return max - min;
-    }
+    vec2 size() { return max - min; }
+    vec2 centre() { return min + size() / 2; }
 
-    vec2 centre() {
-        return min + size() / 2;
-    }
+    float operator[](int i) const { return ((float*)this)[i]; }
+    float& operator[](int i) { return ((float*)this)[i]; }
 
-    float& operator[](int i) {
-        return ((float*)this)[i];
-    }
+    bool operator==(const rect& src) { return min == src.min && max == src.max; }
+    bool operator==(const vec2& src) { return min == src && max == src; }
+    bool operator==(float src) { return min == src && max == src; }
 
-    float operator[](int i) const {
-        return ((float*)this)[i];
-    }
+    bool operator!=(const rect& src) { return min != src.min || max != src.max; }
+    bool operator!=(const vec2& src) { return min != src || max != src; }
+    bool operator!=(float src) { return min != src || max != src; }
 
-    bool operator==(const rect& src) {
-        return (src.min.x == min.x) && (src.min.y == min.y) && (src.max.x == max.x) && (src.max.y == max.y);
-    }
+    bool operator<=(const rect& src) { return min <= src.min && max <= src.max; }
+    bool operator<=(const vec2& src) { return min <= src && max <= src; }
+    bool operator<=(float src) { return min <= src && max <= src; }
 
-    bool operator==(float fl) {
-        return (min.x == fl) && (min.y == fl) && (max.x == fl) && (max.y == fl);
-    }
+    bool operator>=(const rect& src) { return min >= src.min && max >= src.max; }
+    bool operator>=(const vec2& src) { return min >= src && max >= src; }
+    bool operator>=(float src) { return min >= src && max >= src; }
 
-    bool operator!=(const rect& src) {
-        return (src.min.x != min.x) || (src.min.y != min.y) || (src.max.x != max.x) || (src.max.y != max.y);
-    }
+    bool operator<(const rect& src) { return min < src.min && max < src.max; }
+    bool operator<(const vec2& src) { return min < src && max < src; }
+    bool operator<(float src) { return min < src&& max < src; }
 
-    rect& operator=(float fl) {
-        min.x = fl;
-        min.y = fl;
-        max.x = fl;
-        max.y = fl;
-        return *this;
-    }
+    bool operator>(const rect& src) { return min > src.min && max > src.max; }
+    bool operator>(const vec2& src) { return min > src && max > src; }
+    bool operator>(float src) { return min > src && max > src; }
 
-    rect& operator=(const rect& v) {
-        min.x = v.min.x;
-        min.y = v.min.y;
-        max.x = v.max.x;
-        max.y = v.max.y;
-        return *this;
-    }
+    rect& operator*=(const rect& src) { min *= src.min; max *= src.max; return *this; }
+    rect& operator*=(const vec2& src) { min *= src; max *= src; return *this; }
+    rect& operator*=(float src) { min *= src; max *= src; return *this; }
 
-    rect& operator*=(const rect& v) {
-        min.x *= v.min.x;
-        min.y *= v.min.y;
-        max.x *= v.max.x;
-        max.y *= v.max.y;
-        return *this;
-    }
+    rect& operator/=(const rect& src) { min /= src.min; max /= src.max; return *this; }
+    rect& operator/=(const vec2& src) { min /= src; max /= src; return *this; }
+    rect& operator/=(float src) { min /= src; max /= src; return *this; }
 
-    rect& operator*=(float fl) {
-        min.x *= fl;
-        min.y *= fl;
-        max.x *= fl;
-        max.y *= fl;
-        return *this;
-    }
+    rect& operator+=(const rect& src) { min += src.min; max += src.max; return *this; }
+    rect& operator+=(const vec2& src) { min += src; max += src; return *this; }
+    rect& operator+=(float src) { min += src; max += src; return *this; }
 
-    rect& operator/=(const rect& v) {
-        min.x /= v.min.x;
-        min.y /= v.min.y;
-        max.x /= v.max.x;
-        max.y /= v.max.y;
-        return *this;
-    }
+    rect& operator-=(const rect& src) { min -= src.min; max -= src.max; return *this; }
+    rect& operator-=(const vec2& src) { min -= src; max -= src; return *this; }
+    rect& operator-=(float src) { min -= src; max -= src; return *this; }
 
-    rect& operator/=(float fl) {
-        min.x /= fl;
-        min.y /= fl;
-        max.x /= fl;
-        max.y /= fl;
-        return *this;
-    }
+    rect& operator=(const rect& src) { min = src.min; max = src.max; return *this; }
+    rect& operator=(const vec2& src) { min = max = src; return *this; }
+    rect& operator=(float src) { min = max = src; return *this; }
 
-    rect& operator+=(const rect& v) {
-        min.x += v.min.x;
-        min.y += v.min.y;
-        max.x += v.max.x;
-        max.y += v.max.y;
-        return *this;
-    }
+    rect operator+(const rect& src) { return rect(min + src.min, max + src.max); }
+    rect operator+(const vec2 src) { return rect(min + src, max + src); }
+    rect operator+(float src) { return rect(min + src, max + src); }
 
-    rect& operator+=(float fl) {
-        min.x += fl;
-        min.y += fl;
-        max.x += fl;
-        max.y += fl;
-        return *this;
-    }
+    rect operator-(void) const { return rect(-min, -max); }
+    rect operator-(const rect& src) { return rect(min - src.min, max - src.max); }
+    rect operator-(const vec2& src) const { return rect(min - src, max - src); }
+    rect operator-(float src) { return rect(min - src, max - src); }
 
-    rect& operator-=(const rect& v) {
-        min.x -= v.min.x;
-        min.y -= v.min.y;
-        max.x -= v.max.x;
-        max.y -= v.max.y;
-        return *this;
-    }
+    rect operator*(const rect& src) { return rect(min * src.min, max * src.max); }
+    rect operator*(const vec2& src) { return rect(min * src, max * src); }
+    rect operator*(float src) { return rect(min * src, max * src); }
 
-    rect& operator-=(float fl) {
-        min.x -= fl;
-        min.y -= fl;
-        max.x -= fl;
-        max.y -= fl;
-        return *this;
-    }
-
-    rect operator-(void) const {
-        return rect(-min, -max);
-    }
-
-    rect operator+(const rect& v) {
-        return rect(min + v.min, max + v.min);
-    }
-
-    rect operator+(const rect& v) const {
-        return rect(min + v.min, max + v.min);
-    }
-
-    rect operator+(const float v) {
-        return rect(min + v, max + v);
-    }
-
-    rect operator-(const float v) {
-        return rect(min - v, max - v);
-    }
-
-    rect operator-(const rect& v) {
-        return rect(min - v.min, max - v.max);
-    }
-
-    rect operator-(const rect& v) const {
-        return rect(min - v.min, max - v.max);
-    }
-
-    rect operator*(float fl) {
-        return rect(min * fl, max * fl);
-    }
-
-    rect operator*(const rect& v) {
-        return rect(min * v.min, max * v.max);
-    }
-
-    rect operator/(float fl) {
-        return rect(min / fl, max / fl);
-    }
-
-    rect operator/(const rect& v) {
-        return rect(min / v.min, min / v.min);
-    }
+    rect operator/(const rect& src) { return rect(min / src.min, min / src.max); }
+    rect operator/(const vec2& src) { return rect(min / src, max / src); }
+    rect operator/(float src) { return rect(min / src, max / src); }
 
     vec2 min, max;
 };
