@@ -156,6 +156,8 @@ namespace null_input {
 	vec2 mouse_pos;
 	vec2 click_mouse_pos;
 
+	bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
+	bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
 	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 	void bind_control();

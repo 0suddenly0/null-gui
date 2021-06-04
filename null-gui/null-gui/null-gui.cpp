@@ -114,11 +114,11 @@ namespace null_gui {
 			return nullptr;
 		}
 
-		void text_input_info::win_poc(int id) {
+		void text_input_info::win_poc(null_input::key_id key) {
 			text_input_info* active = get_input(active_name);
 			if (!active) return;
 
-			if (null_input::get_key(null_input::key_id::backspace)->down()) {
+			if (key == null_input::key_id::backspace) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text > 0) {
 						active->string_value.erase(active->string_value.begin() + active->pos_in_text - 1, active->string_value.begin() + active->pos_in_text);
@@ -132,7 +132,7 @@ namespace null_gui {
 				}
 			}
 			
-			if (null_input::get_key(null_input::key_id::del)->down()) {
+			if (key == null_input::key_id::del) {
 				if (!active->is_selecting()) {
 					if (active->pos_in_text < active->string_value.size()) {
 						active->string_value.erase(active->string_value.begin() + active->pos_in_text, active->string_value.begin() + active->pos_in_text + 1);
@@ -145,16 +145,16 @@ namespace null_gui {
 			}
 
 			if (null_input::get_key(null_input::key_id::ctrl)->down()) {
-				if (null_input::get_key(null_input::key_id::left)->down() || null_input::get_key(null_input::key_id::right)->down()) {
-					active->pos_in_text = null_input::get_key(null_input::key_id::left)->down() ? 0 : null_input::get_key(null_input::key_id::right)->down() ? active->string_value.size() : 0;
+				if (key == null_input::key_id::left || key == null_input::key_id::right) {
+					active->pos_in_text = key == null_input::key_id::left ? 0 : key == null_input::key_id::right ? active->string_value.size() : 0;
 				}
 
-				if (null_input::get_key(null_input::key_id::c)->down()) {
+				if (key == null_input::key_id::c) {
 					null_input::write_clipboard(std::string(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max));
 					active->reset_select();
 				}
 
-				if (null_input::get_key(null_input::key_id::v)->down()) {
+				if (key == null_input::key_id::v) {
 					if (active->is_selecting()) {
 						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
 						active->pos_in_text = active->select_min;
@@ -164,11 +164,11 @@ namespace null_gui {
 					active->string_value.insert(active->pos_in_text, null_input::read_clipboard());
 					active->pos_in_text += null_input::read_clipboard().size();
 				}
-			} else {
+			} else if(key == null_input::key_id::left || key == null_input::key_id::right){
 				if (!active->is_selecting()) {
-					active->pos_in_text += null_input::get_key(null_input::key_id::left)->down() ? -1 : null_input::get_key(null_input::key_id::right)->down() ? 1 : 0;
+					active->pos_in_text += key == null_input::key_id::left ? -1 : key == null_input::key_id::right ? 1 : 0;
 				} else {
-					active->pos_in_text = null_input::get_key(null_input::key_id::left)->down() ? active->select_min : null_input::get_key(null_input::key_id::right)->down() ? active->select_max : active->pos_in_text;
+					active->pos_in_text = key == null_input::key_id::left ? active->select_min : key == null_input::key_id::right ? active->select_max : active->pos_in_text;
 					active->reset_select();
 				}
 			}
@@ -192,7 +192,7 @@ namespace null_gui {
 					if (can_write) active->string_value = value_for_check;
 				} else {
 					active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
-					active->string_value.insert(value_for_check.begin() + active->select_min, ascii_char);
+					active->string_value.insert(active->string_value.begin() + active->select_min, ascii_char);
 					active->pos_in_text = active->select_min;
 					active->reset_select();
 				}

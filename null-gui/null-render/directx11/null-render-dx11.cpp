@@ -16,27 +16,27 @@ struct vertex {
 };
 
 struct directx11_state {
-    UINT ScissorRectsCount, ViewportsCount;
-    D3D11_RECT ScissorRects[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-    D3D11_VIEWPORT Viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
-    ID3D11RasterizerState* RS;
-    ID3D11BlendState* BlendState;
-    FLOAT BlendFactor[4];
-    UINT SampleMask;
-    UINT StencilRef;
-    ID3D11DepthStencilState* DepthStencilState;
-    ID3D11ShaderResourceView* PSShaderResource;
-    ID3D11SamplerState* PSSampler;
-    ID3D11PixelShader* PS;
-    ID3D11VertexShader* VS;
-    ID3D11GeometryShader* GS;
-    UINT PSInstancesCount, VSInstancesCount, GSInstancesCount;
-    ID3D11ClassInstance* PSInstances[256], * VSInstances[256], * GSInstances[256];
-    D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology;
-    ID3D11Buffer* IndexBuffer, *VertexBuffer, *VSConstantBuffer;
-    UINT IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
-    DXGI_FORMAT IndexBufferFormat;
-    ID3D11InputLayout* InputLayout;
+    UINT scissor_rects_count, viewports_count;
+    D3D11_RECT scissor_rects[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
+    D3D11_VIEWPORT viewports[D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE];
+    ID3D11RasterizerState* rasterizer_state;
+    ID3D11BlendState* blend_state;
+    FLOAT blend_factor[4];
+    UINT sample_mask;
+    UINT stencil_ref;
+    ID3D11DepthStencilState* depth_stencil_state;
+    ID3D11ShaderResourceView* shader_resource;
+    ID3D11SamplerState* sampler;
+    ID3D11PixelShader* pixel_shader;
+    ID3D11VertexShader* vertex_shader;
+    ID3D11GeometryShader* geometry_shader;
+    UINT pixel_shader_instances_count, vertex_shader_instances_count, geometry_shader_instances_count;
+    ID3D11ClassInstance* pixel_shader_instances[256], * vertex_shader_instances[256], * geometry_shader_instances[256];
+    D3D11_PRIMITIVE_TOPOLOGY primitive_topology;
+    ID3D11Buffer* index_buffer, *vertex_buffer, *vertex_shader_constant_buffer;
+    UINT index_buffer_offset, vertex_buffer_stride, vertex_buffer_offset;
+    DXGI_FORMAT index_buffer_format;
+    ID3D11InputLayout* input_layout;
 };
 
 namespace null_render {
@@ -148,24 +148,24 @@ namespace null_render {
             }
 
             directx11_state old = {};
-            old.ScissorRectsCount = old.ViewportsCount = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
-            context->RSGetScissorRects(&old.ScissorRectsCount, old.ScissorRects);
-            context->RSGetViewports(&old.ViewportsCount, old.Viewports);
-            context->RSGetState(&old.RS);
-            context->OMGetBlendState(&old.BlendState, old.BlendFactor, &old.SampleMask);
-            context->OMGetDepthStencilState(&old.DepthStencilState, &old.StencilRef);
-            context->PSGetShaderResources(0, 1, &old.PSShaderResource);
-            context->PSGetSamplers(0, 1, &old.PSSampler);
-            old.PSInstancesCount = old.VSInstancesCount = old.GSInstancesCount = 256;
-            context->PSGetShader(&old.PS, old.PSInstances, &old.PSInstancesCount);
-            context->VSGetShader(&old.VS, old.VSInstances, &old.VSInstancesCount);
-            context->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
-            context->GSGetShader(&old.GS, old.GSInstances, &old.GSInstancesCount);
+            old.scissor_rects_count = old.viewports_count = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE;
+            context->RSGetScissorRects(&old.scissor_rects_count, old.scissor_rects);
+            context->RSGetViewports(&old.viewports_count, old.viewports);
+            context->RSGetState(&old.rasterizer_state);
+            context->OMGetBlendState(&old.blend_state, old.blend_factor, &old.sample_mask);
+            context->OMGetDepthStencilState(&old.depth_stencil_state, &old.stencil_ref);
+            context->PSGetShaderResources(0, 1, &old.shader_resource);
+            context->PSGetSamplers(0, 1, &old.sampler);
+            old.pixel_shader_instances_count = old.vertex_shader_instances_count = old.geometry_shader_instances_count = 256;
+            context->PSGetShader(&old.pixel_shader, old.pixel_shader_instances, &old.pixel_shader_instances_count);
+            context->VSGetShader(&old.vertex_shader, old.vertex_shader_instances, &old.vertex_shader_instances_count);
+            context->VSGetConstantBuffers(0, 1, &old.vertex_shader_constant_buffer);
+            context->GSGetShader(&old.geometry_shader, old.geometry_shader_instances, &old.geometry_shader_instances_count);
 
-            context->IAGetPrimitiveTopology(&old.PrimitiveTopology);
-            context->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
-            context->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
-            context->IAGetInputLayout(&old.InputLayout);
+            context->IAGetPrimitiveTopology(&old.primitive_topology);
+            context->IAGetIndexBuffer(&old.index_buffer, &old.index_buffer_format, &old.index_buffer_offset);
+            context->IAGetVertexBuffers(0, 1, &old.vertex_buffer, &old.vertex_buffer_stride, &old.vertex_buffer_offset);
+            context->IAGetInputLayout(&old.input_layout);
 
             setup_render_state(_draw_data);
 
@@ -193,32 +193,30 @@ namespace null_render {
                     context->RSSetScissorRects(1, &r);
 
                     ID3D11ShaderResourceView* texture_srv = (ID3D11ShaderResourceView*)pcmd->texture_id;
-                    context->PSSetSamplers(0, 1, &font_sampler);
                     context->PSSetShaderResources(0, 1, &texture_srv);
                     context->DrawIndexed(pcmd->elem_count, pcmd->idx_offset + global_idx_offset, pcmd->vtx_offset + global_vtx_offset);
-                    if (!pcmd->setup_render_state_update_call) context->PSSetShader(shaders::pixel::shader.pixel_shader, nullptr, 0);
                 }
                 global_idx_offset += cmd_list->idx_buffer.size();
                 global_vtx_offset += cmd_list->vtx_buffer.size();
             }
 
-            context->RSSetScissorRects(old.ScissorRectsCount, old.ScissorRects);
-            context->RSSetViewports(old.ViewportsCount, old.Viewports);
-            context->RSSetState(old.RS); if (old.RS) old.RS->Release();
-            context->OMSetBlendState(old.BlendState, old.BlendFactor, old.SampleMask); if (old.BlendState) old.BlendState->Release();
-            context->OMSetDepthStencilState(old.DepthStencilState, old.StencilRef); if (old.DepthStencilState) old.DepthStencilState->Release();
-            context->PSSetShaderResources(0, 1, &old.PSShaderResource); if (old.PSShaderResource) old.PSShaderResource->Release();
-            context->PSSetSamplers(0, 1, &old.PSSampler); if (old.PSSampler) old.PSSampler->Release();
-            context->PSSetShader(old.PS, old.PSInstances, old.PSInstancesCount); if (old.PS) old.PS->Release();
-            for (UINT i = 0; i < old.PSInstancesCount; i++) if (old.PSInstances[i]) old.PSInstances[i]->Release();
-            context->VSSetShader(old.VS, old.VSInstances, old.VSInstancesCount); if (old.VS) old.VS->Release();
-            context->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer); if (old.VSConstantBuffer) old.VSConstantBuffer->Release();
-            context->GSSetShader(old.GS, old.GSInstances, old.GSInstancesCount); if (old.GS) old.GS->Release();
-            for (UINT i = 0; i < old.VSInstancesCount; i++) if (old.VSInstances[i]) old.VSInstances[i]->Release();
-            context->IASetPrimitiveTopology(old.PrimitiveTopology);
-            context->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset); if (old.IndexBuffer) old.IndexBuffer->Release();
-            context->IASetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset); if (old.VertexBuffer) old.VertexBuffer->Release();
-            context->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();
+            context->RSSetScissorRects(old.scissor_rects_count, old.scissor_rects);
+            context->RSSetViewports(old.viewports_count, old.viewports);
+            context->RSSetState(old.rasterizer_state); if (old.rasterizer_state) old.rasterizer_state->Release();
+            context->OMSetBlendState(old.blend_state, old.blend_factor, old.sample_mask); if (old.blend_state) old.blend_state->Release();
+            context->OMSetDepthStencilState(old.depth_stencil_state, old.stencil_ref); if (old.depth_stencil_state) old.depth_stencil_state->Release();
+            context->PSSetShaderResources(0, 1, &old.shader_resource); if (old.shader_resource) old.shader_resource->Release();
+            context->PSSetSamplers(0, 1, &old.sampler); if (old.sampler) old.sampler->Release();
+            context->PSSetShader(old.pixel_shader, old.pixel_shader_instances, old.pixel_shader_instances_count); if (old.pixel_shader) old.pixel_shader->Release();
+            for (UINT i = 0; i < old.pixel_shader_instances_count; i++) if (old.pixel_shader_instances[i]) old.pixel_shader_instances[i]->Release();
+            context->VSSetShader(old.vertex_shader, old.vertex_shader_instances, old.vertex_shader_instances_count); if (old.vertex_shader) old.vertex_shader->Release();
+            context->VSSetConstantBuffers(0, 1, &old.vertex_shader_constant_buffer); if (old.vertex_shader_constant_buffer) old.vertex_shader_constant_buffer->Release();
+            context->GSSetShader(old.geometry_shader, old.geometry_shader_instances, old.geometry_shader_instances_count); if (old.geometry_shader) old.geometry_shader->Release();
+            for (UINT i = 0; i < old.vertex_shader_instances_count; i++) if (old.vertex_shader_instances[i]) old.vertex_shader_instances[i]->Release();
+            context->IASetPrimitiveTopology(old.primitive_topology);
+            context->IASetIndexBuffer(old.index_buffer, old.index_buffer_format, old.index_buffer_offset); if (old.index_buffer) old.index_buffer->Release();
+            context->IASetVertexBuffers(0, 1, &old.vertex_buffer, &old.vertex_buffer_stride, &old.vertex_buffer_offset); if (old.vertex_buffer) old.vertex_buffer->Release();
+            context->IASetInputLayout(old.input_layout); if (old.input_layout) old.input_layout->Release();
         }
 
         void setup_render_state(helpers::draw_data* _draw_data) {
@@ -305,22 +303,6 @@ namespace null_render {
             }
         }
 
-        void invalidate_device_objects() {
-            if (!device) return;
-
-            shaders::clear_shaders();
-
-            if (font_sampler) { font_sampler->Release(); font_sampler = NULL; }
-            if (font_texture_view) { font_texture_view->Release(); font_texture_view = NULL; null_font::vars::font_atlas->set_tex_id(NULL); }
-            if (index_buffer) { index_buffer->Release(); index_buffer = NULL; }
-            if (vertex_buffer) { vertex_buffer->Release(); vertex_buffer = NULL; }
-
-            if (blend_state) { blend_state->Release(); blend_state = NULL; }
-            if (depth_stencil_state) { depth_stencil_state->Release(); depth_stencil_state = NULL; }
-            if (rasterizer_state) { rasterizer_state->Release(); rasterizer_state = NULL; }
-            if (input_layout) { input_layout->Release(); input_layout = NULL; }
-        }
-
         bool create_device_objects() {
             if (!device) return false;
             if (font_sampler) invalidate_device_objects();
@@ -328,7 +310,6 @@ namespace null_render {
             shaders::create_shaders();
 
             {
-
                 D3D11_INPUT_ELEMENT_DESC local_layout[] = {
                     { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)offsetof(vertex, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
                     { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,   0, (UINT)offsetof(vertex, uv),  D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -379,6 +360,22 @@ namespace null_render {
             create_fonts_texture();
 
             return true;
+        }
+
+        void invalidate_device_objects() {
+            if (!device) return;
+
+            shaders::clear_shaders();
+
+            if (font_sampler) { font_sampler->Release(); font_sampler = NULL; }
+            if (font_texture_view) { font_texture_view->Release(); font_texture_view = NULL; null_font::vars::font_atlas->set_tex_id(NULL); }
+            if (index_buffer) { index_buffer->Release(); index_buffer = NULL; }
+            if (vertex_buffer) { vertex_buffer->Release(); vertex_buffer = NULL; }
+
+            if (blend_state) { blend_state->Release(); blend_state = NULL; }
+            if (depth_stencil_state) { depth_stencil_state->Release(); depth_stencil_state = NULL; }
+            if (rasterizer_state) { rasterizer_state->Release(); rasterizer_state = NULL; }
+            if (input_layout) { input_layout->Release(); input_layout = NULL; }
         }
     }
 }

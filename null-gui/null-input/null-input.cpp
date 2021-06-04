@@ -5,77 +5,6 @@
 #include "null-input.h"
 #include "../null-gui/null-gui.h"
 
-bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
-    int id = 0;
-    bool state = false;
-
-    switch (u_msg) {
-    case WM_MBUTTONDOWN:
-    case WM_MBUTTONUP:
-        state = u_msg == WM_MBUTTONUP ? false : true;
-		id = null_input::key_data::get_array_id("mouse midle");
-        break;
-    case WM_RBUTTONDOWN:
-    case WM_RBUTTONUP:
-        state = u_msg == WM_RBUTTONUP ? false : true;
-		id = null_input::key_data::get_array_id("mouse right");
-        break;
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONUP:
-        state = u_msg == WM_LBUTTONUP ? false : true;
-		id = null_input::key_data::get_array_id("mouse left");
-        break;
-    case WM_XBUTTONDOWN:
-    case WM_XBUTTONUP:
-        state = u_msg == WM_XBUTTONUP ? false : true;
-		id = (HIWORD(w_param) == XBUTTON1 ? null_input::key_data::get_array_id("mouse x1") : null_input::key_data::get_array_id("mouse x2"));
-        break;
-    default:
-        return false;
-    }
-
-	null_input::input_key* key = &null_input::key_list[id];
-
-	if (key->callback && ((key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false)))
-		key->callback();
-
-	key->state_down = state;
-	if (state) {
-		null_input::click_mouse_pos = null_input::mouse_pos;
-		null_input::last_press_key = id;
-	}
-
-    return true;
-}
-
-bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
-    int id = null_input::key_data::get_array_id(w_param);
-	null_input::input_key* key = &null_input::key_list[id];
-    bool state = false;
-
-    switch (u_msg) {
-    case WM_KEYDOWN:
-    case WM_SYSKEYDOWN:
-        state = true;
-        break;
-    case WM_KEYUP:
-    case WM_SYSKEYUP:
-        state = false;
-        break;
-    }
-
-	if (key->callback != nullptr && ((key->callback_state == null_input::key_state::down && state == true) || (key->callback_state == null_input::key_state::up && state == false)))
-		key->callback();
-
-	key->state_down = state;
-	if (state) {
-		null_gui::deeps::text_input_info::win_poc(id);
-		null_input::last_press_key = id;
-	}
-
-    return true;
-}
-
 std::vector<null_input::input_key> null_input::key_list = {
 	(null_input::key_data( 1, "mouse left" )),
 	(null_input::key_data( 2, "mouse right" )),
@@ -204,11 +133,83 @@ namespace null_input {
 		set_callback(_callback);
 	}
 
+	bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
+		int id = 0;
+		bool state = false;
+
+		switch (u_msg) {
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+			state = u_msg == WM_MBUTTONUP ? false : true;
+			id = key_data::get_array_id("mouse midle");
+			break;
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+			state = u_msg == WM_RBUTTONUP ? false : true;
+			id = key_data::get_array_id("mouse right");
+			break;
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+			state = u_msg == WM_LBUTTONUP ? false : true;
+			id = key_data::get_array_id("mouse left");
+			break;
+		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP:
+			state = u_msg == WM_XBUTTONUP ? false : true;
+			id = (HIWORD(w_param) == XBUTTON1 ? key_data::get_array_id("mouse x1") : key_data::get_array_id("mouse x2"));
+			break;
+		default:
+			return false;
+		}
+
+		input_key* key = &key_list[id];
+
+		if (key->callback && ((key->callback_state == key_state::down && state == true) || (key->callback_state == key_state::up && state == false)))
+			key->callback();
+
+		key->state_down = state;
+		if (state) {
+			click_mouse_pos = mouse_pos;
+			last_press_key = id;
+		}
+
+		return true;
+	}
+
+	bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
+		int id = key_data::get_array_id(w_param);
+		input_key* key = &key_list[id];
+		bool state = false;
+
+		switch (u_msg) {
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+			state = true;
+			break;
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			state = false;
+			break;
+		}
+
+		if (key->callback != nullptr && ((key->callback_state == key_state::down && state == true) || (key->callback_state == key_state::up && state == false)))
+			key->callback();
+
+		key->state_down = state;
+		if (state) {
+			null_gui::deeps::text_input_info::win_poc((key_id)id);
+			last_press_key = id;
+		}
+
+		return true;
+	}
+
 	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
 		switch (msg) {
 		case WM_CHAR:
 			last_symbol = (int)w_param;
 			null_gui::deeps::text_input_info::add_char();
+			return true;
 		case WM_MBUTTONDBLCLK:
 		case WM_RBUTTONDBLCLK:
 		case WM_LBUTTONDBLCLK:
@@ -261,7 +262,7 @@ namespace null_input {
 			key.state_clicked = key.down() && key.down_duration < 0.0f;
 			key.state_pressed = !key.down() && key.down_duration >= 0.f;
 
-			if (key.callback && ((key.callback_state == null_input::key_state::clicked && key.state_clicked) || (key.callback_state == null_input::key_state::pressed && key.state_pressed)))
+			if (key.callback && ((key.callback_state == key_state::clicked && key.state_clicked) || (key.callback_state == key_state::pressed && key.state_pressed)))
 				key.callback();
 
 			key.update_duration();
@@ -272,7 +273,7 @@ namespace null_input {
 					if (delta.length() < pow(null_gui::gui_settings::double_click_max_dist, 2)) {
 						key.state_double_clicked = true;
 
-						if (key.callback && key.callback_state == null_input::key_state::double_clicked)
+						if (key.callback && key.callback_state == key_state::double_clicked)
 							key.callback();
 					}
 					key.clicked_time = -FLT_MAX;

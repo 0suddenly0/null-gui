@@ -127,7 +127,7 @@ namespace null_gui {
 
 			static text_input_info* add(text_input_info input);
 			static text_input_info* get_input(std::string name);
-			static void win_poc(int id);
+			static void win_poc(null_input::key_id key);
 			static void add_char();
 			static void control();
 

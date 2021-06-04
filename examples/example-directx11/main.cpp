@@ -159,7 +159,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		});
 
 	null_render::initialize();
-	null_render::directx11::init(nullptr, nullptr);
+	null_render::directx11::init();
 
 	null_gui::pre_begin_gui(window);
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
