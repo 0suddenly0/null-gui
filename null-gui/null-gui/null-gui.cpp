@@ -118,58 +118,70 @@ namespace null_gui {
 			text_input_info* active = get_input(active_name);
 			if (!active) return;
 
-			if (key == null_input::key_id::backspace) {
-				if (!active->is_selecting()) {
-					if (active->pos_in_text > 0) {
-						active->string_value.erase(active->string_value.begin() + active->pos_in_text - 1, active->string_value.begin() + active->pos_in_text);
-						active->pos_in_text--;
-						active->clamp();
+			switch (key) {
+			case null_input::key_id::backspace: {
+					if (!active->is_selecting()) {
+						if (active->pos_in_text > 0) {
+							active->string_value.erase(active->string_value.begin() + active->pos_in_text - 1, active->string_value.begin() + active->pos_in_text);
+							active->pos_in_text--;
+							active->clamp();
+						}
 					}
-				} else {
-					active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
-					active->pos_in_text = active->select_min;
-					active->clamp();
-				}
-			}
-			
-			if (key == null_input::key_id::del) {
-				if (!active->is_selecting()) {
-					if (active->pos_in_text < active->string_value.size()) {
-						active->string_value.erase(active->string_value.begin() + active->pos_in_text, active->string_value.begin() + active->pos_in_text + 1);
-					}
-				} else {
-					active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
-					active->pos_in_text = active->select_min;
-					active->clamp();
-				}
-			}
-
-			if (null_input::get_key(null_input::key_id::ctrl)->down()) {
-				if (key == null_input::key_id::left || key == null_input::key_id::right) {
-					active->pos_in_text = key == null_input::key_id::left ? 0 : key == null_input::key_id::right ? active->string_value.size() : 0;
-				}
-
-				if (key == null_input::key_id::c) {
-					null_input::write_clipboard(std::string(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max));
-					active->reset_select();
-				}
-
-				if (key == null_input::key_id::v) {
-					if (active->is_selecting()) {
+					else {
 						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
 						active->pos_in_text = active->select_min;
+						active->clamp();
+					}
+				} break;
+			case null_input::key_id::del: {
+					if (!active->is_selecting()) {
+						if (active->pos_in_text < active->string_value.size()) {
+							active->string_value.erase(active->string_value.begin() + active->pos_in_text, active->string_value.begin() + active->pos_in_text + 1);
+						}
+					}
+					else {
+						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
+						active->pos_in_text = active->select_min;
+						active->clamp();
+					}
+				} break;
+			case null_input::key_id::left: {
+					if (null_input::get_key(null_input::key_id::ctrl)->down()) active->pos_in_text = 0;
+					else {
+						if (!active->is_selecting()) active->pos_in_text--;
+						else {
+							active->pos_in_text = active->select_min;
+							active->reset_select();
+						}
+					}
+				} break;
+			case null_input::key_id::right: {
+					if (null_input::get_key(null_input::key_id::ctrl)->down()) active->pos_in_text = active->string_value.size();
+					else {
+						if (!active->is_selecting()) active->pos_in_text++;
+						else {
+							active->pos_in_text = active->select_max;
+							active->reset_select();
+						}
+					}
+				} break;
+			case null_input::key_id::c: {
+					if (null_input::get_key(null_input::key_id::ctrl)->down()) {
+						null_input::write_clipboard(std::string(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max));
 						active->reset_select();
 					}
+				} break;
+			case null_input::key_id::v: {
+					if (null_input::get_key(null_input::key_id::ctrl)->down()) {
+						if (active->is_selecting()) {
+							active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
+							active->pos_in_text = active->select_min;
+							active->reset_select();
+						}
 
-					active->string_value.insert(active->pos_in_text, null_input::read_clipboard());
-					active->pos_in_text += null_input::read_clipboard().size();
-				}
-			} else if(key == null_input::key_id::left || key == null_input::key_id::right){
-				if (!active->is_selecting()) {
-					active->pos_in_text += key == null_input::key_id::left ? -1 : key == null_input::key_id::right ? 1 : 0;
-				} else {
-					active->pos_in_text = key == null_input::key_id::left ? active->select_min : key == null_input::key_id::right ? active->select_max : active->pos_in_text;
-					active->reset_select();
+						active->string_value.insert(active->pos_in_text, null_input::read_clipboard());
+						active->pos_in_text += null_input::read_clipboard().size();
+					}
 				}
 			}
 

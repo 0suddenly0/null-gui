@@ -33,7 +33,7 @@ namespace null_gui {
 
 		if (wnd->flags.contains(window_flags::popup) || wnd->close_call) { //logic for popups
 			if (((null_input::get_key(null_input::key_id::mouse_left)->clicked() || null_input::get_key(null_input::key_id::mouse_right)->clicked()) && !wnd->in_popup_region()) || wnd->close_call) {
-				int window_id = std::distance(wnd->parent_window->child_popup_window.begin(), std::find_if(wnd->parent_window->child_popup_window.begin(), wnd->parent_window->child_popup_window.end(), [=](window* wnd) { return wnd->name == wnd->name; }));
+				int window_id = std::distance(wnd->parent_window->child_popup_window.begin(), std::find_if(wnd->parent_window->child_popup_window.begin(), wnd->parent_window->child_popup_window.end(), [=](window* _wnd) { return _wnd->name == wnd->name; }));
 				if (window_id < wnd->parent_window->child_popup_window.size()) {
 					wnd->parent_window->child_popup_window.erase(wnd->parent_window->child_popup_window.begin() + window_id);
 					deeps::windows.erase(deeps::windows.begin() + wnd->idx);

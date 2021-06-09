@@ -183,8 +183,8 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		if (test_bool_bind)
 			null_render::draw_text("test bind", vec2(10, 40), color(255, 255, 255));
 
-		if (null_gui::begin_window("debug window [ window with debug informa1231231132tion ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
-			null_gui::text(utils::format(u8"ывactive item name - '%s'", null_gui::deeps::active_name.c_str()));
+		if (null_gui::begin_window("debug window [ window with debug information ]", vec2(290, 20), vec2(300, 300), { null_gui::window_flags::auto_size }, &debug_window)) {
+			null_gui::text(utils::format("active item name - '%s'", null_gui::deeps::active_name.c_str()));
 			null_gui::text(utils::format("active window name - '%s'", null_gui::deeps::active_window_name.c_str()));
 			if (null_gui::deeps::hovered_window) null_gui::text(utils::format("hovered window name - '%s'", null_gui::deeps::hovered_window->name.c_str()));
 			null_gui::end_window();
@@ -300,10 +300,10 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			} null_gui::deeps::pop_var();
 
 			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
-				null_gui::slider_int("asd123123131ew", &test_int, 0, 500);
+				null_gui::slider_int("test slider", &test_int, 0, 500);
 			} null_gui::deeps::pop_var();
 
-			null_gui::checkbox("show debug window##23123", &debug_window);
+			null_gui::checkbox("show debug window", &debug_window);
 			null_gui::tooltip("test tooltip");
 			null_gui::text(utils::format("%.6f", test_float));
 			null_gui::text_input("text input", &test_string);
