@@ -107,8 +107,7 @@ namespace null_gui {
 		deeps::colorpicker_behavior(button_rect, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
 
 		color clr_draw = clr->get_convert_to_int();
-		std::string tooltip_text = alpha_bar ? "r: %.0f; g: %.0f; g: %.0f; a: %.0f" : "r: %.0f; g: %.0f; g: %.0f";
-		null_gui::tooltip(utils::format(tooltip_text.c_str(), clr_draw.r(), clr_draw.g(), clr_draw.b(), clr_draw.a()));
+		null_gui::tooltip(utils::format(alpha_bar ? "r: %.0f; g: %.0f; b: %.0f; a: %.0f" : "r: %.0f; g: %.0f; b: %.0f", clr_draw.r(), clr_draw.g(), clr_draw.b(), clr_draw.a()));
 
 		wnd->draw_list->draw_rect_filled(button_rect.min, button_rect.max, color(*clr, 1.f), gui_settings::colorpicker_rounding);
 

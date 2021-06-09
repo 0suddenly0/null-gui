@@ -180,7 +180,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		null_render::draw_rect_filled_multicolor(vec2(300, 300), vec2(600, 400), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, null_gui::gui_settings::button_rounding);
 		null_render::draw_rect_filled_multicolor(vec2(300, 500), vec2(600, 600), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, 0.f);
 
-		null_render::background_draw_list.draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
+		null_render::draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
 
 		static bool test_bool_bind;
 		static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold_on);
@@ -210,7 +210,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		if (null_gui::begin_window("test size", vec2(0, 0), vec2(0, 0), { null_gui::window_flags::set_size, null_gui::window_flags::auto_size })) {
 			null_gui::combo("combo", &test_int, { "nullptr", "null-gui", "https://github.com/0suddenly0/null-gui", "1", "2", "3", "4", "suddenly" });
 			null_gui::multicombo("multicombo", &test_bools, { "head", "body", "legs", "arms" });
-			null_gui::colorpicker("color", &null_gui::gui_settings::main_color);
+			null_gui::colorpicker("color", &null_gui::gui_settings::main_color, false);
 			null_gui::end_window();
 		}
 

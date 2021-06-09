@@ -163,7 +163,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		null_render::draw_rect_filled_multicolor(vec2(300, 300), vec2(600, 400), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, null_gui::gui_settings::button_rounding);
 		null_render::draw_rect_filled_multicolor(vec2(300, 500), vec2(600, 600), { null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg }, { null_gui::gui_settings::button_bg_active, null_gui::gui_settings::button_bg_hovered }, 0.f);
 
-		null_render::background_draw_list.draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
+		null_render::draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
 
 		static bool test_bool_bind;
 		static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold_on);
