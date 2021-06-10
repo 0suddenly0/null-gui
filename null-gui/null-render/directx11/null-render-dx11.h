@@ -6,21 +6,21 @@
 
 namespace null_render {
 	namespace directx11 {
-		ID3D11RenderTargetView* main_render_target_view;
-		ID3D11Device* device;
-		ID3D11DeviceContext* context;
-		IDXGIFactory* factory;
-		ID3D11Buffer* vertex_buffer;
-		ID3D11Buffer* index_buffer;
-		ID3D11InputLayout* input_layout;
-		ID3D11SamplerState* font_sampler;
-		ID3D11ShaderResourceView* font_texture_view;
-		ID3D11RasterizerState* rasterizer_state;
-		ID3D11BlendState* blend_state;
-		ID3D11DepthStencilState* depth_stencil_state;
-		IDXGISwapChain* swap_chain;
+		inline ID3D11RenderTargetView* main_render_target_view;
+		inline ID3D11Device* device;
+		inline ID3D11DeviceContext* context;
+		inline IDXGIFactory* factory;
+		inline ID3D11Buffer* vertex_buffer;
+		inline ID3D11Buffer* index_buffer;
+		inline ID3D11InputLayout* input_layout;
+		inline ID3D11SamplerState* font_sampler;
+		inline ID3D11ShaderResourceView* font_texture_view;
+		inline ID3D11RasterizerState* rasterizer_state;
+		inline ID3D11BlendState* blend_state;
+		inline ID3D11DepthStencilState* depth_stencil_state;
+		inline IDXGISwapChain* swap_chain;
 
-		bool init(ID3D11Device* _device = nullptr, ID3D11DeviceContext* _context = nullptr);
+		bool initialize(ID3D11Device* _device = nullptr, ID3D11DeviceContext* _context = nullptr);
 		void begin_frame();
 		void shutdown();
 

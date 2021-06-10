@@ -1,6 +1,7 @@
 #pragma once
 #define NOMINMAX
 #include <windows.h>
+#include <array>
 
 #include "color.h"
 #include "vectors.h"
@@ -10,17 +11,17 @@
 #define FIXNORMAL2F(VX,VY) do { float d2 = VX*VX + VY*VY; if (d2 < 0.5f) d2 = 0.5f; float inv_lensq = 1.0f / d2; VX *= inv_lensq; VY *= inv_lensq; } while (0)
 
 namespace math {
-	template <typename T> T min(T lhs, T rhs) { return lhs < rhs ? lhs : rhs; }
-	template <typename T> T max(T lhs, T rhs) { return lhs >= rhs ? lhs : rhs; }	
-	template <typename T> T clamp(T v, T mn, T mx) { return (v < mn) ? mn : (v > mx) ? mx : v; }
-	float lerp(float a, float b, float t) { return a + t * (b - a); }
+	template <typename t> static t min(t a, t b) { return a < b ? a : b; }
+	template <typename t> static t max(t a, t b) { return a >= b ? a : b; }
+	template <typename t> static t clamp(t val, t min, t max) { return val < min ? min : val > max ? max : val; }
+	static float lerp(float a, float b, float t) { return a + t * (b - a); }
 
-	vec2 min(vec2 lhs, vec2 rhs) { return vec2(lhs.x < rhs.x ? lhs.x : rhs.x, lhs.y < rhs.y ? lhs.y : rhs.y); }
-	vec2 max(vec2 lhs, vec2 rhs) { return vec2(lhs.x >= rhs.x ? lhs.x : rhs.x, lhs.y >= rhs.y ? lhs.y : rhs.y); }
-	vec2 clamp(const vec2& v, const vec2& mn, vec2 mx) { return vec2((v.x < mn.x) ? mn.x : (v.x > mx.x) ? mx.x : v.x, (v.y < mn.y) ? mn.y : (v.y > mx.y) ? mx.y : v.y); }
-	float floor(float f) { return (float)(int)(f); }
-	vec2 floor(const vec2& v) { return vec2((float)(int)(v.x), (float)(int)(v.y)); }
-	vec2 mul(const vec2& lhs, const vec2& rhs) { return vec2(lhs.x * rhs.x, lhs.y * rhs.y); }
+	static vec2 min(vec2 a, vec2 b) { return a < b ? a : b; }
+	static vec2 max(vec2 a, vec2 b) { return a >= b ? a : b; }
+	static vec2 clamp(vec2 val, vec2 min, vec2 max) { return val < min ? min : val > max ? max : val; }
+	static float floor(float val) { return (float)(int)(val); }
+	static vec2 floor(const vec2& val) { return vec2((float)(int)(val.x), (float)(int)(val.y)); }
 
 	vec2 line_closest_point(const vec2& a, const vec2& b, const vec2& p);
+	std::array<vec2, 3> calc_arrow(float scale);
 }

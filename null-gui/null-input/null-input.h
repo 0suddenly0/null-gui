@@ -148,13 +148,13 @@ namespace null_input {
 		std::array<std::function<void(void)>, 3> callbacks;
 	};
 
-	int last_symbol;
-	int last_press_key;
+	inline int last_symbol;
+	inline int last_press_key;
 	extern std::vector<input_key> key_list;
-	std::vector<bind_key*> bind_list;
-	float mouse_wheel;
-	vec2 mouse_pos;
-	vec2 click_mouse_pos;
+	inline std::vector<bind_key*> bind_list;
+	inline float mouse_wheel;
+	inline vec2 mouse_pos;
+	inline vec2 click_mouse_pos;
 
 	bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
 	bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
@@ -163,13 +163,13 @@ namespace null_input {
 	void bind_control();
 	void update_keys_state();
 
-	bool click_mouse_in_region(vec2 min, vec2 max) { return click_mouse_pos >= min && click_mouse_pos <= max; }
-	bool click_mouse_in_region(rect region) { return click_mouse_pos >= region.min && click_mouse_pos <= region.max; }
-	bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos >= min && mouse_pos <= max; }
-	bool mouse_in_region(rect region) { return mouse_pos >= region.min && mouse_pos <= region.max; }
-	input_key* get_key(std::string name) { return &key_list[key_data::get_array_id(name)]; }
-	input_key* get_key(int id) { return &key_list[id]; }
-	input_key* get_key(key_id id) { return &key_list[(int)id]; }
+	static bool click_mouse_in_region(vec2 min, vec2 max) { return click_mouse_pos >= min && click_mouse_pos <= max; }
+	static bool click_mouse_in_region(rect region) { return click_mouse_pos >= region.min && click_mouse_pos <= region.max; }
+	static bool mouse_in_region(vec2 min, vec2 max) { return mouse_pos >= min && mouse_pos <= max; }
+	static bool mouse_in_region(rect region) { return mouse_pos >= region.min && mouse_pos <= region.max; }
+	static input_key* get_key(std::string name) { return &key_list[key_data::get_array_id(name)]; }
+	static input_key* get_key(int id) { return &key_list[id]; }
+	static input_key* get_key(key_id id) { return &key_list[(int)id]; }
 
 	void create_bind(bool can_show, bind_key* bind);
 

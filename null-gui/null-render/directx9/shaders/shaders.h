@@ -51,15 +51,15 @@ namespace null_render {
 		void clear_shaders();
 
 		namespace vertex {
-			shader_control shader(shader_type::vertex);
+			inline shader_control shader(shader_type::vertex);
 
 			void create_shader_control();
 			void clear_shader_control();
 		}
 
 		namespace blur {
-			shader_control shader_x(shader_type::pixel);
-			shader_control shader_y(shader_type::pixel);
+			inline shader_control shader_x(shader_type::pixel);
+			inline shader_control shader_y(shader_type::pixel);
 
 			class shader {
 			public:
@@ -92,7 +92,7 @@ namespace null_render {
 				draw_list* shader_draw_list;
 			};
 
-			std::vector<shader*> shader_list;
+			inline std::vector<shader*> shader_list;
 			shader* create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding);
 			void clear_all_shaders();
 

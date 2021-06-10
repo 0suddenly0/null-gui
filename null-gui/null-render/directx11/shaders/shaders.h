@@ -68,14 +68,14 @@ namespace null_render {
 		void win_proc();
 
 		namespace pixel {
-			shader_control shader(shader_type::pixel);
+			inline shader_control shader(shader_type::pixel);
 
 			void create_shader_control();
 			void clear_shader_control();
 		}
 
 		namespace vertex {
-			shader_control shader(shader_type::vertex);
+			inline shader_control shader(shader_type::vertex);
 
 			struct constant { float matrix[4][4]; };
 
@@ -84,12 +84,12 @@ namespace null_render {
 		}
 
 		namespace blur {
-			shader_control shader_x(shader_type::pixel);
-			shader_control shader_y(shader_type::pixel);
+			inline shader_control shader_x(shader_type::pixel);
+			inline shader_control shader_y(shader_type::pixel);
 
-			resources becup_layer;
-			resources first_layer;
-			resources second_layer;
+			inline resources becup_layer;
+			inline resources first_layer;
+			inline resources second_layer;
 
 			struct constant { float clamp[2]; float size; };
 
@@ -119,7 +119,7 @@ namespace null_render {
 				void use_y_shader();
 			};
 
-			std::vector<shader*> shader_list;
+			inline std::vector<shader*> shader_list;
 			shader* create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding);
 			void clear_layers();
 			void clear_all_shaders();

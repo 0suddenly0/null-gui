@@ -158,10 +158,10 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		test_int = 100;
 		});
 
+	null_render::directx11::initialize();
 	null_render::initialize();
-	null_render::directx11::init();
+	null_gui::initialize(window);
 
-	null_gui::pre_begin_gui(window);
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
 
 	while (msg.message != WM_QUIT) {
@@ -170,9 +170,10 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			DispatchMessage(&msg);
 			continue;
 		}
+
 		null_render::directx11::begin_frame();
-		null_render::begin_render(window);
-		null_gui::begin_gui();
+		null_render::begin_frame(window);
+		null_gui::begin_frame();
 
 		null_render::draw_rect_filled(vec2(25, 25), vec2(75, 75), color(255, 255, 255, 100));
 		null_render::draw_rect_filled_multicolor_vertical(vec2(100, 200), vec2(200, 500), null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg, null_gui::gui_settings::button_rounding);
@@ -331,13 +332,13 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			null_gui::end_window();
 		}
 
-		null_render::end_render();
+		null_render::end_frame();
 
 		const float clear_color_with_alpha[4] = { 0.07f, 0.07f, 0.07f, 1.f };
 		null_render::directx11::context->OMSetRenderTargets(1, &null_render::directx11::main_render_target_view, nullptr);
 		null_render::directx11::context->ClearRenderTargetView(null_render::directx11::main_render_target_view, clear_color_with_alpha);
 
-		null_render::render();
+		null_render::setup_draw_data();
 		null_render::directx11::render_draw_data();
 
 		null_render::directx11::swap_chain->Present(1, 0);

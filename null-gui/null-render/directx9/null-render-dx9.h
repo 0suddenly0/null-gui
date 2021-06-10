@@ -6,13 +6,13 @@
 
 namespace null_render {
 	namespace directx9 {
-		IDirect3DDevice9* device;
-		IDirect3DVertexBuffer9* vertex_buffer;
-		IDirect3DIndexBuffer9* index_buffer;
-		IDirect3DTexture9* font_texture;
-		IDirect3DVertexDeclaration9* vertex_declaration;
+		inline IDirect3DDevice9* device;
+		inline IDirect3DVertexBuffer9* vertex_buffer;
+		inline IDirect3DIndexBuffer9* index_buffer;
+		inline IDirect3DTexture9* font_texture;
+		inline IDirect3DVertexDeclaration9* vertex_declaration;
 
-		bool init(IDirect3DDevice9* _device);
+		bool initialize(IDirect3DDevice9* _device);
 		void begin_frame();
 		void shutdown();
 		

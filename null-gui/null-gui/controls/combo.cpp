@@ -1,15 +1,5 @@
 #include "../null-gui.h"
 
-std::array<vec2, 3> calc_arrow(float scale) {
-	null_gui::window* wnd = null_gui::deeps::current_window;
-	if (!wnd) return {};
-
-	const float h = wnd->draw_list->_data->font_size * 1.00f;
-	float r = h * 0.40f * scale;
-
-	return { vec2(+0.000f, +0.750f) * r, vec2(-0.866f, -0.750f) * r, vec2(+0.866f, -0.750f) * r };
-}
-
 namespace null_gui {
 	void combo(std::string text, int* value, std::vector<std::string> items) {
 		window* wnd = deeps::current_window;
@@ -17,7 +7,7 @@ namespace null_gui {
 
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
-		std::array<vec2, 3> arrow = calc_arrow(gui_settings::combo_arrow_size);
+		std::array<vec2, 3> arrow = math::calc_arrow(gui_settings::combo_arrow_size * wnd->draw_list->_data->font_size);
 		float arrow_size = arrow.at(0).dist_to(arrow.at(2));
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);

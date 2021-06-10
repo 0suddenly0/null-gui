@@ -719,13 +719,13 @@ namespace null_gui {
 		}
 	}
 
-	void pre_begin_gui(HWND hwnd) {
+	void initialize(HWND hwnd) {
 		deeps::hwnd = hwnd;
 		::QueryPerformanceFrequency((LARGE_INTEGER*)&deeps::ticks_per_second);
 		::QueryPerformanceCounter((LARGE_INTEGER*)&deeps::time);
 	}
 
-	void begin_gui() {
+	void begin_frame() {
 		RECT rect;
 		::GetClientRect(deeps::hwnd, &rect);
 		if(!IsIconic(deeps::hwnd)) deeps::display_size = vec2((float)(rect.right - rect.left), (float)(rect.bottom - rect.top));

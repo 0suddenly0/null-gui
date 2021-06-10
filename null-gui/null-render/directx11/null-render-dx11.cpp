@@ -41,7 +41,7 @@ struct directx11_state {
 
 namespace null_render {
     namespace directx11 {
-        bool init(ID3D11Device* _device, ID3D11DeviceContext* _context) {
+        bool initialize(ID3D11Device* _device, ID3D11DeviceContext* _context) {
             if (_device) device = _device;
             if (_context) context = _context;
             IDXGIDevice* dxg_device = nullptr;

@@ -3,6 +3,8 @@
 #pragma once
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STB_RECT_PACK_IMPLEMENTATION
+#define STBRP_STATIC
+#define STBTT_STATIC
 #include <float.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -199,8 +201,8 @@ namespace null_font {
             int pack_id_lines;
         };
 
-        int upper_power_of_two(int v) { v--; v |= v >> 1; v |= v >> 2; v |= v >> 4; v |= v >> 8; v |= v >> 16; v++; return v; }
-        int get_char_from_utf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
+        static int upper_power_of_two(int v) { v--; v |= v >> 1; v |= v >> 2; v |= v >> 4; v |= v >> 8; v |= v >> 16; v++; return v; }
+        static int get_char_from_utf8(unsigned int* out_char, const char* in_text, const char* in_text_end);
 
         const unsigned short* glyph_ranges_default();
         const unsigned short* glyph_ranges_korean();
@@ -269,27 +271,27 @@ namespace null_font {
     };
 
     namespace vars {
-        bool atlas_owned_by_initialize;
-        font* main_font;
-        float font_size;
-        float font_base_size;
-        std::vector<font*> font_list;
-        helpers::atlas* font_atlas;
-        float font_global_scale;
+        inline bool atlas_owned_by_initialize;
+        inline font* main_font;
+        inline float font_size;
+        inline float font_base_size;
+        inline std::vector<font*> font_list;
+        inline helpers::atlas* font_atlas;
+        inline float font_global_scale;
     }
 
     void set_current_font(font* font);
     vec2 text_size_w(std::wstring text);
     vec2 text_size(std::string text);
-    font* get_default_font() { return vars::main_font ? vars::main_font : vars::font_atlas->fonts[0]; }
+    static font* get_default_font() { return vars::main_font ? vars::main_font : vars::font_atlas->fonts[0]; }
 
     void push_font(font* font);
     void pop_font();
 
-    font* load_font(std::string filename, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_file_ttf(filename.c_str(), size_pixels, font_cfg, glyph_ranges); }
-    font* load_font_memory(void* font_data, int font_size, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_ttf(font_data, font_size, size_pixels, font_cfg, glyph_ranges); }
-    font* load_font_compressed(const void* compressed_font_data, int compressed_font_size, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_compressed_ttf(compressed_font_data, compressed_font_size, size_pixels, font_cfg, glyph_ranges); }
-    font* load_font_base_85(const char* compressed_font_data_base85, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_compressed_base_85_ttf(compressed_font_data_base85, size_pixels, font_cfg, glyph_ranges); }
+    static font* load_font(std::string filename, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_file_ttf(filename.c_str(), size_pixels, font_cfg, glyph_ranges); }
+    static font* load_font_memory(void* font_data, int font_size, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_ttf(font_data, font_size, size_pixels, font_cfg, glyph_ranges); }
+    static font* load_font_compressed(const void* compressed_font_data, int compressed_font_size, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_compressed_ttf(compressed_font_data, compressed_font_size, size_pixels, font_cfg, glyph_ranges); }
+    static font* load_font_base_85(const char* compressed_font_data_base85, float size_pixels, const unsigned short* glyph_ranges = helpers::glyph_ranges_cyrillic(), helpers::font_config* font_cfg = NULL) { return vars::font_atlas->add_font_from_memory_compressed_base_85_ttf(compressed_font_data_base85, size_pixels, font_cfg, glyph_ranges); }
 }
 
 namespace null_render {
@@ -481,64 +483,53 @@ namespace null_render {
         void _on_changed_vtx_offset();
     };
 
-    helpers::draw_data draw_data;
-    helpers::data_builder data_builder;
-    helpers::shared_data shared_data;
+    inline helpers::draw_data draw_data;
+    inline helpers::data_builder data_builder;
+    inline helpers::shared_data shared_data;
 
-    draw_list background_draw_list;
-    draw_list foreground_draw_list;
+    inline draw_list background_draw_list;
+    inline draw_list foreground_draw_list;
 
     namespace settings {
-        bool initialized;
-        bool renderer_has_vtx_offset = true;
-        vec2 display_size;
+        inline bool initialized;
+        inline bool renderer_has_vtx_offset = true;
+        inline vec2 display_size;
     }
 
-    void initialize(null_font::helpers::atlas* shared_font_atlas = NULL) {
-        background_draw_list.initialize(&shared_data);
-        foreground_draw_list.initialize(&shared_data);
-        settings::initialized = false;
-        null_font::vars::atlas_owned_by_initialize = shared_font_atlas ? false : true;
-        null_font::vars::main_font = NULL;
-        null_font::vars::font_size = null_font::vars::font_base_size = 0.0f;
-        null_font::vars::font_atlas = shared_font_atlas ? shared_font_atlas : new null_font::helpers::atlas();
-        //settings::renderer_has_vtx_offset = false;
-        settings::display_size = vec2(0.f, 0.f);
-    }
-
-    void begin_render(HWND hwnd);
-    void render();
-    void end_render() { null_font::vars::font_atlas->locked = false; }
+    void initialize(null_font::helpers::atlas* shared_font_atlas = NULL);
+    void begin_frame(HWND hwnd);
+    void setup_draw_data();
+    static void end_frame() { null_font::vars::font_atlas->locked = false; }
     void shutdown();
 
 
-    void push_clip_rect(rect clip_rect, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(clip_rect.min, clip_rect.max, intersect_with_current_clip_rect); }
-    void push_clip_rect(vec2 min, vec2 max, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(min, max, intersect_with_current_clip_rect); }
-    void pop_clip_rect(draw_list* list = &background_draw_list) { list->pop_clip_rect(); }
+    static void push_clip_rect(rect clip_rect, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(clip_rect.min, clip_rect.max, intersect_with_current_clip_rect); }
+    static void push_clip_rect(vec2 min, vec2 max, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(min, max, intersect_with_current_clip_rect); }
+    static void pop_clip_rect(draw_list* list = &background_draw_list) { list->pop_clip_rect(); }
 
-    void draw_blur(vec2 start, vec2 end, float amount, float alpha, float rounding, draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding); }
-    void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_line(start_point, end_point, clr, thickness); }
-    void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_rect(min, max, clr, rounding, rounding_corners, thickness); }
-    void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled(min, max, clr, rounding, rounding_corners); }
-    void draw_rect_filled_multicolor(vec2 min, vec2 max, std::array<color, 2> upper_colors, std::array<color, 2> bottom_colors, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor(min, max, upper_colors, bottom_colors, rounding, rounding_corners); }
-    void draw_rect_filled_multicolor_vertical(vec2 min, vec2 max, color upper_color, color bottom_color, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor_vertical(min, max, upper_color, bottom_color, rounding, rounding_corners); }
-    void draw_rect_filled_multicolor_horizontal(vec2 min, vec2 max, color left_color, color right_color, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor_horizontal(min, max, left_color, right_color, rounding, rounding_corners); }
-    void draw_quad(std::array<vec2, 4> points, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_quad(points, clr, thickness); }
-    void draw_quad_filled(std::array<vec2, 4> points, color clr, draw_list* list = &background_draw_list) { list->draw_quad_filled(points, clr); }
-    void draw_triangle(std::array<vec2, 3> points, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_triangle(points, clr, thickness); }
-    void draw_triangle_filled(std::array<vec2, 3> points, color clr, draw_list* list = &background_draw_list) { list->draw_triangle_filled(points, clr); }
-    void draw_circle(vec2 center, color clr, float radius, int num_segments = 0, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_circle(center, clr, radius, num_segments, thickness); }
-    void draw_circle_filled(vec2 center, color clr, float radius, int num_segments = 0, draw_list* list = &background_draw_list) { list->draw_circle_filled(center, clr, radius, num_segments); }
-    void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_ngon(center, radius, clr, num_segments, thickness); }
-    void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments, draw_list* list = &background_draw_list) { list->draw_ngon_filled(center, radius, clr, num_segments); }
-    void draw_char(null_font::font* font, float size, vec2 pos, color clr, unsigned short c, draw_list* list = &background_draw_list) { list->draw_char(font, size, pos, clr, c); }
-    void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, outline, centered); }
-    void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, font, size, clip_rect, cpu_fine_clip); }
-    void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, outline, centered); }
-    void draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, font, size, clip_rect, cpu_fine_clip); }
-    void draw_polyline(std::vector<vec2> points, color clr, bool closed, float thickness, draw_list* list = &background_draw_list) { list->draw_poly_line(points, clr, closed, thickness); }
-    void draw_convex_poly_filled(std::vector<vec2> points, color clr, draw_list* list = &background_draw_list) { list->draw_convex_poly_filled(points, clr); }
-    void draw_image(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min = vec2(0, 0), vec2 uv_max = vec2(1, 1), color clr = color(1.f, 1.f, 1.f, 1.f), draw_list* list = &background_draw_list) { list->draw_image(user_texture_id, min, max, uv_min, uv_max, clr); }
-    void draw_image_quad(void* user_texture_id, std::array<vec2, 4> points, std::array<vec2, 4> uvs = { vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(0, 1) }, color clr = color(1.f, 1.f, 1.f, 1.f), draw_list* list = &background_draw_list) { list->draw_image_quad(user_texture_id, points, uvs, clr); }
-    void draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_image_rounded(user_texture_id, min, max, uv_min, uv_max, clr, rounding, rounding_corners); }
+    static void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding); }
+    static void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_line(start_point, end_point, clr, thickness); }
+    static void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_rect(min, max, clr, rounding, rounding_corners, thickness); }
+    static void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled(min, max, clr, rounding, rounding_corners); }
+    static void draw_rect_filled_multicolor(vec2 min, vec2 max, std::array<color, 2> upper_colors, std::array<color, 2> bottom_colors, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor(min, max, upper_colors, bottom_colors, rounding, rounding_corners); }
+    static void draw_rect_filled_multicolor_vertical(vec2 min, vec2 max, color upper_color, color bottom_color, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor_vertical(min, max, upper_color, bottom_color, rounding, rounding_corners); }
+    static void draw_rect_filled_multicolor_horizontal(vec2 min, vec2 max, color left_color, color right_color, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled_multicolor_horizontal(min, max, left_color, right_color, rounding, rounding_corners); }
+    static void draw_quad(std::array<vec2, 4> points, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_quad(points, clr, thickness); }
+    static void draw_quad_filled(std::array<vec2, 4> points, color clr, draw_list* list = &background_draw_list) { list->draw_quad_filled(points, clr); }
+    static void draw_triangle(std::array<vec2, 3> points, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_triangle(points, clr, thickness); }
+    static void draw_triangle_filled(std::array<vec2, 3> points, color clr, draw_list* list = &background_draw_list) { list->draw_triangle_filled(points, clr); }
+    static void draw_circle(vec2 center, color clr, float radius, int num_segments = 0, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_circle(center, clr, radius, num_segments, thickness); }
+    static void draw_circle_filled(vec2 center, color clr, float radius, int num_segments = 0, draw_list* list = &background_draw_list) { list->draw_circle_filled(center, clr, radius, num_segments); }
+    static void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_ngon(center, radius, clr, num_segments, thickness); }
+    static void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments, draw_list* list = &background_draw_list) { list->draw_ngon_filled(center, radius, clr, num_segments); }
+    static void draw_char(null_font::font* font, float size, vec2 pos, color clr, unsigned short c, draw_list* list = &background_draw_list) { list->draw_char(font, size, pos, clr, c); }
+    static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, outline, centered); }
+    static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, font, size, clip_rect, cpu_fine_clip); }
+    static void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, outline, centered); }
+    static void draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* clip_rect = NULL, bool cpu_fine_clip = false, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, font, size, clip_rect, cpu_fine_clip); }
+    static void draw_polyline(std::vector<vec2> points, color clr, bool closed, float thickness, draw_list* list = &background_draw_list) { list->draw_poly_line(points, clr, closed, thickness); }
+    static void draw_convex_poly_filled(std::vector<vec2> points, color clr, draw_list* list = &background_draw_list) { list->draw_convex_poly_filled(points, clr); }
+    static void draw_image(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min = vec2(0, 0), vec2 uv_max = vec2(1, 1), color clr = color(1.f, 1.f, 1.f, 1.f), draw_list* list = &background_draw_list) { list->draw_image(user_texture_id, min, max, uv_min, uv_max, clr); }
+    static void draw_image_quad(void* user_texture_id, std::array<vec2, 4> points, std::array<vec2, 4> uvs = { vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(0, 1) }, color clr = color(1.f, 1.f, 1.f, 1.f), draw_list* list = &background_draw_list) { list->draw_image_quad(user_texture_id, points, uvs, clr); }
+    static void draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_image_rounded(user_texture_id, min, max, uv_min, uv_max, clr, rounding, rounding_corners); }
 }

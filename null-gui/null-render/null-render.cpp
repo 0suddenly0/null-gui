@@ -1397,11 +1397,11 @@ namespace null_render {
                 const vec2 max = math::max(uv_a, uv_b);
                 for (vertex* vertex = vert_start; vertex < vert_end; ++vertex) {
                     vec2 asd = vec2(0, 0);
-                    vertex->uv = math::clamp(uv_a + math::mul(vec2(vertex->pos.x, vertex->pos.y) - a, scale), min, max);
+                    vertex->uv = math::clamp(uv_a + (vertex->pos - a) * scale, min, max);
                 }
             } else {
                 for (vertex* vertex = vert_start; vertex < vert_end; ++vertex)
-                    vertex->uv = uv_a + math::mul(vec2(vertex->pos.x, vertex->pos.y) - a, scale);
+                    vertex->uv = uv_a + (vertex->pos - a) * scale;
             }
         }
 
@@ -2710,26 +2710,19 @@ namespace null_render {
         curr_cmd->vtx_offset = _cmd_header.vtx_offset;
     }
 
-    void shutdown() {
-        if (null_font::vars::font_atlas && null_font::vars::atlas_owned_by_initialize) {
-            null_font::vars::font_atlas->locked = false;
-            null_font::vars::font_atlas->~atlas();
-            free(null_font::vars::font_atlas);
-        }
-
-        null_font::vars::font_atlas = NULL;
-
-        if (!settings::initialized) return;
-
-        null_font::vars::font_list.clear();
-        data_builder.clear_free_memory();
-        background_draw_list._clear_free_memory();
-        foreground_draw_list._clear_free_memory();
-
+    void initialize(null_font::helpers::atlas* shared_font_atlas) {
+        background_draw_list.initialize(&shared_data);
+        foreground_draw_list.initialize(&shared_data);
         settings::initialized = false;
+        null_font::vars::atlas_owned_by_initialize = shared_font_atlas ? false : true;
+        null_font::vars::main_font = NULL;
+        null_font::vars::font_size = null_font::vars::font_base_size = 0.0f;
+        null_font::vars::font_atlas = shared_font_atlas ? shared_font_atlas : new null_font::helpers::atlas();
+        //settings::renderer_has_vtx_offset = false;
+        settings::display_size = vec2(0.f, 0.f);
     }
 
-    void begin_render(HWND hwnd) {
+    void begin_frame(HWND hwnd) {
         RECT display_rect = { 0, 0, 0, 0 };
         ::GetClientRect(hwnd, &display_rect);
         settings::display_size = vec2((float)(display_rect.right - display_rect.left), (float)(display_rect.bottom - display_rect.top));
@@ -2760,7 +2753,7 @@ namespace null_render {
         draw_data.clear();
     }
 
-    void render() {
+    void setup_draw_data() {
         data_builder.clear();
 
         if (!background_draw_list.vtx_buffer.empty())
@@ -2774,5 +2767,24 @@ namespace null_render {
             helpers::add_draw_list_to_draw_data(&data_builder.layer, &foreground_draw_list);
 
         helpers::setup_draw_data(&data_builder.layer, &draw_data);
+    }
+
+    void shutdown() {
+        if (null_font::vars::font_atlas && null_font::vars::atlas_owned_by_initialize) {
+            null_font::vars::font_atlas->locked = false;
+            null_font::vars::font_atlas->~atlas();
+            free(null_font::vars::font_atlas);
+        }
+
+        null_font::vars::font_atlas = NULL;
+
+        if (!settings::initialized) return;
+
+        null_font::vars::font_list.clear();
+        data_builder.clear_free_memory();
+        background_draw_list._clear_free_memory();
+        foreground_draw_list._clear_free_memory();
+
+        settings::initialized = false;
     }
 }

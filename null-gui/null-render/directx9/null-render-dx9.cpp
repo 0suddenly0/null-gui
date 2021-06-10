@@ -13,7 +13,7 @@ struct vertex {
 
 namespace null_render {
     namespace directx9 {
-        bool init(IDirect3DDevice9* _device) {
+        bool initialize(IDirect3DDevice9* _device) {
             device = _device;
             device->AddRef();
             return true;

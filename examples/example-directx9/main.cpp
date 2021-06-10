@@ -141,10 +141,10 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		test_int = 100;
 		});
 
+	null_render::directx9::initialize(d3d_device);
 	null_render::initialize();
-	null_render::directx9::init(d3d_device);
+	null_gui::initialize(window);
 
-	null_gui::pre_begin_gui(window);
 	null_font::font* font = null_font::load_font("C:\\Windows\\fonts\\Tahoma.ttf", 13.0f);
 
 	while (msg.message != WM_QUIT) {
@@ -154,8 +154,8 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			continue;
 		}
 		null_render::directx9::begin_frame();
-		null_render::begin_render(window);
-		null_gui::begin_gui();
+		null_render::begin_frame(window);
+		null_gui::begin_frame();
 
 		null_render::draw_rect_filled(vec2(25, 25), vec2(75, 75), color(255, 255, 255, 100));
 		null_render::draw_rect_filled_multicolor_vertical(vec2(100, 200), vec2(200, 500), null_gui::gui_settings::main_color, null_gui::gui_settings::button_bg, null_gui::gui_settings::button_rounding);
@@ -315,16 +315,15 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			null_gui::end_window();
 		}
 
-		null_render::end_render();
+		null_render::end_frame();
 
 		d3d_device->SetRenderState(D3DRS_ZENABLE, FALSE);
 		d3d_device->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 		d3d_device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 		D3DCOLOR clear_col_dx = D3DCOLOR_RGBA(20, 20, 20, 100);
 		d3d_device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
-		if (d3d_device->BeginScene() >= 0)
-		{
-			null_render::render();
+		if (d3d_device->BeginScene() >= 0) {
+			null_render::setup_draw_data();
 			null_render::directx9::render_draw_data();
 			d3d_device->EndScene();
 		}
