@@ -9,9 +9,6 @@ Perhaps, if someone wants to make their own gui, they can pick something up for 
 Warning! The code has a huge amount of shit and other garbage that someday, perhaps, will be fixed.
 
 # Project settings
-General project settings:  
-**Linker -> Command Line | add parameter "/FORCE:MULTIPLE"**
-
 Pixel shaders:  
 * blur_x
 * blur_y
