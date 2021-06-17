@@ -12,7 +12,7 @@ namespace null_gui {
 		}
 
 		draw_list = flags.contains(window_flags::group) && parent_window ? get_main_window()->draw_list : new null_render::draw_list(&null_render::shared_data);
-		draw_list->_reset_for_begin_render();
+		draw_list->reset_for_begin_render();
 		draw_list->push_texture_id(null_font::vars::font_atlas->tex_id);
 		draw_list->push_clip_rect_full_screen();
 	}

@@ -9,7 +9,7 @@
 #include "../helpers/vectors.h"
 
 namespace null_input {
-	enum class key_id {
+	enum class key_id : int {
 		mouse_left,
 		mouse_right,
 		cancel,
@@ -96,7 +96,7 @@ namespace null_input {
 		key_data() {}
 		key_data(int _id, std::string _name) : id(_id), name(_name) {}
 
-		static bool char_allowed(int id);
+		static bool char_allowed(int id) { return (id <= 0x44F && id >= 0x20) || id == 0x451 || id == 0x401; }
 		static int get_array_id(std::string name);
 		static int get_array_id(int id);
 		static std::string get_name(int id, bool uppercase_check = false);
@@ -130,13 +130,17 @@ namespace null_input {
 		float clicked_time;
 	};
 
+	extern std::vector<input_key> key_list;
+
 	class bind_key {
 	public:
 		bind_key() {}
-		bind_key(std::string _name, int key_id, bool* var, bind_type _type, std::array<std::string, 2> _text = { "", "" }, std::array<std::function<void(void)>, 3> _callback = { nullptr, nullptr, nullptr });
-		bind_key(std::string _name, std::string key_name, bool* var, bind_type _type, std::array<std::string, 2> _text = { "", "" }, std::array<std::function<void(void)>, 3> _callback = { nullptr, nullptr, nullptr });
+		bind_key(std::string _name, key_id key_id, bool* var, bind_type _type, std::array<std::string, 2> _text = { "enable", "disable" }, std::array<std::function<void(void)>, 3> _callbacks = { nullptr, nullptr, nullptr }) :
+			name(_name), key(&key_list[(int)key_id]), type(_type), text(_text) { set_callbacks(_callbacks, { [var](){ *var = true; }, [var](){ *var = false; }, [var](){ *var = !*var; } }); };
+		bind_key(std::string _name, std::string key_name, bool* var, bind_type _type, std::array<std::string, 2> _text = { "enable", "disable" }, std::array<std::function<void(void)>, 3> _callbacks = { nullptr, nullptr, nullptr }) :
+			name(_name), key(&key_list[key_data::get_array_id(key_name)]), type(_type), text(_text) { set_callbacks(_callbacks, { [var](){ *var = true; }, [var](){ *var = false; }, [var](){ *var = !*var; } }); };
 
-		void set_callback(std::array<std::function<void(void)>, 3> _callbacks) { callbacks = _callbacks; }
+		void set_callbacks(std::array<std::function<void(void)>, 3> _callbacks, std::array<std::function<void(void)>, 3> default_callbacks) { for (int i = 0; i < _callbacks.size(); i++) callbacks[i] = _callbacks[i] == nullptr ? default_callbacks[i] : _callbacks[i]; }
 		void call_callback(int id) { if(callbacks[id]) callbacks[id](); }
 
 		bool can_show;
@@ -150,15 +154,14 @@ namespace null_input {
 
 	inline int last_symbol;
 	inline int last_press_key;
-	extern std::vector<input_key> key_list;
 	inline std::vector<bind_key*> bind_list;
 	inline float mouse_wheel;
 	inline vec2 mouse_pos;
 	inline vec2 click_mouse_pos;
 
-	bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
-	bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param);
-	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param);
+	bool process_mouse_message(UINT msg, WPARAM w_param, LPARAM l_param);
+	bool process_keybd_message(UINT msg, WPARAM w_param, LPARAM l_param);
+	LRESULT wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 	void bind_control();
 	void update_keys_state();

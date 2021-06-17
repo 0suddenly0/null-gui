@@ -71,7 +71,7 @@ BOOL create_device_d3d(HWND hwnd) {
 
 
 LRESULT CALLBACK wnd_proc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param) {
-	null_input::null_wnd_proc(message, w_param, l_param);
+	null_input::wnd_proc(message, w_param, l_param);
 
 	switch (message) {
 	case WM_SIZE:
@@ -166,7 +166,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		null_render::draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 10.f);
 
 		static bool test_bool_bind;
-		static null_input::bind_key bind("test_bind", "7", &test_bool_bind, null_input::bind_type::hold_on);
+		static null_input::bind_key bind("test_bind", null_input::key_id::seven, &test_bool_bind, null_input::bind_type::hold_on);
 
 		null_input::create_bind(true, &bind);
 
@@ -290,13 +290,9 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			null_gui::text(utils::format("%d", test_int));
 			null_gui::same_line();
 			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
-				if (null_gui::clickable_text("-")) {
-					test_int--;
-				}
+				if (null_gui::clickable_text("-")) test_int--;
 				null_gui::same_line();
-				if (null_gui::clickable_text("+")) {
-					test_int++;
-				}
+				if (null_gui::clickable_text("+")) test_int++;
 			} null_gui::deeps::pop_var();
 
 			null_gui::deeps::push_var(&null_gui::gui_settings::items_size_full_window, false); {
@@ -329,9 +325,8 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		}
 		HRESULT result = d3d_device->Present(NULL, NULL, NULL, NULL);
 
-		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET) {
+		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
 			reset_device_d3d();
-		}
 	}
 	cleanup_device_d3d();
 

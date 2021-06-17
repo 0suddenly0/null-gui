@@ -93,19 +93,11 @@ namespace null_gui {
 	template <typename t>
 	class pushed_var : public abstract_pushed_var {
 	public:
-		pushed_var(t* _var, t _new_value) {
-			var = _var;
-			old_value = *var;
-			*var = _new_value;
-		}
-
-		void reset() {
-			*var = old_value;
-		}
+		pushed_var(t* _var, t _new_value) : var(_var), old_value(*_var) { *var = _new_value; }
+		void reset() { *var = old_value; }
 
 		t* var;
 		t old_value;
-		t new_value;
 	};
 
 	enum class select_type {
@@ -184,7 +176,7 @@ namespace null_gui {
 		inline std::string active_window_name;
 		inline std::string last_item_name;
 		inline std::vector<window*> windows;
-		inline std::vector<abstract_pushed_var*> pushed_vars;
+		inline std::vector<std::shared_ptr<abstract_pushed_var>> pushed_vars;
 		inline std::vector<text_input_info> text_inputs;
 
 		bool window_exist(std::string name);
@@ -212,8 +204,8 @@ namespace null_gui {
 		void popups_control();
 
 		template <typename t>
-		static void push_var(t* var, t new_value) { pushed_vars.push_back((abstract_pushed_var*)(new pushed_var<t>(var, new_value))); }
-		static void pop_var() { pushed_vars.back()->reset(); delete pushed_vars.back(); pushed_vars.pop_back(); }
+		static void push_var(t* var, t new_value) { pushed_vars.push_back((std::shared_ptr<abstract_pushed_var>)(std::make_shared<pushed_var<t>>(var, new_value))); }
+		static void pop_var() { pushed_vars.back()->reset(); pushed_vars.pop_back(); }
 	}
 
 	namespace gui_settings {

@@ -5,77 +5,73 @@
 #include "null-input.h"
 #include "../null-gui/null-gui.h"
 
-std::vector<null_input::input_key> null_input::key_list = {
-	(null_input::key_data( 1, "mouse left" )),
-	(null_input::key_data( 2, "mouse right" )),
-	(null_input::key_data( 3, "cancel" )),
-	(null_input::key_data( 4, "mouse midle" )),
-	(null_input::key_data( 5, "mouse x1" )),
-	(null_input::key_data( 6, "mouse x2" )),
-	(null_input::key_data( 8, "backspace" )),
-	(null_input::key_data( 9, "tab" )),
-	(null_input::key_data( 12, "clear"  )),
-	(null_input::key_data( 13, "enter" )),
-	(null_input::key_data( 16, "shift" )),
-	(null_input::key_data( 17, "ctrl" )),
-	(null_input::key_data( 18, "alt" )),
-	(null_input::key_data( 19, "pause" )),
-	(null_input::key_data( 20, "caps lock" )),
-	(null_input::key_data( 27, "escape" )),
-	(null_input::key_data( 32, "space" )),
-	(null_input::key_data( 33, "page up" )),
-	(null_input::key_data( 34, "page down" )),
-	(null_input::key_data( 35, "end" )),
-	(null_input::key_data( 36, "home" )),
-	(null_input::key_data( 37, "left" )),
-	(null_input::key_data( 38, "up" )),
-	(null_input::key_data( 39, "right" )),
-	(null_input::key_data( 40, "down" )),
-	(null_input::key_data( 44, "print screen" )),
-	(null_input::key_data( 45, "insert" )),
-	(null_input::key_data( 46, "del" )),
-
-	(null_input::key_data( 48, "0" )), (null_input::key_data( 49, "1" )), (null_input::key_data( 50, "2" )), (null_input::key_data( 51, "3" )), (null_input::key_data( 52, "4" )),
-	(null_input::key_data( 53, "5" )), (null_input::key_data( 54, "6" )), (null_input::key_data( 55, "7" )), (null_input::key_data( 56, "8" )), (null_input::key_data( 57, "9" )),
-
-	(null_input::key_data( 65, "a" )), (null_input::key_data( 66, "b" )), (null_input::key_data( 67, "c" )), (null_input::key_data( 68, "d" )), (null_input::key_data( 69, "e" )),
-	(null_input::key_data( 70, "f" )), (null_input::key_data( 71, "g" )), (null_input::key_data( 72, "h" )), (null_input::key_data( 73, "i" )), (null_input::key_data( 74, "j" )),
-	(null_input::key_data( 75, "k" )), (null_input::key_data( 76, "l" )), (null_input::key_data( 77, "m" )), (null_input::key_data( 78, "n" )), (null_input::key_data( 79, "o" )),
-	(null_input::key_data( 80, "p" )), (null_input::key_data( 81, "q" )), (null_input::key_data( 82, "r" )), (null_input::key_data( 83, "s" )), (null_input::key_data( 84, "t" )),
-	(null_input::key_data( 85, "u" )), (null_input::key_data( 86, "v" )), (null_input::key_data( 87, "w" )), (null_input::key_data( 88, "x" )), (null_input::key_data( 89, "y" )),
-	(null_input::key_data( 90, "z" )),
-
-	(null_input::key_data( 91, "win" )),
-	(null_input::key_data( 93, "app" )),
-	
-	(null_input::key_data( 96, "num 0" )), (null_input::key_data( 97, "num 1" )), (null_input::key_data( 98, "num 2" )), (null_input::key_data( 99, "num 3" )), (null_input::key_data( 100, "num 4" )),
-	(null_input::key_data( 101, "num 5" )), (null_input::key_data( 102, "num 6" )), (null_input::key_data( 103, "num 7" )), (null_input::key_data( 104, "num 8" )), (null_input::key_data( 105, "num 9" )),
-	(null_input::key_data( 106, "num *" )), (null_input::key_data( 107, "num +" )), (null_input::key_data( 109, "num -" )), (null_input::key_data( 110, "num ." )), (null_input::key_data( 111, "num /" )),
-	
-	(null_input::key_data( 112, "f1" )), (null_input::key_data( 113, "f2" )), (null_input::key_data( 114, "f3" )), (null_input::key_data( 115, "f4" )), (null_input::key_data( 116, "f5" )),
-	(null_input::key_data( 117, "f6" )), (null_input::key_data( 118, "f7" )), (null_input::key_data( 119, "f8" )), (null_input::key_data( 120, "f9" )),(null_input::key_data( 121, "f10" )),
-	(null_input::key_data( 122, "f11" )), (null_input::key_data( 123, "f12" )), (null_input::key_data( 124, "f13" )), (null_input::key_data( 125, "f14" )), (null_input::key_data( 126, "f15" )),
-	(null_input::key_data( 127, "f16" )), (null_input::key_data( 128, "f17" )), (null_input::key_data( 129, "f18" )), (null_input::key_data( 130, "f19" )), (null_input::key_data( 131, "f20" )),
-	(null_input::key_data( 132, "f21" )), (null_input::key_data( 133, "f22" )), (null_input::key_data( 134, "f23" )), (null_input::key_data( 135, "f24" )),
-	
-	(null_input::key_data( 144, "num lock" )),
-	(null_input::key_data( 145, "scroll lock" )),
-	(null_input::key_data( 160, "left shift" )),
-	(null_input::key_data( 161, "right shift" )),
-	(null_input::key_data( 162, "left ctrl" )),
-	(null_input::key_data( 163, "right ctrl" )),
-	(null_input::key_data( 164, "left menu" )),
-	(null_input::key_data( 165, "right menu" )),
-	
-	(null_input::key_data( 186, ";" )), (null_input::key_data( 187, "=" )), (null_input::key_data( 188, "," )), (null_input::key_data( 189, "-" )), (null_input::key_data( 190, "." )),
-	(null_input::key_data( 191, "/" )), (null_input::key_data( 192, "`" )), (null_input::key_data( 219, "[" )), (null_input::key_data( 220, "\\" )), (null_input::key_data( 221, "]" )),
-	(null_input::key_data( 222, "\'" ))
-};
-
 namespace null_input {
-	bool key_data::char_allowed(int id) {
-		return (id <= 0x44F && id >= 0x20) || id == 0x451 || id == 0x401;
-	}
+	std::vector<input_key> key_list = {
+		(key_data(1, "mouse left")),
+		(key_data(2, "mouse right")),
+		(key_data(3, "cancel")),
+		(key_data(4, "mouse midle")),
+		(key_data(5, "mouse x1")),
+		(key_data(6, "mouse x2")),
+		(key_data(8, "backspace")),
+		(key_data(9, "tab")),
+		(key_data(12, "clear")),
+		(key_data(13, "enter")),
+		(key_data(16, "shift")),
+		(key_data(17, "ctrl")),
+		(key_data(18, "alt")),
+		(key_data(19, "pause")),
+		(key_data(20, "caps lock")),
+		(key_data(27, "escape")),
+		(key_data(32, "space")),
+		(key_data(33, "page up")),
+		(key_data(34, "page down")),
+		(key_data(35, "end")),
+		(key_data(36, "home")),
+		(key_data(37, "left")),
+		(key_data(38, "up")),
+		(key_data(39, "right")),
+		(key_data(40, "down")),
+		(key_data(44, "print screen")),
+		(key_data(45, "insert")),
+		(key_data(46, "del")),
+		
+		(key_data(48, "0")), (key_data(49, "1")), (key_data(50, "2")), (key_data(51, "3")), (key_data(52, "4")),
+		(key_data(53, "5")), (key_data(54, "6")), (key_data(55, "7")), (key_data(56, "8")), (key_data(57, "9")),
+		
+		(key_data(65, "a")), (key_data(66, "b")), (key_data(67, "c")), (key_data(68, "d")), (key_data(69, "e")),
+		(key_data(70, "f")), (key_data(71, "g")), (key_data(72, "h")), (key_data(73, "i")), (key_data(74, "j")),
+		(key_data(75, "k")), (key_data(76, "l")), (key_data(77, "m")), (key_data(78, "n")), (key_data(79, "o")),
+		(key_data(80, "p")), (key_data(81, "q")), (key_data(82, "r")), (key_data(83, "s")), (key_data(84, "t")),
+		(key_data(85, "u")), (key_data(86, "v")), (key_data(87, "w")), (key_data(88, "x")), (key_data(89, "y")),
+		(key_data(90, "z")),
+
+		(key_data(91, "win")),
+		(key_data(93, "app")),
+
+		(key_data(96, "num 0")), (key_data(97, "num 1")), (key_data(98, "num 2")), (key_data(99, "num 3")), (key_data(100, "num 4")),
+		(key_data(101, "num 5")), (key_data(102, "num 6")), (key_data(103, "num 7")), (key_data(104, "num 8")), (key_data(105, "num 9")),
+		(key_data(106, "num *")), (key_data(107, "num +")), (key_data(109, "num -")), (key_data(110, "num .")), (key_data(111, "num /")),
+
+		(key_data(112, "f1")), (key_data(113, "f2")), (key_data(114, "f3")), (key_data(115, "f4")), (key_data(116, "f5")),
+		(key_data(117, "f6")), (key_data(118, "f7")), (key_data(119, "f8")), (key_data(120, "f9")), (key_data(121, "f10")),
+		(key_data(122, "f11")), (key_data(123, "f12")), (key_data(124, "f13")), (key_data(125, "f14")), (key_data(126, "f15")),
+		(key_data(127, "f16")), (key_data(128, "f17")), (key_data(129, "f18")), (key_data(130, "f19")), (key_data(131, "f20")),
+		(key_data(132, "f21")), (key_data(133, "f22")), (key_data(134, "f23")), (key_data(135, "f24")),
+
+		(key_data(144, "num lock")),
+		(key_data(145, "scroll lock")),
+		(key_data(160, "left shift")),
+		(key_data(161, "right shift")),
+		(key_data(162, "left ctrl")),
+		(key_data(163, "right ctrl")),
+		(key_data(164, "left menu")),
+		(key_data(165, "right menu")),
+
+		(key_data(186, ";")), (key_data(187, "=")), (key_data(188, ",")), (key_data(189, "-")), (key_data(190, ".")),
+		(key_data(191, "/")), (key_data(192, "`")), (key_data(219, "[")), (key_data(220, "\\")), (key_data(221, "]")),
+		(key_data(222, "\'"))
+	};
 
 	int key_data::get_array_id(std::string name) {
 		std::vector<input_key>::iterator ret = std::find_if(key_list.begin(), key_list.end(), [=](input_key& a) { return a.data.name == name; });
@@ -116,53 +112,38 @@ namespace null_input {
 		down_duration = down() ? (down_duration < 0.0f ? 0.0f : down_duration + null_gui::deeps::delta_time) : -1.0f;
 	}
 
-
-	bind_key::bind_key(std::string _name, int key_id, bool* var, bind_type _type, std::array<std::string, 2> _text, std::array<std::function<void(void)>, 3> _callback) {
-		key = get_key(key_id);
-		name = _name;
-		type = _type;
-		text = _text;
-		set_callback(_callback);
-	}
-
-	bind_key::bind_key(std::string _name, std::string key_name, bool* var, bind_type _type, std::array<std::string, 2> _text, std::array<std::function<void(void)>, 3> _callback) {
-		key = get_key(key_name);
-		name = _name;
-		type = _type;
-		text = _text;
-		set_callback(_callback);
-	}
-
-	bool process_mouse_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
-		int id = 0;
+	bool process_mouse_message(UINT msg, WPARAM w_param, LPARAM l_param) {
+		key_id id;
 		bool state = false;
 
-		switch (u_msg) {
+		switch (msg) {
+		case WM_MBUTTONDBLCLK:
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
-			state = u_msg == WM_MBUTTONUP ? false : true;
-			id = key_data::get_array_id("mouse midle");
+			state = msg == WM_MBUTTONDOWN || msg == WM_MBUTTONDBLCLK ? true : false;
+			id = key_id::mouse_midle;
 			break;
+		case WM_RBUTTONDBLCLK:
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
-			state = u_msg == WM_RBUTTONUP ? false : true;
-			id = key_data::get_array_id("mouse right");
+			state = msg == WM_RBUTTONDOWN || msg == WM_RBUTTONDBLCLK ? true : false;
+			id = key_id::mouse_right;
 			break;
+		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
-			state = u_msg == WM_LBUTTONUP ? false : true;
-			id = key_data::get_array_id("mouse left");
+			state = msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK ? true : false;
+			id = key_id::mouse_left;
 			break;
+		case WM_XBUTTONDBLCLK:
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP:
-			state = u_msg == WM_XBUTTONUP ? false : true;
-			id = (HIWORD(w_param) == XBUTTON1 ? key_data::get_array_id("mouse x1") : key_data::get_array_id("mouse x2"));
+			state = msg == WM_XBUTTONDOWN || msg == WM_XBUTTONDBLCLK ? true : false;
+			id = (HIWORD(w_param) == XBUTTON1 ? key_id::mouse_x1 : key_id::mouse_x2);
 			break;
-		default:
-			return false;
 		}
 
-		input_key* key = &key_list[id];
+		input_key* key = &key_list[(int)id];
 
 		if (key->callback && ((key->callback_state == key_state::down && state == true) || (key->callback_state == key_state::up && state == false)))
 			key->callback();
@@ -170,18 +151,18 @@ namespace null_input {
 		key->state_down = state;
 		if (state) {
 			click_mouse_pos = mouse_pos;
-			last_press_key = id;
+			last_press_key = (int)id;
 		}
 
 		return true;
 	}
 
-	bool process_keybd_message(UINT u_msg, WPARAM w_param, LPARAM l_param) {
+	bool process_keybd_message(UINT msg, WPARAM w_param, LPARAM l_param) {
 		int id = key_data::get_array_id(w_param);
 		input_key* key = &key_list[id];
 		bool state = false;
 
-		switch (u_msg) {
+		switch (msg) {
 		case WM_KEYDOWN:
 		case WM_SYSKEYDOWN:
 			state = true;
@@ -204,7 +185,7 @@ namespace null_input {
 		return true;
 	}
 
-	LRESULT null_wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
+	LRESULT wnd_proc(UINT msg, WPARAM w_param, LPARAM l_param) {
 		switch (msg) {
 		case WM_CHAR:
 			last_symbol = (int)w_param;
@@ -229,7 +210,7 @@ namespace null_input {
 		case WM_SYSKEYUP:
 			return process_keybd_message(msg, w_param, l_param);
 		case WM_MOUSEWHEEL:
-			mouse_wheel += GET_WHEEL_DELTA_WPARAM(w_param) > 0 ? +1.0f : -1.0f;
+			mouse_wheel += GET_WHEEL_DELTA_WPARAM(w_param) > 0 ? 1.0f : -1.0f;
 			return true;
 		case WM_MOUSEMOVE:
 			mouse_pos = vec2((signed short)(l_param), (signed short)(l_param >> 16));

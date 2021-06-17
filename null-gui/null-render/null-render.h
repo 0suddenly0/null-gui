@@ -24,52 +24,6 @@
 #include "stb/rectpack.h"
 #include "stb/truetype.h"
 
-namespace custom_stl {
-    class bit_vector {
-    public:
-        std::vector<unsigned int> storage;
-        void create(int sz) {
-            storage.resize((sz + 31) >> 5);
-            std::fill(storage.begin(), storage.end(), 0);
-        }
-
-        void clear() {
-            storage.clear();
-        }
-
-        bool test_bit(int n) const {
-            assert(n < (storage.size() << 5));
-            unsigned int mask = (unsigned int)1 << (n & 31);
-            return (storage[n >> 5] & mask) != 0;
-        }
-
-        void set_bit(int n) {
-            assert(n < (storage.size() << 5));
-            unsigned int mask = (unsigned int)1 << (n & 31);
-            storage[n >> 5] |= mask;
-        }
-
-        void clear_bit(int n) {
-            assert(n < (storage.size() << 5));
-            unsigned int mask = (unsigned int)1 << (n & 31);
-            storage[n >> 5] &= ~mask;
-        }
-
-        void unpack_bit_vector_to_flat_index_list(std::vector<int>* out) {
-            assert(sizeof(storage.data()[0]) == sizeof(int));
-            const unsigned int* begin = storage.data();
-            const unsigned int* end = storage.data() + storage.size();
-            for (const unsigned int* it = begin; it < end; it++)
-                if (unsigned int entries_32 = *it)
-                    for (unsigned int bit_n = 0; bit_n < 32; bit_n++)
-                        if (entries_32 & ((unsigned int)1 << bit_n)) {
-                            if (out->size() <= 0) *out = std::vector<int>{ (int)(((it - begin) << 5) + bit_n) };
-                            else out->push_back((int)(((it - begin) << 5) + bit_n));
-                        }
-        }
-    };
-}
-
 namespace null_font {
     class font;
 
@@ -84,7 +38,7 @@ namespace null_font {
             int dst_index;
             int glyphs_highest;
             int glyphs_count;
-            custom_stl::bit_vector glyphs_set;
+            std::vector<unsigned int> glyphs_set;
             std::vector<int> glyphs_list;
         };
 
@@ -93,7 +47,7 @@ namespace null_font {
             int src_count;
             int glyphs_highest;
             int glyphs_count;
-            custom_stl::bit_vector glyphs_set;
+            std::vector<unsigned int> glyphs_set;
         };
 
         class glyph {
@@ -227,6 +181,8 @@ namespace null_font {
         std::string convert_string(std::wstring text);
         std::string convert_utf8(std::string text);
         std::string erase_utf8(std::string text);
+
+        void unpack_bit_vector_to_flat_index_list(std::vector<unsigned int> source, std::vector<int>* out);
     }
 
     class font {
@@ -365,8 +321,8 @@ namespace null_render {
             float circle_segment_max_error;
             rect clip_rect_fullscreen;
             flags_list<draw_list_flags> initial_flags;
-            vec2 arc_fast_vtx[12];
-            unsigned char circle_segment_counts[64];
+            std::array<vec2, 12> arc_fast_vtx;
+            std::array<unsigned char, 64> circle_segment_counts;
             const rect* tex_uv_lines;
 
             shared_data();
@@ -398,29 +354,29 @@ namespace null_render {
         std::vector<helpers::vertex> vtx_buffer;
         flags_list<draw_list_flags> flags;
 
-        unsigned int _vtx_current_idx;
-        helpers::shared_data* _data;
-        helpers::vertex* _vtx_write_ptr;
-        unsigned short* _idx_write_ptr;
-        std::vector<rect> _clip_rect_stack;
-        std::vector<void*> _texture_id_stack;
-        std::vector<vec2> _path;
-        helpers::cmd_header _cmd_header;
+        unsigned int vtx_current_idx;
+        helpers::shared_data* shared_data;
+        helpers::vertex* vtx_write_ptr;
+        unsigned short* idx_write_ptr;
+        std::vector<rect> clip_rect_stack;
+        std::vector<void*> texture_id_stack;
+        std::vector<vec2> path;
+        helpers::cmd_header cmd_header;
 
-        void initialize(helpers::shared_data* shared_data) { _data = shared_data; }
-        draw_list(helpers::shared_data* shared_data = NULL) { _data = shared_data; }
-        ~draw_list() { _clear_free_memory(); }
+        void initialize(helpers::shared_data* _shared_data) { shared_data = _shared_data; }
+        draw_list(helpers::shared_data* _shared_data = NULL) { shared_data = _shared_data; }
+        ~draw_list() { clear_free_memory(); }
 
         void push_clip_rect(vec2 clip_rect_min, vec2 clip_rect_max, bool intersect_with_current_clip_rect = false);
-        void push_clip_rect_full_screen();
+        void push_clip_rect_full_screen() { push_clip_rect(shared_data->clip_rect_fullscreen.min, shared_data->clip_rect_fullscreen.max); }
         void pop_clip_rect();
         void push_texture_id(void* texture_id);
         void pop_texture_id();
-        rect get_clip_rect() { return _clip_rect_stack.back(); }
+        rect get_clip_rect() { return clip_rect_stack.back(); }
         vec2 get_clip_rect_min() { return get_clip_rect().min; }
         vec2 get_clip_rect_max() { return get_clip_rect().max; }
 
-        void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f);
+        void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
         void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f);
         void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f);
         void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
@@ -449,13 +405,13 @@ namespace null_render {
         void draw_image_quad(void* user_texture_id, std::array<vec2, 4> points, std::array<vec2, 4> uvs = { vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1)}, color clr = color(1.f, 1.f, 1.f, 1.f));
         void draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
 
-        void path_clear() { _path.resize(0); }
-        void path_line_to(vec2 pos) { _path.push_back(pos); }
-        void path_line_to_merge_duplicate(vec2 pos) { if (_path.size() == 0 || memcmp(&_path.data()[_path.size() - 1], &pos, 8) != 0) _path.push_back(pos); }
-        void path_fill_convex(color clr) { draw_convex_poly_filled(_path, clr); _path.resize(0); }
-        void path_fill_convex_multicolor(vec2 min, vec2 max, std::array<color, 2> upper_colors, std::array<color, 2> bottom_colors) { draw_convex_poly_filled_multicolor(_path, min, max, upper_colors, bottom_colors); _path.resize(0); }
-        void path_fill_convex_multicolor_liner(vec2 min, vec2 max, color first_color, color second_color) { draw_convex_poly_filled_multicolor_liner(_path, min, max, first_color, second_color); _path.resize(0); }
-        void path_stroke(color clr, bool closed, float thickness = 1.0f) { draw_poly_line(_path, clr, closed, thickness); _path.resize(0); }
+        void path_clear() { path.resize(0); }
+        void path_line_to(vec2 pos) { path.push_back(pos); }
+        void path_line_to_merge_duplicate(vec2 pos) { if (path.size() == 0 || memcmp(&path.data()[path.size() - 1], &pos, 8) != 0) path.push_back(pos); }
+        void path_fill_convex(color clr) { draw_convex_poly_filled(path, clr); path.resize(0); }
+        void path_fill_convex_multicolor(vec2 min, vec2 max, std::array<color, 2> upper_colors, std::array<color, 2> bottom_colors) { draw_convex_poly_filled_multicolor(path, min, max, upper_colors, bottom_colors); path.resize(0); }
+        void path_fill_convex_multicolor_liner(vec2 min, vec2 max, color first_color, color second_color) { draw_convex_poly_filled_multicolor_liner(path, min, max, first_color, second_color); path.resize(0); }
+        void path_stroke(color clr, bool closed, float thickness = 1.0f) { draw_poly_line(path, clr, closed, thickness); path.resize(0); }
         void path_arc_to(vec2 center, float radius, float a_min, float a_max, int num_segments = 10);
         void path_arc_to_fast(vec2 center, float radius, int a_min_of_12, int a_max_of_12);
         void path_bezier_curve_to(std::array<vec2, 3> points, int num_segments = 0);
@@ -471,16 +427,16 @@ namespace null_render {
         void prim_rect(vec2 a, vec2 b, color clr);
         void prim_rect_uv(vec2 a, vec2 b, vec2 uv_a, vec2 uv_b, color clr);
         void prim_quad_uv(std::array<vec2, 4> points, std::array<vec2, 4> uvs, color clr);
-        void prim_write_vtx(vec2 pos, vec2 uv, color clr) { _vtx_write_ptr->pos = pos; _vtx_write_ptr->uv = uv; _vtx_write_ptr->clr = clr; _vtx_write_ptr++; _vtx_current_idx++; }
-        void prim_write_idx(unsigned short idx) { *_idx_write_ptr = idx; _idx_write_ptr++; }
-        void prim_vtx(vec2 pos, vec2 uv, color clr) { prim_write_idx((unsigned short)_vtx_current_idx); prim_write_vtx(pos, uv, clr); }
+        void prim_write_vtx(vec2 pos, vec2 uv, color clr) { vtx_write_ptr->pos = pos; vtx_write_ptr->uv = uv; vtx_write_ptr->clr = clr; vtx_write_ptr++; vtx_current_idx++; }
+        void prim_write_idx(unsigned short idx) { *idx_write_ptr = idx; idx_write_ptr++; }
+        void prim_vtx(vec2 pos, vec2 uv, color clr) { prim_write_idx((unsigned short)vtx_current_idx); prim_write_vtx(pos, uv, clr); }
 
-        void _reset_for_begin_render();
-        void _clear_free_memory();
-        void _pop_unused_draw_cmd();
-        void _on_changed_clip_rect();
-        void _on_changed_texture_id();
-        void _on_changed_vtx_offset();
+        void reset_for_begin_render();
+        void clear_free_memory();
+        void pop_unused_draw_cmd();
+        void on_changed_clip_rect();
+        void on_changed_texture_id();
+        void on_changed_vtx_offset();
     };
 
     inline helpers::draw_data draw_data;
@@ -507,7 +463,7 @@ namespace null_render {
     static void push_clip_rect(vec2 min, vec2 max, bool intersect_with_current_clip_rect = false, draw_list* list = &background_draw_list) { list->push_clip_rect(min, max, intersect_with_current_clip_rect); }
     static void pop_clip_rect(draw_list* list = &background_draw_list) { list->pop_clip_rect(); }
 
-    static void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding); }
+    static void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding, rounding_corners); }
     static void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_line(start_point, end_point, clr, thickness); }
     static void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_rect(min, max, clr, rounding, rounding_corners, thickness); }
     static void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled(min, max, clr, rounding, rounding_corners); }

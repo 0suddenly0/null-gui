@@ -11,7 +11,7 @@
 #include "../null-gui/null-gui.h"
 
 const char* get_default_compressed_font_data() {
-    const char proggy_clean_ttf_compressed_data_base85[11980 + 1] =
+    static const char proggy_clean_ttf_compressed_data_base85[11980 + 1] =
         "7])#######hV0qs'/###[),##/l:$#Q6>##5[n42>c-TH`->>#/e>11NNV=Bv(*:.F?uu#(gRU.o0XGH`$vhLG1hxt9?W`#,5LsCp#-i>.r$<$6pD>Lb';9Crc6tgXmKVeU2cD4Eo3R/"
         "2*>]b(MC;$jPfY.;h^`IWM9<Lh2TlS+f-s$o6Q<BWH`YiU.xfLq$N;$0iR/GX:U(jcW2p/W*q?-qmnUCI;jHSAiFWM.R*kU@C=GH?a9wp8f$e.-4^Qg1)Q-GL(lf(r/7GrRgwV%MS=C#"
         "`8ND>Qo#t'X#(v#Y9w0#1D$CIf;W'#pWUPXOuxXuU(H9M(1<q-UE31#^-V'8IRUo7Qf./L>=Ke$$'5F%)]0^#0X@U.a<r:QLtFsLcL6##lOj)#.Y5<-R&KgLwqJfLgN&;Q?gI^#DY2uL"
@@ -112,9 +112,9 @@ void decode85(const unsigned char* src, unsigned char* dst) {
     }
 }
 
-#define stb_in2(x)   ((i[x] << 8) + i[(x)+1])
-#define stb_in3(x)   ((i[x] << 16) + stb_in2((x)+1))
-#define stb_in4(x)   ((i[x] << 24) + stb_in3((x)+1))
+#define stb_in2(x) ((i[x] << 8) + i[(x)+1])
+#define stb_in3(x) ((i[x] << 16) + stb_in2((x)+1))
+#define stb_in4(x) ((i[x] << 24) + stb_in3((x)+1))
 
 namespace stb {
     unsigned char* barrier_out_e, *barrier_out_b;
@@ -322,7 +322,7 @@ namespace null_font {
             font_cfg.glyph_offset.y = 1.0f * floor(font_cfg.size_pixels / 13.0f);
 
             const char* ttf_compressed_base85 = get_default_compressed_font_data();
-            const unsigned short* glyph_ranges = font_cfg.glyph_ranges != NULL ? font_cfg.glyph_ranges : glyph_ranges_default();
+            const unsigned short* glyph_ranges = font_cfg.glyph_ranges != NULL ? font_cfg.glyph_ranges : glyph_ranges_cyrillic();
             font* font = add_font_from_memory_compressed_base_85_ttf(ttf_compressed_base85, font_cfg.size_pixels, &font_cfg, glyph_ranges);
             return font;
         }
@@ -671,20 +671,20 @@ namespace null_font {
             for (int src_i = 0; src_i < src_tmp_array.size(); src_i++) {
                 src_data& src_tmp = src_tmp_array[src_i];
                 dst_data& dst_tmp = dst_tmp_array[src_tmp.dst_index];
-                src_tmp.glyphs_set.create(src_tmp.glyphs_highest + 1);
-                if (dst_tmp.glyphs_set.storage.empty())
-                    dst_tmp.glyphs_set.create(dst_tmp.glyphs_highest + 1);
+                src_tmp.glyphs_set.resize(((src_tmp.glyphs_highest + 1) + 31) >> 5, 0);
+                if (dst_tmp.glyphs_set.empty())
+                    dst_tmp.glyphs_set.resize(((dst_tmp.glyphs_highest + 1) + 31) >> 5, 0);
 
                 unsigned int temp_codepoint;
                 for (const unsigned short* src_range = src_tmp.src_ranges; src_range[0] && src_range[1]; src_range += 2) {
                     for (unsigned int codepoint = src_range[0]; codepoint <= src_range[1]; codepoint++) {
-                        if (dst_tmp.glyphs_set.test_bit(codepoint)) continue;
+                        if (dst_tmp.glyphs_set[codepoint >> 5] & (unsigned int)1 << (codepoint & 31)) continue;
                         if (!stbtt_FindGlyphIndex(&src_tmp.font_info, codepoint)) continue;
 
                         src_tmp.glyphs_count++;
                         dst_tmp.glyphs_count++;
-                        src_tmp.glyphs_set.set_bit(codepoint);
-                        dst_tmp.glyphs_set.set_bit(codepoint);
+                        src_tmp.glyphs_set[codepoint >> 5] |= (unsigned int)1 << (codepoint & 31);
+                        dst_tmp.glyphs_set[codepoint >> 5] |= (unsigned int)1 << (codepoint & 31);
                         total_glyphs_count++;
                         temp_codepoint = codepoint;
                     }
@@ -694,7 +694,7 @@ namespace null_font {
             for (int src_i = 0; src_i < src_tmp_array.size(); src_i++) {
                 src_data& src_tmp = src_tmp_array[src_i];
                 src_tmp.glyphs_list.reserve(src_tmp.glyphs_count);
-                src_tmp.glyphs_set.unpack_bit_vector_to_flat_index_list(&src_tmp.glyphs_list);
+                unpack_bit_vector_to_flat_index_list(src_tmp.glyphs_set, &src_tmp.glyphs_list);
                 src_tmp.glyphs_set.clear();
                 assert(src_tmp.glyphs_list.size() == src_tmp.glyphs_count);
             }
@@ -992,6 +992,18 @@ namespace null_font {
 
             }
             return text;
+        }
+
+        void unpack_bit_vector_to_flat_index_list(std::vector<unsigned int> source, std::vector<int>* out) {
+            const unsigned int* begin = source.data();
+            const unsigned int* end = source.data() + source.size();
+            for (const unsigned int* it = begin; it < end; it++)
+                if (unsigned int entries_32 = *it)
+                    for (unsigned int bit_n = 0; bit_n < 32; bit_n++)
+                        if (entries_32 & ((unsigned int)1 << bit_n)) {
+                            if (out->size() <= 0) *out = std::vector<int>{ (int)(((it - begin) << 5) + bit_n) };
+                            else out->push_back((int)(((it - begin) << 5) + bit_n));
+                        }
         }
     }
 
@@ -1367,8 +1379,8 @@ namespace null_render {
 
         shared_data::shared_data() {
             memset(this, 0, sizeof(*this));
-            for (int i = 0; i < ARRAYSIZE(arc_fast_vtx); i++) {
-                const float a = ((float)i * 2 * pi) / (float)ARRAYSIZE(arc_fast_vtx);
+            for (int i = 0; i < arc_fast_vtx.size(); i++) {
+                const float a = ((float)i * 2 * pi) / (float)arc_fast_vtx.size();
                 arc_fast_vtx[i] = vec2(cosf(a), sinf(a));
             }
         }
@@ -1376,7 +1388,7 @@ namespace null_render {
         void shared_data::set_circle_segment_max_error(float max_error) {
             if (circle_segment_max_error == max_error) return;
             circle_segment_max_error = max_error;
-            for (int i = 0; i < ARRAYSIZE(circle_segment_counts); i++) {
+            for (int i = 0; i < circle_segment_counts.size(); i++) {
                 const float radius = i + 1.0f;
                 const int segment_count = math::clamp((int)((pi * 2.0f) / acosf((radius - circle_segment_max_error) / radius)), 12, 512);
                 circle_segment_counts[i] = (unsigned char)math::min(segment_count, 255);
@@ -1406,17 +1418,17 @@ namespace null_render {
         }
 
         void add_draw_list_to_draw_data(std::vector<draw_list*>* out_list, draw_list* draw_list) {
-            draw_list->_pop_unused_draw_cmd();
+            draw_list->pop_unused_draw_cmd();
             if (draw_list->cmd_buffer.size() == 0)
                 return;
 
-            assert(draw_list->vtx_buffer.size() == 0 || draw_list->_vtx_write_ptr == draw_list->vtx_buffer.data() + draw_list->vtx_buffer.size());
-            assert(draw_list->idx_buffer.size() == 0 || draw_list->_idx_write_ptr == draw_list->idx_buffer.data() + draw_list->idx_buffer.size());
+            assert(draw_list->vtx_buffer.size() == 0 || draw_list->vtx_write_ptr == draw_list->vtx_buffer.data() + draw_list->vtx_buffer.size());
+            assert(draw_list->idx_buffer.size() == 0 || draw_list->idx_write_ptr == draw_list->idx_buffer.data() + draw_list->idx_buffer.size());
             if (!(draw_list->flags.contains(draw_list_flags::allow_vtx_offset)))
-                assert((int)draw_list->_vtx_current_idx == draw_list->vtx_buffer.size());
+                assert((int)draw_list->vtx_current_idx == draw_list->vtx_buffer.size());
 
             if (sizeof(unsigned short) == 2)
-                assert(draw_list->_vtx_current_idx < (1 << 16) && "Too many vertices in draw_list using 16-bit indices. Read comment above");
+                assert(draw_list->vtx_current_idx < (1 << 16) && "Too many vertices in draw_list using 16-bit indices. Read comment above");
 
             out_list->push_back(draw_list);
         }
@@ -1438,7 +1450,7 @@ namespace null_render {
     void draw_list::push_clip_rect(vec2 cr_min, vec2 cr_max, bool intersect_with_current_clip_rect) {
         rect cr(cr_min.x, cr_min.y, cr_max.x, cr_max.y);
         if (intersect_with_current_clip_rect) {
-            rect current = _cmd_header.clip_rect;
+            rect current = cmd_header.clip_rect;
             if (cr.min.x < current.min.x) cr.min.x = current.min.x;
             if (cr.min.y < current.min.y) cr.min.y = current.min.y;
             if (cr.max.x > current.max.x) cr.max.x = current.max.x;
@@ -1447,31 +1459,27 @@ namespace null_render {
         cr.max.x = math::max(cr.min.x, cr.max.x);
         cr.max.y = math::max(cr.min.y, cr.max.y);
 
-        _clip_rect_stack.push_back(cr);
-        _cmd_header.clip_rect = cr;
-        _on_changed_clip_rect();
-    }
-
-    void draw_list::push_clip_rect_full_screen() {
-        push_clip_rect(_data->clip_rect_fullscreen.min, _data->clip_rect_fullscreen.max);
+        clip_rect_stack.push_back(cr);
+        cmd_header.clip_rect = cr;
+        on_changed_clip_rect();
     }
 
     void draw_list::pop_clip_rect() {
-        _clip_rect_stack.pop_back();
-        _cmd_header.clip_rect = (_clip_rect_stack.size() == 0) ? _data->clip_rect_fullscreen : _clip_rect_stack.data()[_clip_rect_stack.size() - 1];
-        _on_changed_clip_rect();
+        clip_rect_stack.pop_back();
+        cmd_header.clip_rect = (clip_rect_stack.size() == 0) ? shared_data->clip_rect_fullscreen : clip_rect_stack.data()[clip_rect_stack.size() - 1];
+        on_changed_clip_rect();
     }
 
     void draw_list::push_texture_id(void* texture_id) {
-        _texture_id_stack.push_back(texture_id);
-        _cmd_header.texture_id = texture_id;
-        _on_changed_texture_id();
+        texture_id_stack.push_back(texture_id);
+        cmd_header.texture_id = texture_id;
+        on_changed_texture_id();
     }
 
     void draw_list::pop_texture_id() {
-        _texture_id_stack.pop_back();
-        _cmd_header.texture_id = (_texture_id_stack.size() == 0) ? (void*)NULL : _texture_id_stack.data()[_texture_id_stack.size() - 1];
-        _on_changed_texture_id();
+        texture_id_stack.pop_back();
+        cmd_header.texture_id = (texture_id_stack.size() == 0) ? (void*)NULL : texture_id_stack.data()[texture_id_stack.size() - 1];
+        on_changed_texture_id();
     }
 
     void draw_list::draw_line(vec2 start_point, vec2 end_point, color clr, float thickness) {
@@ -1509,10 +1517,10 @@ namespace null_render {
             path_rect(min, max, rounding, rounding_corners);
             path_fill_convex_multicolor(min, vec2(max.x, min.y), upper_colors, bottom_colors);
         } else {
-            const vec2 uv = _data->tex_uv_white_pixel;
+            const vec2 uv = shared_data->tex_uv_white_pixel;
             prim_reserve(6, 4);
-            prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 1)); prim_write_idx((unsigned short)(_vtx_current_idx + 2));
-            prim_write_idx((unsigned short)(_vtx_current_idx)); prim_write_idx((unsigned short)(_vtx_current_idx + 2)); prim_write_idx((unsigned short)(_vtx_current_idx + 3));
+            prim_write_idx((unsigned short)(vtx_current_idx)); prim_write_idx((unsigned short)(vtx_current_idx + 1)); prim_write_idx((unsigned short)(vtx_current_idx + 2));
+            prim_write_idx((unsigned short)(vtx_current_idx)); prim_write_idx((unsigned short)(vtx_current_idx + 2)); prim_write_idx((unsigned short)(vtx_current_idx + 3));
             prim_write_vtx(min, uv, upper_colors[0]);
             prim_write_vtx(vec2(max.x, min.y), uv, upper_colors[1]);
             prim_write_vtx(max, uv, bottom_colors[1]);
@@ -1585,8 +1593,8 @@ namespace null_render {
 
         if (num_segments <= 0) {
             const int radius_idx = (int)radius - 1;
-            if (radius_idx < ARRAYSIZE(_data->circle_segment_counts)) num_segments = _data->circle_segment_counts[radius_idx];
-            else num_segments = math::clamp((int)((pi * 2.0f) / acosf((radius - _data->circle_segment_max_error) / radius)), 12, 512);
+            if (radius_idx < shared_data->circle_segment_counts.size()) num_segments = shared_data->circle_segment_counts[radius_idx];
+            else num_segments = math::clamp((int)((pi * 2.0f) / acosf((radius - shared_data->circle_segment_max_error) / radius)), 12, 512);
         } else {
             num_segments = math::clamp(num_segments, 3, 512);
         }
@@ -1602,8 +1610,8 @@ namespace null_render {
 
         if (num_segments <= 0) {
             const int radius_idx = (int)radius - 1;
-            if (radius_idx < ARRAYSIZE(_data->circle_segment_counts)) num_segments = _data->circle_segment_counts[radius_idx];
-            else num_segments = math::clamp((int)((pi * 2.0f) / acosf((radius - _data->circle_segment_max_error) / radius)), 12, 512);
+            if (radius_idx < shared_data->circle_segment_counts.size()) num_segments = shared_data->circle_segment_counts[radius_idx];
+            else num_segments = math::clamp((int)((pi * 2.0f) / acosf((radius - shared_data->circle_segment_max_error) / radius)), 12, 512);
         } else {
             num_segments = math::clamp(num_segments, 3, 512);
         }
@@ -1641,8 +1649,8 @@ namespace null_render {
     }
 
     void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline, std::array<bool, 2> centered, null_font::font* font, float size) {
-        if (font == NULL) font = _data->font;
-        if (size == 0.f) size = _data->font_size;
+        if (font == NULL) font = shared_data->font;
+        if (size == 0.f) size = shared_data->font_size;
 
         std::string text = std::accumulate(text_list.begin(), text_list.end(), std::make_pair<std::string, color>("", color(0, 0, 0)), [](std::pair<std::string, color> a, std::pair<std::string, color> b) {
             return std::make_pair(a.first + b.first, a.second);
@@ -1663,12 +1671,12 @@ namespace null_render {
     }
 
     void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, null_font::font* font, float size, rect* _clip_rect, bool cpu_fine_clip) {
-        if (font == NULL) font = _data->font;
-        if (size == 0.0f) size = _data->font_size;
+        if (font == NULL) font = shared_data->font;
+        if (size == 0.0f) size = shared_data->font_size;
 
-        assert(font->container_atlas->tex_id == _cmd_header.texture_id);
+        assert(font->container_atlas->tex_id == cmd_header.texture_id);
 
-        rect clip_rect = _cmd_header.clip_rect;
+        rect clip_rect = cmd_header.clip_rect;
         if (cpu_fine_clip) {
             clip_rect.min.x = math::max(clip_rect.min.x, _clip_rect->min.x);
             clip_rect.min.y = math::max(clip_rect.min.y, _clip_rect->min.y);
@@ -1717,9 +1725,9 @@ namespace null_render {
         const int idx_expected_size = idx_buffer.size() + idx_count_max;
         prim_reserve(idx_count_max, vtx_count_max);
 
-        helpers::vertex* vtx_write = _vtx_write_ptr;
-        unsigned short* idx_write = _idx_write_ptr;
-        unsigned int vtx_current_idx = _vtx_current_idx;
+        helpers::vertex* vtx_write = vtx_write_ptr;
+        unsigned short* idx_write = idx_write_ptr;
+        unsigned int _vtx_current_idx = vtx_current_idx;
 
         int current_id = 0;
         int last_size = 0;
@@ -1816,14 +1824,14 @@ namespace null_render {
         vtx_buffer.resize((int)(vtx_write - vtx_buffer.data()));
         idx_buffer.resize((int)(idx_write - idx_buffer.data()));
         cmd_buffer[cmd_buffer.size() - 1].elem_count -= (idx_expected_size - idx_buffer.size());
-        _vtx_write_ptr = vtx_write;
-        _idx_write_ptr = idx_write;
+        vtx_write_ptr = vtx_write;
+        idx_write_ptr = idx_write;
         _vtx_current_idx = vtx_current_idx;
     }
 
     void draw_list::draw_text(std::string text, vec2 pos, color clr, bool outline, std::array<bool, 2> centered, null_font::font* font, float size) {
-        if(font == NULL) font = _data->font;
-        if(size == 0.f) size = _data->font_size;
+        if(font == NULL) font = shared_data->font;
+        if(size == 0.f) size = shared_data->font_size;
         vec2 text_size = font->calc_text_size(text, size);
         if (centered[0]) pos.x -= text_size.x / 2;
         if (centered[1]) pos.y -= text_size.y / 2;
@@ -1840,12 +1848,12 @@ namespace null_render {
 
     void draw_list::draw_text(std::string text, vec2 pos, color clr, null_font::font* font, float size, rect* _clip_rect, bool cpu_fine_clip) {
         if (clr.a() == 0.f) return;
-        if (font == NULL) font = _data->font;
-        if (size == 0.0f) size = _data->font_size;
+        if (font == NULL) font = shared_data->font;
+        if (size == 0.0f) size = shared_data->font_size;
 
-        assert(font->container_atlas->tex_id == _cmd_header.texture_id);
+        assert(font->container_atlas->tex_id == cmd_header.texture_id);
 
-        rect clip_rect = _cmd_header.clip_rect;
+        rect clip_rect = cmd_header.clip_rect;
         if (cpu_fine_clip) {
             clip_rect.min.x = math::max(clip_rect.min.x, _clip_rect->min.x);
             clip_rect.min.y = math::max(clip_rect.min.y, _clip_rect->min.y);
@@ -1890,9 +1898,9 @@ namespace null_render {
         const int idx_expected_size = idx_buffer.size() + idx_count_max;
         prim_reserve(idx_count_max, vtx_count_max);
 
-        helpers::vertex* vtx_write = _vtx_write_ptr;
-        unsigned short* idx_write = _idx_write_ptr;
-        unsigned int vtx_current_idx = _vtx_current_idx;
+        helpers::vertex* vtx_write = vtx_write_ptr;
+        unsigned short* idx_write = idx_write_ptr;
+        unsigned int _vtx_current_idx = vtx_current_idx;
 
         while (s < text_end) {
             unsigned int c = (unsigned int)*s;
@@ -1960,14 +1968,14 @@ namespace null_render {
                     }
 
                     {
-                        idx_write[0] = (unsigned short)(vtx_current_idx); idx_write[1] = (unsigned short)(vtx_current_idx + 1); idx_write[2] = (unsigned short)(vtx_current_idx + 2);
-                        idx_write[3] = (unsigned short)(vtx_current_idx); idx_write[4] = (unsigned short)(vtx_current_idx + 2); idx_write[5] = (unsigned short)(vtx_current_idx + 3);
+                        idx_write[0] = (unsigned short)(_vtx_current_idx); idx_write[1] = (unsigned short)(_vtx_current_idx + 1); idx_write[2] = (unsigned short)(_vtx_current_idx + 2);
+                        idx_write[3] = (unsigned short)(_vtx_current_idx); idx_write[4] = (unsigned short)(_vtx_current_idx + 2); idx_write[5] = (unsigned short)(_vtx_current_idx + 3);
                         vtx_write[0].pos.x = x1; vtx_write[0].pos.y = y1; vtx_write[0].clr = clr; vtx_write[0].uv.x = u1; vtx_write[0].uv.y = v1;
                         vtx_write[1].pos.x = x2; vtx_write[1].pos.y = y1; vtx_write[1].clr = clr; vtx_write[1].uv.x = u2; vtx_write[1].uv.y = v1;
                         vtx_write[2].pos.x = x2; vtx_write[2].pos.y = y2; vtx_write[2].clr = clr; vtx_write[2].uv.x = u2; vtx_write[2].uv.y = v2;
                         vtx_write[3].pos.x = x1; vtx_write[3].pos.y = y2; vtx_write[3].clr = clr; vtx_write[3].uv.x = u1; vtx_write[3].uv.y = v2;
                         vtx_write += 4;
-                        vtx_current_idx += 4;
+                        _vtx_current_idx += 4;
                         idx_write += 6;
                     }
                 }
@@ -1978,15 +1986,15 @@ namespace null_render {
         vtx_buffer.resize((int)(vtx_write - vtx_buffer.data()));
         idx_buffer.resize((int)(idx_write - idx_buffer.data()));
         cmd_buffer[cmd_buffer.size() - 1].elem_count -= (idx_expected_size - idx_buffer.size());
-        _vtx_write_ptr = vtx_write;
-        _idx_write_ptr = idx_write;
-        _vtx_current_idx = vtx_current_idx;
+        vtx_write_ptr = vtx_write;
+        idx_write_ptr = idx_write;
+        vtx_current_idx = _vtx_current_idx;
     }
 
     void draw_list::draw_poly_line(std::vector<vec2> points, color clr, bool closed, float thickness) {
         if (points.size() < 2) return;
 
-        const vec2 opaque_uv = _data->tex_uv_white_pixel;
+        const vec2 opaque_uv = shared_data->tex_uv_white_pixel;
         const int count = closed ? points.size() : points.size() - 1;
         const bool thick_line = (thickness > 1.0f);
 
@@ -2027,10 +2035,10 @@ namespace null_render {
                     temp_points[(points.size() - 1) * 2 + 1] = points[points.size() - 1] - temp_normals[points.size() - 1] * half_draw_size;
                 }
 
-                unsigned int idx1 = _vtx_current_idx;
+                unsigned int idx1 = vtx_current_idx;
                 for (int i1 = 0; i1 < count; i1++) {
                     const int i2 = (i1 + 1) == points.size() ? 0 : i1 + 1;
-                    const unsigned int idx2 = ((i1 + 1) == points.size()) ? _vtx_current_idx : (idx1 + (use_texture ? 2 : 3));
+                    const unsigned int idx2 = ((i1 + 1) == points.size()) ? vtx_current_idx : (idx1 + (use_texture ? 2 : 3));
 
                     float dm_x = (temp_normals[i1].x + temp_normals[i2].x) * 0.5f;
                     float dm_y = (temp_normals[i1].y + temp_normals[i2].y) * 0.5f;
@@ -2045,35 +2053,35 @@ namespace null_render {
                     out_vtx[1].y = points[i2].y - dm_y;
 
                     if (use_texture) {
-                        _idx_write_ptr[0] = (unsigned short)(idx2 + 0); _idx_write_ptr[1] = (unsigned short)(idx1 + 0); _idx_write_ptr[2] = (unsigned short)(idx1 + 1);
-                        _idx_write_ptr[3] = (unsigned short)(idx2 + 1); _idx_write_ptr[4] = (unsigned short)(idx1 + 1); _idx_write_ptr[5] = (unsigned short)(idx2 + 0);
-                        _idx_write_ptr += 6;
+                        idx_write_ptr[0] = (unsigned short)(idx2 + 0); idx_write_ptr[1] = (unsigned short)(idx1 + 0); idx_write_ptr[2] = (unsigned short)(idx1 + 1);
+                        idx_write_ptr[3] = (unsigned short)(idx2 + 1); idx_write_ptr[4] = (unsigned short)(idx1 + 1); idx_write_ptr[5] = (unsigned short)(idx2 + 0);
+                        idx_write_ptr += 6;
                     } else {
-                        _idx_write_ptr[0] = (unsigned short)(idx2 + 0); _idx_write_ptr[1] = (unsigned short)(idx1 + 0); _idx_write_ptr[2] = (unsigned short)(idx1 + 2);
-                        _idx_write_ptr[3] = (unsigned short)(idx1 + 2); _idx_write_ptr[4] = (unsigned short)(idx2 + 2); _idx_write_ptr[5] = (unsigned short)(idx2 + 0);
-                        _idx_write_ptr[6] = (unsigned short)(idx2 + 1); _idx_write_ptr[7] = (unsigned short)(idx1 + 1); _idx_write_ptr[8] = (unsigned short)(idx1 + 0);
-                        _idx_write_ptr[9] = (unsigned short)(idx1 + 0); _idx_write_ptr[10] = (unsigned short)(idx2 + 0); _idx_write_ptr[11] = (unsigned short)(idx2 + 1);
-                        _idx_write_ptr += 12;
+                        idx_write_ptr[0] = (unsigned short)(idx2 + 0); idx_write_ptr[1] = (unsigned short)(idx1 + 0); idx_write_ptr[2] = (unsigned short)(idx1 + 2);
+                        idx_write_ptr[3] = (unsigned short)(idx1 + 2); idx_write_ptr[4] = (unsigned short)(idx2 + 2); idx_write_ptr[5] = (unsigned short)(idx2 + 0);
+                        idx_write_ptr[6] = (unsigned short)(idx2 + 1); idx_write_ptr[7] = (unsigned short)(idx1 + 1); idx_write_ptr[8] = (unsigned short)(idx1 + 0);
+                        idx_write_ptr[9] = (unsigned short)(idx1 + 0); idx_write_ptr[10] = (unsigned short)(idx2 + 0); idx_write_ptr[11] = (unsigned short)(idx2 + 1);
+                        idx_write_ptr += 12;
                     }
 
                     idx1 = idx2;
                 }
 
                 if (use_texture) {
-                    rect tex_uvs = _data->tex_uv_lines[integer_thickness];
+                    rect tex_uvs = shared_data->tex_uv_lines[integer_thickness];
                     vec2 tex_uv0 = tex_uvs.min;
                     vec2 tex_uv1 = tex_uvs.max;
                     for (int i = 0; i < points.size(); i++) {
-                        _vtx_write_ptr[0].pos = temp_points[i * 2 + 0]; _vtx_write_ptr[0].uv = tex_uv0; _vtx_write_ptr[0].clr = clr;
-                        _vtx_write_ptr[1].pos = temp_points[i * 2 + 1]; _vtx_write_ptr[1].uv = tex_uv1; _vtx_write_ptr[1].clr = clr;
-                        _vtx_write_ptr += 2;
+                        vtx_write_ptr[0].pos = temp_points[i * 2 + 0]; vtx_write_ptr[0].uv = tex_uv0; vtx_write_ptr[0].clr = clr;
+                        vtx_write_ptr[1].pos = temp_points[i * 2 + 1]; vtx_write_ptr[1].uv = tex_uv1; vtx_write_ptr[1].clr = clr;
+                        vtx_write_ptr += 2;
                     }
                 } else {
                     for (int i = 0; i < points.size(); i++) {
-                        _vtx_write_ptr[0].pos = points[i];              _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].clr = clr;
-                        _vtx_write_ptr[1].pos = temp_points[i * 2 + 0]; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].clr = color(clr, 0.f);
-                        _vtx_write_ptr[2].pos = temp_points[i * 2 + 1]; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].clr = color(clr, 0.f);
-                        _vtx_write_ptr += 3;
+                        vtx_write_ptr[0].pos = points[i];              vtx_write_ptr[0].uv = opaque_uv; vtx_write_ptr[0].clr = clr;
+                        vtx_write_ptr[1].pos = temp_points[i * 2 + 0]; vtx_write_ptr[1].uv = opaque_uv; vtx_write_ptr[1].clr = color(clr, 0.f);
+                        vtx_write_ptr[2].pos = temp_points[i * 2 + 1]; vtx_write_ptr[2].uv = opaque_uv; vtx_write_ptr[2].clr = color(clr, 0.f);
+                        vtx_write_ptr += 3;
                     }
                 }
             } else {
@@ -2091,10 +2099,10 @@ namespace null_render {
                     temp_points[points_last * 4 + 3] = points[points_last] - temp_normals[points_last] * (half_inner_thickness + AA_SIZE);
                 }
 
-                unsigned int idx1 = _vtx_current_idx;
+                unsigned int idx1 = vtx_current_idx;
                 for (int i1 = 0; i1 < count; i1++) {
                     const int i2 = (i1 + 1) == points.size() ? 0 : (i1 + 1);
-                    const unsigned int idx2 = (i1 + 1) == points.size() ? _vtx_current_idx : (idx1 + 4);
+                    const unsigned int idx2 = (i1 + 1) == points.size() ? vtx_current_idx : (idx1 + 4);
 
                     float dm_x = (temp_normals[i1].x + temp_normals[i2].x) * 0.5f;
                     float dm_y = (temp_normals[i1].y + temp_normals[i2].y) * 0.5f;
@@ -2114,26 +2122,26 @@ namespace null_render {
                     out_vtx[3].x = points[i2].x - dm_out_x;
                     out_vtx[3].y = points[i2].y - dm_out_y;
 
-                    _idx_write_ptr[0] = (unsigned short)(idx2 + 1); _idx_write_ptr[1] = (unsigned short)(idx1 + 1); _idx_write_ptr[2] = (unsigned short)(idx1 + 2);
-                    _idx_write_ptr[3] = (unsigned short)(idx1 + 2); _idx_write_ptr[4] = (unsigned short)(idx2 + 2); _idx_write_ptr[5] = (unsigned short)(idx2 + 1);
-                    _idx_write_ptr[6] = (unsigned short)(idx2 + 1); _idx_write_ptr[7] = (unsigned short)(idx1 + 1); _idx_write_ptr[8] = (unsigned short)(idx1 + 0);
-                    _idx_write_ptr[9] = (unsigned short)(idx1 + 0); _idx_write_ptr[10] = (unsigned short)(idx2 + 0); _idx_write_ptr[11] = (unsigned short)(idx2 + 1);
-                    _idx_write_ptr[12] = (unsigned short)(idx2 + 2); _idx_write_ptr[13] = (unsigned short)(idx1 + 2); _idx_write_ptr[14] = (unsigned short)(idx1 + 3);
-                    _idx_write_ptr[15] = (unsigned short)(idx1 + 3); _idx_write_ptr[16] = (unsigned short)(idx2 + 3); _idx_write_ptr[17] = (unsigned short)(idx2 + 2);
-                    _idx_write_ptr += 18;
+                    idx_write_ptr[0] = (unsigned short)(idx2 + 1); idx_write_ptr[1] = (unsigned short)(idx1 + 1); idx_write_ptr[2] = (unsigned short)(idx1 + 2);
+                    idx_write_ptr[3] = (unsigned short)(idx1 + 2); idx_write_ptr[4] = (unsigned short)(idx2 + 2); idx_write_ptr[5] = (unsigned short)(idx2 + 1);
+                    idx_write_ptr[6] = (unsigned short)(idx2 + 1); idx_write_ptr[7] = (unsigned short)(idx1 + 1); idx_write_ptr[8] = (unsigned short)(idx1 + 0);
+                    idx_write_ptr[9] = (unsigned short)(idx1 + 0); idx_write_ptr[10] = (unsigned short)(idx2 + 0); idx_write_ptr[11] = (unsigned short)(idx2 + 1);
+                    idx_write_ptr[12] = (unsigned short)(idx2 + 2); idx_write_ptr[13] = (unsigned short)(idx1 + 2); idx_write_ptr[14] = (unsigned short)(idx1 + 3);
+                    idx_write_ptr[15] = (unsigned short)(idx1 + 3); idx_write_ptr[16] = (unsigned short)(idx2 + 3); idx_write_ptr[17] = (unsigned short)(idx2 + 2);
+                    idx_write_ptr += 18;
 
                     idx1 = idx2;
                 }
 
                 for (int i = 0; i < points.size(); i++) {
-                    _vtx_write_ptr[0].pos = temp_points[i * 4 + 0]; _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].clr = color(clr, 0.f);
-                    _vtx_write_ptr[1].pos = temp_points[i * 4 + 1]; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].clr = clr;
-                    _vtx_write_ptr[2].pos = temp_points[i * 4 + 2]; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].clr = clr;
-                    _vtx_write_ptr[3].pos = temp_points[i * 4 + 3]; _vtx_write_ptr[3].uv = opaque_uv; _vtx_write_ptr[3].clr = color(clr, 0.f);
-                    _vtx_write_ptr += 4;
+                    vtx_write_ptr[0].pos = temp_points[i * 4 + 0]; vtx_write_ptr[0].uv = opaque_uv; vtx_write_ptr[0].clr = color(clr, 0.f);
+                    vtx_write_ptr[1].pos = temp_points[i * 4 + 1]; vtx_write_ptr[1].uv = opaque_uv; vtx_write_ptr[1].clr = clr;
+                    vtx_write_ptr[2].pos = temp_points[i * 4 + 2]; vtx_write_ptr[2].uv = opaque_uv; vtx_write_ptr[2].clr = clr;
+                    vtx_write_ptr[3].pos = temp_points[i * 4 + 3]; vtx_write_ptr[3].uv = opaque_uv; vtx_write_ptr[3].clr = color(clr, 0.f);
+                    vtx_write_ptr += 4;
                 }
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         } else {
             const int idx_count = count * 6;
             const int vtx_count = count * 4;
@@ -2150,16 +2158,16 @@ namespace null_render {
                 dx *= (thickness * 0.5f);
                 dy *= (thickness * 0.5f);
 
-                _vtx_write_ptr[0].pos.x = p1.x + dy; _vtx_write_ptr[0].pos.y = p1.y - dx; _vtx_write_ptr[0].uv = opaque_uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr[1].pos.x = p2.x + dy; _vtx_write_ptr[1].pos.y = p2.y - dx; _vtx_write_ptr[1].uv = opaque_uv; _vtx_write_ptr[1].clr = clr;
-                _vtx_write_ptr[2].pos.x = p2.x - dy; _vtx_write_ptr[2].pos.y = p2.y + dx; _vtx_write_ptr[2].uv = opaque_uv; _vtx_write_ptr[2].clr = clr;
-                _vtx_write_ptr[3].pos.x = p1.x - dy; _vtx_write_ptr[3].pos.y = p1.y + dx; _vtx_write_ptr[3].uv = opaque_uv; _vtx_write_ptr[3].clr = clr;
-                _vtx_write_ptr += 4;
+                vtx_write_ptr[0].pos.x = p1.x + dy; vtx_write_ptr[0].pos.y = p1.y - dx; vtx_write_ptr[0].uv = opaque_uv; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr[1].pos.x = p2.x + dy; vtx_write_ptr[1].pos.y = p2.y - dx; vtx_write_ptr[1].uv = opaque_uv; vtx_write_ptr[1].clr = clr;
+                vtx_write_ptr[2].pos.x = p2.x - dy; vtx_write_ptr[2].pos.y = p2.y + dx; vtx_write_ptr[2].uv = opaque_uv; vtx_write_ptr[2].clr = clr;
+                vtx_write_ptr[3].pos.x = p1.x - dy; vtx_write_ptr[3].pos.y = p1.y + dx; vtx_write_ptr[3].uv = opaque_uv; vtx_write_ptr[3].clr = clr;
+                vtx_write_ptr += 4;
 
-                _idx_write_ptr[0] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[1] = (unsigned short)(_vtx_current_idx + 1); _idx_write_ptr[2] = (unsigned short)(_vtx_current_idx + 2);
-                _idx_write_ptr[3] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[4] = (unsigned short)(_vtx_current_idx + 2); _idx_write_ptr[5] = (unsigned short)(_vtx_current_idx + 3);
-                _idx_write_ptr += 6;
-                _vtx_current_idx += 4;
+                idx_write_ptr[0] = (unsigned short)(vtx_current_idx); idx_write_ptr[1] = (unsigned short)(vtx_current_idx + 1); idx_write_ptr[2] = (unsigned short)(vtx_current_idx + 2);
+                idx_write_ptr[3] = (unsigned short)(vtx_current_idx); idx_write_ptr[4] = (unsigned short)(vtx_current_idx + 2); idx_write_ptr[5] = (unsigned short)(vtx_current_idx + 3);
+                idx_write_ptr += 6;
+                vtx_current_idx += 4;
             }
         }
     }
@@ -2167,19 +2175,17 @@ namespace null_render {
     void draw_list::draw_convex_poly_filled(std::vector<vec2> points, color clr) {
         if (points.size() < 3) return;
 
-        const vec2 uv = _data->tex_uv_white_pixel;
-
         if (flags.contains(draw_list_flags::anti_aliased_fill)) {
             const float AA_SIZE = 1.0f;
             const int idx_count = (points.size() - 2) * 3 + points.size() * 6;
             const int vtx_count = (points.size() * 2);
             prim_reserve(idx_count, vtx_count);
 
-            unsigned int vtx_inner_idx = _vtx_current_idx;
-            unsigned int vtx_outer_idx = _vtx_current_idx + 1;
+            unsigned int vtx_inner_idx = vtx_current_idx;
+            unsigned int vtx_outer_idx = vtx_current_idx + 1;
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
+                idx_write_ptr += 3;
             }
 
             vec2* temp_normals = (vec2*)alloca(points.size() * sizeof(vec2));
@@ -2202,36 +2208,34 @@ namespace null_render {
                 dm_x *= AA_SIZE * 0.5f;
                 dm_y *= AA_SIZE * 0.5f;
 
-                _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].clr = color(clr, 0.f);
-                _vtx_write_ptr += 2;
+                vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); vtx_write_ptr[1].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[1].clr = color(clr, 0.f);
+                vtx_write_ptr += 2;
 
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
-                _idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); _idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); _idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
-                _idx_write_ptr += 6;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
+                idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
+                idx_write_ptr += 6;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         } else {
             const int idx_count = (points.size() - 2) * 3;
             const int vtx_count = points.size();
             prim_reserve(idx_count, vtx_count);
             for (int i = 0; i < vtx_count; i++) {
-                _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr++;
+                vtx_write_ptr[0].pos = points[i]; vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr++;
             }
 
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[1] = (unsigned short)(_vtx_current_idx + i - 1); _idx_write_ptr[2] = (unsigned short)(_vtx_current_idx + i);
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_current_idx); idx_write_ptr[1] = (unsigned short)(vtx_current_idx + i - 1); idx_write_ptr[2] = (unsigned short)(vtx_current_idx + i);
+                idx_write_ptr += 3;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         }
     }
 
     void draw_list::draw_convex_poly_filled_multicolor(std::vector<vec2> points, vec2 min, vec2 max, std::array<color, 2> upper_colors, std::array<color, 2> bottom_colors) {
         if (points.size() < 3) return;
-
-        const vec2 uv = _data->tex_uv_white_pixel;
 
         if (flags.contains(draw_list_flags::anti_aliased_fill)) {
             const float AA_SIZE = 1.0f;
@@ -2239,11 +2243,11 @@ namespace null_render {
             const int vtx_count = (points.size() * 2);
             prim_reserve(idx_count, vtx_count);
 
-            unsigned int vtx_inner_idx = _vtx_current_idx;
-            unsigned int vtx_outer_idx = _vtx_current_idx + 1;
+            unsigned int vtx_inner_idx = vtx_current_idx;
+            unsigned int vtx_outer_idx = vtx_current_idx + 1;
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
+                idx_write_ptr += 3;
             }
 
             vec2* temp_normals = (vec2*)alloca(points.size() * sizeof(vec2));
@@ -2271,15 +2275,15 @@ namespace null_render {
                 if (i1 < points.size() / 2) clr = color(upper_colors[0] + (upper_colors[1] - upper_colors[0]) * t);
                 else clr = color(bottom_colors[0] + (bottom_colors[1] - bottom_colors[0]) * t);
 
-                _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].clr = color(clr, 0.f);
-                _vtx_write_ptr += 2;
+                vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); vtx_write_ptr[1].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[1].clr = color(clr, 0.f);
+                vtx_write_ptr += 2;
 
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
-                _idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); _idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); _idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
-                _idx_write_ptr += 6;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
+                idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
+                idx_write_ptr += 6;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         } else {
             const int idx_count = (points.size() - 2) * 3;
             const int vtx_count = points.size();
@@ -2290,22 +2294,20 @@ namespace null_render {
                 if (i < points.size() / 2) clr = color(upper_colors[0] + (upper_colors[1] - upper_colors[0]) * t);
                 else clr = color(bottom_colors[0] + (bottom_colors[1] - bottom_colors[0]) * t);
 
-                _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr++;
+                vtx_write_ptr[0].pos = points[i]; vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr++;
             }
 
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[1] = (unsigned short)(_vtx_current_idx + i - 1); _idx_write_ptr[2] = (unsigned short)(_vtx_current_idx + i);
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_current_idx); idx_write_ptr[1] = (unsigned short)(vtx_current_idx + i - 1); idx_write_ptr[2] = (unsigned short)(vtx_current_idx + i);
+                idx_write_ptr += 3;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         }
     }
 
     void draw_list::draw_convex_poly_filled_multicolor_liner(std::vector<vec2> points, vec2 min, vec2 max, color first_color, color second_color) {
         if (points.size() < 3) return;
-
-        const vec2 uv = _data->tex_uv_white_pixel;
 
         if (flags.contains(draw_list_flags::anti_aliased_fill)) {
             const float AA_SIZE = 1.0f;
@@ -2313,11 +2315,11 @@ namespace null_render {
             const int vtx_count = (points.size() * 2);
             prim_reserve(idx_count, vtx_count);
 
-            unsigned int vtx_inner_idx = _vtx_current_idx;
-            unsigned int vtx_outer_idx = _vtx_current_idx + 1;
+            unsigned int vtx_inner_idx = vtx_current_idx;
+            unsigned int vtx_outer_idx = vtx_current_idx + 1;
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + ((i - 1) << 1)); idx_write_ptr[2] = (unsigned short)(vtx_inner_idx + (i << 1));
+                idx_write_ptr += 3;
             }
 
             vec2* temp_normals = (vec2*)alloca(points.size() * sizeof(vec2));
@@ -2344,15 +2346,15 @@ namespace null_render {
                 float t = math::clamp((points[i1] - min).dot(max - min) * (1.0f / (max - min).length()), 0.0f, 1.0f);
                 clr = first_color + (second_color - first_color) * t;
 
-                _vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); _vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); _vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].clr = color(clr, 0.f);
-                _vtx_write_ptr += 2;
+                vtx_write_ptr[0].pos.x = (points[i1].x - dm_x); vtx_write_ptr[0].pos.y = (points[i1].y - dm_y); vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr[1].pos.x = (points[i1].x + dm_x); vtx_write_ptr[1].pos.y = (points[i1].y + dm_y); vtx_write_ptr[1].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[1].clr = color(clr, 0.f);
+                vtx_write_ptr += 2;
 
-                _idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); _idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); _idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
-                _idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); _idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); _idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
-                _idx_write_ptr += 6;
+                idx_write_ptr[0] = (unsigned short)(vtx_inner_idx + (i1 << 1)); idx_write_ptr[1] = (unsigned short)(vtx_inner_idx + (i0 << 1)); idx_write_ptr[2] = (unsigned short)(vtx_outer_idx + (i0 << 1));
+                idx_write_ptr[3] = (unsigned short)(vtx_outer_idx + (i0 << 1)); idx_write_ptr[4] = (unsigned short)(vtx_outer_idx + (i1 << 1)); idx_write_ptr[5] = (unsigned short)(vtx_inner_idx + (i1 << 1));
+                idx_write_ptr += 6;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         } else {
             const int idx_count = (points.size() - 2) * 3;
             const int vtx_count = points.size();
@@ -2362,15 +2364,15 @@ namespace null_render {
                 float t = math::clamp((points[i] - min).dot(vec2(max.x, 0.f) - min) * (1.0f / (vec2(max.x, 0.f) - min).length()), 0.0f, 1.0f);
                 clr = first_color + (second_color - first_color) * t;
 
-                _vtx_write_ptr[0].pos = points[i]; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-                _vtx_write_ptr++;
+                vtx_write_ptr[0].pos = points[i]; vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+                vtx_write_ptr++;
             }
 
             for (int i = 2; i < points.size(); i++) {
-                _idx_write_ptr[0] = (unsigned short)(_vtx_current_idx); _idx_write_ptr[1] = (unsigned short)(_vtx_current_idx + i - 1); _idx_write_ptr[2] = (unsigned short)(_vtx_current_idx + i);
-                _idx_write_ptr += 3;
+                idx_write_ptr[0] = (unsigned short)(vtx_current_idx); idx_write_ptr[1] = (unsigned short)(vtx_current_idx + i - 1); idx_write_ptr[2] = (unsigned short)(vtx_current_idx + i);
+                idx_write_ptr += 3;
             }
-            _vtx_current_idx += (unsigned short)vtx_count;
+            vtx_current_idx += (unsigned short)vtx_count;
         }
     }
 
@@ -2385,7 +2387,7 @@ namespace null_render {
     void draw_list::draw_image(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr) {
         if (clr.a() == 0.f) return;
 
-        const bool _push_texture_id = user_texture_id != _cmd_header.texture_id;
+        const bool _push_texture_id = user_texture_id != cmd_header.texture_id;
         if (_push_texture_id)
             push_texture_id(user_texture_id);
 
@@ -2399,7 +2401,7 @@ namespace null_render {
     void draw_list::draw_image_quad(void* user_texture_id, std::array<vec2, 4> points, std::array<vec2, 4> uvs, color clr) {
         if (clr.a() == 0.f) return;
 
-        const bool _push_texture_id = user_texture_id != _cmd_header.texture_id;
+        const bool _push_texture_id = user_texture_id != cmd_header.texture_id;
         if (_push_texture_id)
             push_texture_id(user_texture_id);
 
@@ -2418,7 +2420,7 @@ namespace null_render {
             return;
         }
 
-        const bool _push_texture_id = _texture_id_stack.empty() || user_texture_id != _texture_id_stack.back();
+        const bool _push_texture_id = texture_id_stack.empty() || user_texture_id != texture_id_stack.back();
         if (_push_texture_id)
             push_texture_id(user_texture_id);
 
@@ -2434,34 +2436,34 @@ namespace null_render {
 
     void draw_list::path_arc_to(vec2 center, float radius, float a_min, float a_max, int num_segments) {
         if (radius == 0.0f) {
-            _path.push_back(center);
+            path.push_back(center);
             return;
         }
 
-        _path.reserve(_path.size() + (num_segments + 1));
+        path.reserve(path.size() + (num_segments + 1));
         for (int i = 0; i <= num_segments; i++) {
             const float a = a_min + ((float)i / (float)num_segments) * (a_max - a_min);
-            _path.push_back(vec2(center.x + cosf(a) * radius, center.y + sinf(a) * radius));
+            path.push_back(vec2(center.x + cosf(a) * radius, center.y + sinf(a) * radius));
         }
     }
 
     void draw_list::path_arc_to_fast(vec2 center, float radius, int a_min_of_12, int a_max_of_12) {
         if (radius == 0.0f || a_min_of_12 > a_max_of_12) {
-            _path.push_back(center);
+            path.push_back(center);
             return;
         }
 
-        _path.reserve(_path.size() + (a_max_of_12 - a_min_of_12 + 1));
+        path.reserve(path.size() + (a_max_of_12 - a_min_of_12 + 1));
         for (int a = a_min_of_12; a <= a_max_of_12; a++) {
-            const vec2& c = _data->arc_fast_vtx[a % ARRAYSIZE(_data->arc_fast_vtx)];
-            _path.push_back(vec2(center.x + c.x * radius, center.y + c.y * radius));
+            const vec2& c = shared_data->arc_fast_vtx[a % shared_data->arc_fast_vtx.size()];
+            path.push_back(vec2(center.x + c.x * radius, center.y + c.y * radius));
         }
     }
 
     void draw_list::path_bezier_curve_to(std::array<vec2, 3> points, int num_segments) {
-        vec2 first_point = _path.back();
+        vec2 first_point = path.back();
         if (num_segments == 0) {
-            path_bezier_to_casteljau(&_path, { first_point, points[0], points[1], points[2] }, _data->curve_tessellation_tol, 0);
+            path_bezier_to_casteljau(&path, { first_point, points[0], points[1], points[2] }, shared_data->curve_tessellation_tol, 0);
         } else {
             float t_step = 1.0f / (float)num_segments;
             for (int i_step = 1; i_step <= num_segments; i_step++) {
@@ -2470,7 +2472,7 @@ namespace null_render {
                 float w2 = 3 * u * u * (t_step * i_step);
                 float w3 = 3 * u * (t_step * i_step) * (t_step * i_step);
                 float w4 = (t_step * i_step) * (t_step * i_step) * (t_step * i_step);
-                _path.push_back(first_point * w1 + points[0] * w2 + points[1] * w3 + points[2] * w4);//vec2(w1 * first_point.x + w2 * points[0].x + w3 * points[1].x + w4 * points[2].x, w1 * first_point.y + w2 * points[0].y + w3 * points[1].y + w4 * points[2].y));
+                path.push_back(first_point * w1 + points[0] * w2 + points[1] * w3 + points[2] * w4);//vec2(w1 * first_point.x + w2 * points[0].x + w3 * points[1].x + w4 * points[2].x, w1 * first_point.y + w2 * points[0].y + w3 * points[1].y + w4 * points[2].y));
             }
         }
     }
@@ -2547,16 +2549,16 @@ namespace null_render {
 
     void draw_list::add_draw_cmd() {
         helpers::cmd draw_cmd;
-        draw_cmd.clip_rect = _cmd_header.clip_rect;
-        draw_cmd.texture_id = _cmd_header.texture_id;
-        draw_cmd.vtx_offset = _cmd_header.vtx_offset;
+        draw_cmd.clip_rect = cmd_header.clip_rect;
+        draw_cmd.texture_id = cmd_header.texture_id;
+        draw_cmd.vtx_offset = cmd_header.vtx_offset;
         draw_cmd.idx_offset = idx_buffer.size();
 
         cmd_buffer.push_back(draw_cmd);
     }
 
     draw_list* draw_list::clone_output() const {
-        draw_list* dst = new draw_list(_data);
+        draw_list* dst = new draw_list(shared_data);
         dst->cmd_buffer = cmd_buffer;
         dst->idx_buffer = idx_buffer;
         dst->vtx_buffer = vtx_buffer;
@@ -2565,9 +2567,9 @@ namespace null_render {
     }
 
     void draw_list::prim_reserve(int idx_count, int vtx_count) {
-        if (sizeof(unsigned short) == 2 && (_vtx_current_idx + vtx_count >= (1 << 16)) && (flags.contains(draw_list_flags::allow_vtx_offset))) {
-            _cmd_header.vtx_offset = vtx_buffer.size();
-            _on_changed_vtx_offset();
+        if (sizeof(unsigned short) == 2 && (vtx_current_idx + vtx_count >= (1 << 16)) && (flags.contains(draw_list_flags::allow_vtx_offset))) {
+            cmd_header.vtx_offset = vtx_buffer.size();
+            on_changed_vtx_offset();
         }
 
         helpers::cmd* draw_cmd = &cmd_buffer.data()[cmd_buffer.size() - 1];
@@ -2575,11 +2577,11 @@ namespace null_render {
 
         int vtx_buffer_old_size = vtx_buffer.size();
         vtx_buffer.resize(vtx_buffer_old_size + vtx_count);
-        _vtx_write_ptr = vtx_buffer.data() + vtx_buffer_old_size;
+        vtx_write_ptr = vtx_buffer.data() + vtx_buffer_old_size;
 
         int idx_buffer_old_size = idx_buffer.size();
         idx_buffer.resize(idx_buffer_old_size + idx_count);
-        _idx_write_ptr = idx_buffer.data() + idx_buffer_old_size;
+        idx_write_ptr = idx_buffer.data() + idx_buffer_old_size;
     }
 
     void draw_list::prim_unreserve(int idx_count, int vtx_count) {
@@ -2590,47 +2592,47 @@ namespace null_render {
     }
 
     void draw_list::prim_rect(vec2 a, vec2 c, color clr) {
-        vec2 b(c.x, a.y), d(a.x, c.y), uv(_data->tex_uv_white_pixel);
-        unsigned short idx = (unsigned short)_vtx_current_idx;
-        _idx_write_ptr[0] = idx; _idx_write_ptr[1] = (unsigned short)(idx + 1); _idx_write_ptr[2] = (unsigned short)(idx + 2);
-        _idx_write_ptr[3] = idx; _idx_write_ptr[4] = (unsigned short)(idx + 2); _idx_write_ptr[5] = (unsigned short)(idx + 3);
-        _vtx_write_ptr[0].pos = a; _vtx_write_ptr[0].uv = uv; _vtx_write_ptr[0].clr = clr;
-        _vtx_write_ptr[1].pos = b; _vtx_write_ptr[1].uv = uv; _vtx_write_ptr[1].clr = clr;
-        _vtx_write_ptr[2].pos = c; _vtx_write_ptr[2].uv = uv; _vtx_write_ptr[2].clr = clr;
-        _vtx_write_ptr[3].pos = d; _vtx_write_ptr[3].uv = uv; _vtx_write_ptr[3].clr = clr;
-        _vtx_write_ptr += 4;
-        _vtx_current_idx += 4;
-        _idx_write_ptr += 6;
+        vec2 b = vec2(c.x, a.y), d = vec2(a.x, c.y);
+        unsigned short idx = (unsigned short)vtx_current_idx;
+        idx_write_ptr[0] = idx; idx_write_ptr[1] = (unsigned short)(idx + 1); idx_write_ptr[2] = (unsigned short)(idx + 2);
+        idx_write_ptr[3] = idx; idx_write_ptr[4] = (unsigned short)(idx + 2); idx_write_ptr[5] = (unsigned short)(idx + 3);
+        vtx_write_ptr[0].pos = a; vtx_write_ptr[0].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[0].clr = clr;
+        vtx_write_ptr[1].pos = b; vtx_write_ptr[1].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[1].clr = clr;
+        vtx_write_ptr[2].pos = c; vtx_write_ptr[2].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[2].clr = clr;
+        vtx_write_ptr[3].pos = d; vtx_write_ptr[3].uv = shared_data->tex_uv_white_pixel; vtx_write_ptr[3].clr = clr;
+        vtx_write_ptr += 4;
+        vtx_current_idx += 4;
+        idx_write_ptr += 6;
     }
 
     void draw_list::prim_rect_uv(vec2 a, vec2 c, vec2 uv_a, vec2 uv_c, color clr) {
         vec2 b(c.x, a.y), d(a.x, c.y), uv_b(uv_c.x, uv_a.y), uv_d(uv_a.x, uv_c.y);
-        unsigned short idx = (unsigned short)_vtx_current_idx;
-        _idx_write_ptr[0] = idx; _idx_write_ptr[1] = (unsigned short)(idx + 1); _idx_write_ptr[2] = (unsigned short)(idx + 2);
-        _idx_write_ptr[3] = idx; _idx_write_ptr[4] = (unsigned short)(idx + 2); _idx_write_ptr[5] = (unsigned short)(idx + 3);
-        _vtx_write_ptr[0].pos = a; _vtx_write_ptr[0].uv = uv_a; _vtx_write_ptr[0].clr = clr;
-        _vtx_write_ptr[1].pos = b; _vtx_write_ptr[1].uv = uv_b; _vtx_write_ptr[1].clr = clr;
-        _vtx_write_ptr[2].pos = c; _vtx_write_ptr[2].uv = uv_c; _vtx_write_ptr[2].clr = clr;
-        _vtx_write_ptr[3].pos = d; _vtx_write_ptr[3].uv = uv_d; _vtx_write_ptr[3].clr = clr;
-        _vtx_write_ptr += 4;
-        _vtx_current_idx += 4;
-        _idx_write_ptr += 6;
+        unsigned short idx = (unsigned short)vtx_current_idx;
+        idx_write_ptr[0] = idx; idx_write_ptr[1] = (unsigned short)(idx + 1); idx_write_ptr[2] = (unsigned short)(idx + 2);
+        idx_write_ptr[3] = idx; idx_write_ptr[4] = (unsigned short)(idx + 2); idx_write_ptr[5] = (unsigned short)(idx + 3);
+        vtx_write_ptr[0].pos = a; vtx_write_ptr[0].uv = uv_a; vtx_write_ptr[0].clr = clr;
+        vtx_write_ptr[1].pos = b; vtx_write_ptr[1].uv = uv_b; vtx_write_ptr[1].clr = clr;
+        vtx_write_ptr[2].pos = c; vtx_write_ptr[2].uv = uv_c; vtx_write_ptr[2].clr = clr;
+        vtx_write_ptr[3].pos = d; vtx_write_ptr[3].uv = uv_d; vtx_write_ptr[3].clr = clr;
+        vtx_write_ptr += 4;
+        vtx_current_idx += 4;
+        idx_write_ptr += 6;
     }
 
     void draw_list::prim_quad_uv(std::array<vec2, 4> points, std::array<vec2, 4> uvs, color clr) {
-        unsigned short idx = (unsigned short)_vtx_current_idx;
-        _idx_write_ptr[0] = idx; _idx_write_ptr[1] = (unsigned short)(idx + 1); _idx_write_ptr[2] = (unsigned short)(idx + 2);
-        _idx_write_ptr[3] = idx; _idx_write_ptr[4] = (unsigned short)(idx + 2); _idx_write_ptr[5] = (unsigned short)(idx + 3);
-        _vtx_write_ptr[0].pos = uvs[0]; _vtx_write_ptr[0].uv = uvs[0]; _vtx_write_ptr[0].clr = clr;
-        _vtx_write_ptr[1].pos = uvs[1]; _vtx_write_ptr[1].uv = uvs[1]; _vtx_write_ptr[1].clr = clr;
-        _vtx_write_ptr[2].pos = uvs[2]; _vtx_write_ptr[2].uv = uvs[2]; _vtx_write_ptr[2].clr = clr;
-        _vtx_write_ptr[3].pos = uvs[3]; _vtx_write_ptr[3].uv = uvs[3]; _vtx_write_ptr[3].clr = clr;
-        _vtx_write_ptr += 4;
-        _vtx_current_idx += 4;
-        _idx_write_ptr += 6;
+        unsigned short idx = (unsigned short)vtx_current_idx;
+        idx_write_ptr[0] = idx; idx_write_ptr[1] = (unsigned short)(idx + 1); idx_write_ptr[2] = (unsigned short)(idx + 2);
+        idx_write_ptr[3] = idx; idx_write_ptr[4] = (unsigned short)(idx + 2); idx_write_ptr[5] = (unsigned short)(idx + 3);
+        vtx_write_ptr[0].pos = uvs[0]; vtx_write_ptr[0].uv = uvs[0]; vtx_write_ptr[0].clr = clr;
+        vtx_write_ptr[1].pos = uvs[1]; vtx_write_ptr[1].uv = uvs[1]; vtx_write_ptr[1].clr = clr;
+        vtx_write_ptr[2].pos = uvs[2]; vtx_write_ptr[2].uv = uvs[2]; vtx_write_ptr[2].clr = clr;
+        vtx_write_ptr[3].pos = uvs[3]; vtx_write_ptr[3].uv = uvs[3]; vtx_write_ptr[3].clr = clr;
+        vtx_write_ptr += 4;
+        vtx_current_idx += 4;
+        idx_write_ptr += 6;
     }
 
-    void draw_list::_reset_for_begin_render() {
+    void draw_list::reset_for_begin_render() {
         assert(offsetof(helpers::cmd, clip_rect) == 0);
         assert(offsetof(helpers::cmd, texture_id) == sizeof(rect));
         assert(offsetof(helpers::cmd, vtx_offset) == sizeof(rect) + sizeof(void*));
@@ -2638,76 +2640,76 @@ namespace null_render {
         cmd_buffer.resize(0);
         idx_buffer.resize(0);
         vtx_buffer.resize(0);
-        flags = _data->initial_flags;
-        memset(&_cmd_header, 0, sizeof(_cmd_header));
-        _vtx_current_idx = 0;
-        _vtx_write_ptr = NULL;
-        _idx_write_ptr = NULL;
-        _clip_rect_stack.resize(0);
-        _texture_id_stack.resize(0);
-        _path.resize(0);
+        flags = shared_data->initial_flags;
+        memset(&cmd_header, 0, sizeof(cmd_header));
+        vtx_current_idx = 0;
+        vtx_write_ptr = NULL;
+        idx_write_ptr = NULL;
+        clip_rect_stack.resize(0);
+        texture_id_stack.resize(0);
+        path.resize(0);
         cmd_buffer.push_back(helpers::cmd());
     }
 
-    void draw_list::_clear_free_memory() {
+    void draw_list::clear_free_memory() {
         cmd_buffer.clear();
         idx_buffer.clear();
         vtx_buffer.clear();
-        _vtx_current_idx = 0;
-        _vtx_write_ptr = NULL;
-        _idx_write_ptr = NULL;
-        _clip_rect_stack.clear();
-        _texture_id_stack.clear();
-        _path.clear();
+        vtx_current_idx = 0;
+        vtx_write_ptr = NULL;
+        idx_write_ptr = NULL;
+        clip_rect_stack.clear();
+        texture_id_stack.clear();
+        path.clear();
     }
 
-    void draw_list::_pop_unused_draw_cmd() {
+    void draw_list::pop_unused_draw_cmd() {
         if (cmd_buffer.size() == 0) return;
         helpers::cmd* curr_cmd = &cmd_buffer.data()[cmd_buffer.size() - 1];
         if (curr_cmd->elem_count == 0)
             cmd_buffer.pop_back();
     }
 
-    void draw_list::_on_changed_clip_rect() {
+    void draw_list::on_changed_clip_rect() {
         helpers::cmd* curr_cmd = &cmd_buffer.data()[cmd_buffer.size() - 1];
-        if (curr_cmd->elem_count != 0 && memcmp(&curr_cmd->clip_rect, &_cmd_header.clip_rect, sizeof(rect)) != 0) {
+        if (curr_cmd->elem_count != 0 && memcmp(&curr_cmd->clip_rect, &cmd_header.clip_rect, sizeof(rect)) != 0) {
             add_draw_cmd();
             return;
         }
 
         helpers::cmd* prev_cmd = curr_cmd - 1;
-        if (curr_cmd->elem_count == 0 && cmd_buffer.size() > 1 && memcmp(&_cmd_header, prev_cmd, offsetof(helpers::cmd, vtx_offset) + sizeof(unsigned int)) == 0) {
+        if (curr_cmd->elem_count == 0 && cmd_buffer.size() > 1 && memcmp(&cmd_header, prev_cmd, offsetof(helpers::cmd, vtx_offset) + sizeof(unsigned int)) == 0) {
             cmd_buffer.pop_back();
             return;
         }
 
-        curr_cmd->clip_rect = _cmd_header.clip_rect;
+        curr_cmd->clip_rect = cmd_header.clip_rect;
     }
 
-    void draw_list::_on_changed_texture_id() {
+    void draw_list::on_changed_texture_id() {
         helpers::cmd* curr_cmd = &cmd_buffer.data()[cmd_buffer.size() - 1];
-        if (curr_cmd->elem_count != 0 && curr_cmd->texture_id != _cmd_header.texture_id) {
+        if (curr_cmd->elem_count != 0 && curr_cmd->texture_id != cmd_header.texture_id) {
             add_draw_cmd();
             return;
         }
 
         helpers::cmd* prev_cmd = curr_cmd - 1;
-        if (curr_cmd->elem_count == 0 && cmd_buffer.size() > 1 && memcmp(&_cmd_header, prev_cmd, offsetof(helpers::cmd, vtx_offset) + sizeof(unsigned int)) == 0) {
+        if (curr_cmd->elem_count == 0 && cmd_buffer.size() > 1 && memcmp(&cmd_header, prev_cmd, offsetof(helpers::cmd, vtx_offset) + sizeof(unsigned int)) == 0) {
             cmd_buffer.pop_back();
             return;
         }
 
-        curr_cmd->texture_id = _cmd_header.texture_id;
+        curr_cmd->texture_id = cmd_header.texture_id;
     }
 
-    void draw_list::_on_changed_vtx_offset() {
-        _vtx_current_idx = 0;
+    void draw_list::on_changed_vtx_offset() {
+        vtx_current_idx = 0;
         helpers::cmd* curr_cmd = &cmd_buffer.data()[cmd_buffer.size() - 1];
         if (curr_cmd->elem_count != 0) {
             add_draw_cmd();
             return;
         }
-        curr_cmd->vtx_offset = _cmd_header.vtx_offset;
+        curr_cmd->vtx_offset = cmd_header.vtx_offset;
     }
 
     void initialize(null_font::helpers::atlas* shared_font_atlas) {
@@ -2736,16 +2738,16 @@ namespace null_render {
         shared_data.initial_flags.add({ draw_list_flags::anti_aliased_lines, draw_list_flags::anti_aliased_lines_use_tex, draw_list_flags::anti_aliased_fill });
         if (settings::renderer_has_vtx_offset) shared_data.initial_flags.add(draw_list_flags::allow_vtx_offset);
 
-        background_draw_list._reset_for_begin_render();
+        background_draw_list.reset_for_begin_render();
         background_draw_list.push_texture_id(null_font::vars::font_atlas->tex_id);
         background_draw_list.push_clip_rect_full_screen();
 
-        foreground_draw_list._reset_for_begin_render();
+        foreground_draw_list.reset_for_begin_render();
         foreground_draw_list.push_texture_id(null_font::vars::font_atlas->tex_id);
         foreground_draw_list.push_clip_rect_full_screen();
 
         for (null_gui::window* wnd : null_gui::deeps::windows) {
-            wnd->draw_list->_reset_for_begin_render();
+            wnd->draw_list->reset_for_begin_render();
             wnd->draw_list->push_texture_id(null_font::vars::font_atlas->tex_id);
             wnd->draw_list->push_clip_rect_full_screen();
         }
@@ -2782,8 +2784,8 @@ namespace null_render {
 
         null_font::vars::font_list.clear();
         data_builder.clear_free_memory();
-        background_draw_list._clear_free_memory();
-        foreground_draw_list._clear_free_memory();
+        background_draw_list.clear_free_memory();
+        foreground_draw_list.clear_free_memory();
 
         settings::initialized = false;
     }

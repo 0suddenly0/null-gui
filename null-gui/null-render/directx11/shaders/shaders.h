@@ -96,7 +96,8 @@ namespace null_render {
 			class shader {
 			public:
 				shader() = default;
-				shader(draw_list* _shader_draw_list, rect _region, float _amount, float _alpha, float _rounding) : shader_draw_list(_shader_draw_list), region(_region), amount(_amount), alpha(_alpha), rounding(_rounding) { };
+				shader(draw_list* _shader_draw_list, rect _region, float _amount, float _alpha, float _rounding, flags_list<corner_flags> _rounding_corners) : shader_draw_list(_shader_draw_list), region(_region), amount(_amount), alpha(_alpha), rounding(_rounding), rounding_corners(_rounding_corners) { };
+				~shader() { clear(); }
 				void clear();
 
 				void draw();
@@ -107,6 +108,7 @@ namespace null_render {
 				float amount = 1.f;
 				float rounding = 0.f;
 				rect region;
+				flags_list<corner_flags> rounding_corners;
 
 				draw_list* shader_draw_list;
 			private:
@@ -119,8 +121,8 @@ namespace null_render {
 				void use_y_shader();
 			};
 
-			inline std::vector<shader*> shader_list;
-			shader* create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding);
+			inline std::vector<std::shared_ptr<shader>> shader_list;
+			std::shared_ptr<shader> create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding, flags_list<corner_flags> rounding_corners);
 			void clear_layers();
 			void clear_all_shaders();
 

@@ -7,7 +7,7 @@ namespace null_gui {
 
 		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
 		std::string draw_text = deeps::format_item(name);
-		std::array<vec2, 3> arrow = math::calc_arrow(gui_settings::combo_arrow_size * wnd->draw_list->_data->font_size);
+		std::array<vec2, 3> arrow = math::calc_arrow(gui_settings::combo_arrow_size * wnd->draw_list->shared_data->font_size);
 		float arrow_size = arrow.at(0).dist_to(arrow.at(2));
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);

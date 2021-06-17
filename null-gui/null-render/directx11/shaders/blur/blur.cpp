@@ -28,7 +28,7 @@ namespace null_render {
                 shader_draw_list->add_callback([=](helpers::cmd* cmd) { end_draw(); });
                 shader_draw_list->add_callback(nullptr, true);
 
-                shader_draw_list->draw_image_rounded(first_layer.shader_resource, region.min, region.max, calc_uv.min, calc_uv.max, color(1.f, 1.f, 1.f, alpha), rounding);
+                shader_draw_list->draw_image_rounded(first_layer.shader_resource, region.min, region.max, calc_uv.min, calc_uv.max, color(1.f, 1.f, 1.f, alpha), rounding, rounding_corners);
             }
 
             void shader::create_layers() {
@@ -46,9 +46,6 @@ namespace null_render {
                     directx11::context->CopyResource(first_layer.texture, back_buffer);
                     directx11::context->CopyResource(second_layer.texture, back_buffer);
                     });
-
-                //copy_backbuffer(&first_layer);
-                //copy_backbuffer(&second_layer);
 
                 set_constants(settings::display_size / amount);
             }
@@ -77,8 +74,8 @@ namespace null_render {
                 shader_y.set_constant();
             }
 
-            shader* create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding) {
-                shader_list.push_back(new shader(shader_draw_list, region, amount, alpha, rounding));
+            std::shared_ptr<shader> create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding, flags_list<corner_flags> rounding_corners) {
+                shader_list.push_back(std::make_shared<shader>(shader_draw_list, region, amount, alpha, rounding, rounding_corners));
                 return shader_list.back();
             }
 
@@ -104,7 +101,7 @@ namespace null_render {
         }
     }
 
-    void draw_list::draw_blur(vec2 start, vec2 end, float amount, float alpha, float rounding) {
-        shaders::blur::create_shader(this, rect(start, end), amount, alpha, rounding)->draw();
+    void draw_list::draw_blur(vec2 start, vec2 end, float amount, float alpha, float rounding, flags_list<corner_flags> rounding_corners) {
+        shaders::blur::create_shader(this, rect(start, end), amount, alpha, rounding, rounding_corners)->draw();
     }
 }
