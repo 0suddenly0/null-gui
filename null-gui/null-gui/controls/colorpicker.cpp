@@ -91,8 +91,7 @@ namespace null_gui {
 		if (!wnd) return;
 
 		color ret = clr->rgb_to_hsv();
-		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
-		std::string draw_text = deeps::format_item(name);
+		std::string draw_text = deeps::format_item(text);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text.c_str());
 		vec2 min = vec2(text_size.x + gui_settings::text_spacing + gui_settings::checkbox_size * 2, math::max(gui_settings::checkbox_size, text_size.y));
@@ -100,32 +99,35 @@ namespace null_gui {
 		rect button_rect = rect(item_rect.max - vec2(item_rect.size().y * 2, item_rect.size().y), item_rect.max);
 		std::vector<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
 
-		deeps::add_item(item_rect.size(), name);
+		deeps::add_item(item_rect.size(), text);
 		if (!wnd->can_draw_item(item_rect))
 			return;
 
-		deeps::colorpicker_behavior(button_rect, name, utils::format("##%s colorpicker", text.c_str()), utils::format("##%s colorpicker tooltip", text.c_str()), flags, alpha_bar);
+		std::string colorpicker_window = utils::format("##%s colorpicker", text.c_str());
+		std::string colorpicker_tooltip_window = utils::format("##%s colorpicker tooltip", text.c_str());
+
+		deeps::colorpicker_behavior(button_rect, text, colorpicker_window, colorpicker_tooltip_window, flags, alpha_bar);
 
 		color clr_draw = clr->get_convert_to_int();
 		null_gui::tooltip(utils::format(alpha_bar ? "r: %.0f; g: %.0f; b: %.0f; a: %.0f" : "r: %.0f; g: %.0f; b: %.0f", clr_draw.r(), clr_draw.g(), clr_draw.b(), clr_draw.a()));
 
 		wnd->draw_list->draw_rect_filled(button_rect.min, button_rect.max, color(*clr, 1.f), gui_settings::colorpicker_rounding);
 
-		wnd->draw_list->draw_text(deeps::format_item(name), vec2(item_rect.min.x, item_rect.max.y - (item_rect.max.y - item_rect.min.y) / 2), gui_settings::text, false, { false , true });
+		wnd->draw_list->draw_text(draw_text, vec2(item_rect.min.x, item_rect.max.y - (item_rect.max.y - item_rect.min.y) / 2), gui_settings::text, false, { false , true });
 
-		if (deeps::window_exist(utils::format("##%s colorpicker", text.c_str()))) {
+		if (deeps::window_exist(colorpicker_window)) {
 			deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
-				if (begin_window(utils::format("##%s colorpicker", text.c_str()), vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
+				if (begin_window(colorpicker_window, vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
 					
-					if (colorpicker_list.count(name) == 0) //if this item not exists - initialization
-						colorpicker_list.insert(std::pair<std::string, color>(name, ret ));
+					if (colorpicker_list.count(text) == 0) //if this item not exists - initialization
+						colorpicker_list.insert(std::pair<std::string, color>(text, ret ));
 
-					color sv = colorpicker_sv(ret, name);
+					color sv = colorpicker_sv(ret, text);
 					deeps::push_var(&gui_settings::item_spacing, 0.f); {
 						same_line();
 					} deeps::pop_var();
-					float h = colorpicker_slider_h(ret, name);
-					float alpha = alpha_bar ? colorpicker_slider_alpha(ret, name) : ret.a();
+					float h = colorpicker_slider_h(ret, text);
+					float alpha = alpha_bar ? colorpicker_slider_alpha(ret, text) : ret.a();
 					color result = color(h, sv.g(), sv.b(), alpha);
 
 					if (result != ret) ret = result;
@@ -135,10 +137,10 @@ namespace null_gui {
 			} deeps::pop_var();
 		}
 
-		if (deeps::window_exist(utils::format("##%s colorpicker tooltip", text.c_str()))) {
+		if (deeps::window_exist(colorpicker_tooltip_window)) {
 			deeps::push_var(&gui_settings::window_padding, vec2(5.f, 5.f)); {
 				deeps::push_var(&gui_settings::items_size_full_window, true); {
-					if (begin_window(utils::format("##%s colorpicker tooltip", text.c_str()), vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
+					if (begin_window(colorpicker_tooltip_window, vec2(item_rect.max.x, item_rect.min.y), vec2(0.f, 0.f), flags, nullptr)) {
 						if (button("copy")) {
 							temp_copy_of_color = ret;
 							deeps::close_current_window();

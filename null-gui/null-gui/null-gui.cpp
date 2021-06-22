@@ -11,7 +11,7 @@ namespace null_gui {
 			parent_window = deeps::current_window;
 		}
 
-		draw_list = flags.contains(window_flags::group) && parent_window ? get_main_window()->draw_list : new null_render::draw_list(&null_render::shared_data);
+		draw_list = flags.contains(window_flags::group) && parent_window ? get_main_window()->draw_list : std::make_shared<null_render::draw_list>(&null_render::shared_data);
 		draw_list->reset_for_begin_render();
 		draw_list->push_texture_id(null_font::vars::font_atlas->tex_id);
 		draw_list->push_clip_rect_full_screen();
@@ -49,7 +49,7 @@ namespace null_gui {
 	}
 
 	void window::focus_window() {
-		if (this == deeps::windows.back()) return;
+		if (this == deeps::windows.back().get()) return;
 		auto it = deeps::windows.begin() + idx;
 		std::rotate(it, it + 1, deeps::windows.end());
 	}
@@ -126,8 +126,7 @@ namespace null_gui {
 							active->pos_in_text--;
 							active->clamp();
 						}
-					}
-					else {
+					} else {
 						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
 						active->pos_in_text = active->select_min;
 						active->clamp();
@@ -138,8 +137,7 @@ namespace null_gui {
 						if (active->pos_in_text < active->string_value.size()) {
 							active->string_value.erase(active->string_value.begin() + active->pos_in_text, active->string_value.begin() + active->pos_in_text + 1);
 						}
-					}
-					else {
+					} else {
 						active->string_value.erase(active->string_value.begin() + active->select_min, active->string_value.begin() + active->select_max);
 						active->pos_in_text = active->select_min;
 						active->clamp();
@@ -378,7 +376,7 @@ namespace null_gui {
 
 		window* find_window(std::string name) {
 			for (int i = 0; i < windows.size(); i++) {
-				window* wnd = windows[i];
+				window* wnd = windows[i].get();
 				wnd->idx = i;
 				if (wnd->name == name)
 					return wnd;
@@ -388,7 +386,7 @@ namespace null_gui {
 		}
 
 		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags) {
-			window* wnd = new window(name, pos, size, flags);
+			std::shared_ptr<window> wnd = std::make_shared<window>(name, pos, size, flags);
 
 			if (wnd->flags.contains(window_flags::popup)) wnd->flags.add(window_flags::no_move);
 
@@ -397,19 +395,19 @@ namespace null_gui {
 			if (windows.size() == 0) windows.push_back(wnd);
 			else {
 				if (wnd->flags.contains(window_flags::popup) || wnd->flags.contains(window_flags::group)) {
-					if (wnd->flags.contains(window_flags::popup)) current_window->child_popup_window.push_back(wnd);
-					else current_window->child_group_window.push_back(wnd);
+					if (wnd->flags.contains(window_flags::popup)) current_window->child_popup_window.push_back(wnd.get());
+					else current_window->child_group_window.push_back(wnd.get());
 				}
 				windows.insert(wnd->flags.contains(window_flags::group) ? windows.begin() : windows.end(), wnd);
 			}
 
-			return wnd;
+			return wnd.get();
 		}
 
 		bool can_use_item(rect item_rect, std::string item_name) {
 			window* wnd = deeps::current_window;
 			if (!wnd) return false;
-			return (hovered_name == "" || hovered_name == item_name) && ((null_input::mouse_in_region(item_rect) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_windows()) || active_name == item_name);
+			return (hovered_name == "" || hovered_name == item_name) && ((null_input::mouse_in_region(item_rect) && null_input::mouse_in_region(wnd->draw_list->get_clip_rect()) && deeps::mouse_in_current_window()) || active_name == item_name);
 		}
 
 		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name) {
@@ -483,7 +481,7 @@ namespace null_gui {
 			}
 
 			if (bind->binding) {
-				if ((!null_input::mouse_in_region(size) || !deeps::mouse_in_current_windows()) && null_input::get_key(null_input::key_id::mouse_left)->clicked()) {
+				if ((!null_input::mouse_in_region(size) || !deeps::mouse_in_current_window()) && null_input::get_key(null_input::key_id::mouse_left)->clicked()) {
 					active_name = "";
 					bind->binding = false;
 				}
@@ -524,7 +522,7 @@ namespace null_gui {
 
 			if (active_name == name) {
 				if (null_input::get_key(null_input::key_id::mouse_left)->down()) _pressed = true;
-				if (null_input::mouse_in_region(size) && deeps::mouse_in_current_windows() && null_input::get_key(null_input::key_id::mouse_left)->pressed()) _active = true;
+				if (null_input::mouse_in_region(size) && deeps::mouse_in_current_window() && null_input::get_key(null_input::key_id::mouse_left)->pressed()) _active = true;
 			}
 
 			if (!null_input::get_key(null_input::key_id::mouse_left)->down() && active_name == name) {
@@ -662,7 +660,7 @@ namespace null_gui {
 			active_name = item_name;
 		}
 
-		bool mouse_in_current_windows() {
+		bool mouse_in_current_window() {
 			return deeps::hovered_window == (deeps::current_window->flags.contains(window_flags::group) ? deeps::current_window->get_main_window() : deeps::current_window);
 		}
 
@@ -677,7 +675,7 @@ namespace null_gui {
 
 		void window_control() {
 			for (int i = deeps::windows.size() - 1; i >= 0; i--) { //getting hovered window and group
-				window* wnd = deeps::windows[i];
+				window* wnd = deeps::windows[i].get();
 				if (!wnd->visible) continue;
 
 				if (!null_input::mouse_in_region(wnd->pos, wnd->pos + wnd->size)) {
@@ -691,7 +689,7 @@ namespace null_gui {
 
 			if (null_input::get_key(null_input::key_id::mouse_left)->clicked() && (active_name.empty() && active_window_name.empty())) { //window moving
 				for (int i = windows.size() - 1; i >= 0; --i) {
-					window* wnd = windows[i];
+					window* wnd = windows[i].get();
 
 					if (wnd->flags.contains(window_flags::no_move)) continue;
 
@@ -707,7 +705,7 @@ namespace null_gui {
 
 		void popups_control() {
 			for (int i = 0; i < deeps::windows.size(); i++) {
-				window* wnd = deeps::windows[i];
+				window* wnd = deeps::windows[i].get();
 
 				if (wnd->flags.contains(window_flags::popup)) {
 					if (!deeps::window_exist(wnd->parent_window->name) || !wnd->parent_window->visible) {
@@ -723,6 +721,15 @@ namespace null_gui {
 		deeps::hwnd = hwnd;
 		::QueryPerformanceFrequency((LARGE_INTEGER*)&deeps::ticks_per_second);
 		::QueryPerformanceCounter((LARGE_INTEGER*)&deeps::time);
+	}
+
+	void shutdown() {
+		deeps::windows.clear();
+		deeps::pushed_vars.clear();
+		deeps::text_inputs.clear();
+
+		null_input::bind_list.clear();
+		null_input::key_list.clear();
 	}
 
 	void begin_frame() {

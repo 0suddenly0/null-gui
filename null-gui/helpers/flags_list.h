@@ -7,6 +7,7 @@ public:
 	flags_list() { }
 	flags_list(T flag) : list(std::vector<T>{ flag }) { }
 	flags_list(std::vector<T> flags) : list(flags) { }
+	~flags_list() { list.clear(); }
 
 	int count(T flag) { return std::count(list.begin(), list.end(), flag); }
 	bool contains(T flag) { return count(flag) > 0; }

@@ -5,8 +5,7 @@ namespace null_gui {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
-		std::string draw_text = deeps::format_item(name);
+		std::string draw_text = deeps::format_item(text);
 		std::array<vec2, 3> arrow = math::calc_arrow(gui_settings::combo_arrow_size * wnd->draw_list->shared_data->font_size);
 		float arrow_size = arrow.at(0).dist_to(arrow.at(2));
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
@@ -17,12 +16,14 @@ namespace null_gui {
 		int clamped_value = math::clamp(*value, 0, (int)items.size() - 1);
 		std::vector<window_flags> flags = { window_flags::popup, window_flags::set_pos, window_flags::set_size, window_flags::auto_size, window_flags::no_title_line };
 
-		deeps::add_item(item_rect.size(), name);
+		deeps::add_item(item_rect.size(), text);
 		if (!wnd->can_draw_item(item_rect))
 			return;
 
+		std::string combo_popup_window = utils::format("##%s combo popup", text.c_str());
+
 		bool hovered, pressed;
-		bool open = deeps::combo_behavior(body_rect, &hovered, &pressed, utils::format("##%s combo popup", text.c_str()), flags);
+		bool open = deeps::combo_behavior(body_rect, &hovered, &pressed, combo_popup_window, flags);
 
 		wnd->draw_list->draw_text(draw_text, item_rect.min, gui_settings::text, false);
 		wnd->draw_list->draw_rect_filled(body_rect.min, body_rect.max, hovered || pressed ? pressed ? gui_settings::button_bg_active : gui_settings::button_bg_hovered : gui_settings::button_bg, gui_settings::combo_rounding);
@@ -34,10 +35,10 @@ namespace null_gui {
 			wnd->draw_list->draw_text(items[clamped_value], vec2(body_rect.min.x + gui_settings::text_spacing, body_rect.max.y - ((body_rect.max.y - body_rect.min.y) / 2)), gui_settings::text, false, { false, true });
 		} wnd->draw_list->pop_clip_rect();
 
-		if (deeps::window_exist(utils::format("##%s combo popup", text.c_str()))) {
+		if (deeps::window_exist(combo_popup_window)) {
 			deeps::push_var(&gui_settings::window_padding, vec2(0.f, 0.f)); {
 				deeps::push_var(&gui_settings::item_spacing, 0.f); {
-					if (begin_window(utils::format("##%s combo popup", text.c_str()), vec2(body_rect.min.x, body_rect.max.y + gui_settings::combo_window_padding), vec2(body_rect.max.x - body_rect.min.x, 0.f), flags, nullptr)) {
+					if (begin_window(combo_popup_window, vec2(body_rect.min.x, body_rect.max.y + gui_settings::combo_window_padding), vec2(body_rect.max.x - body_rect.min.x, 0.f), flags, nullptr)) {
 						for (int i = 0; i < items.size(); i++) {
 							if (i == gui_settings::max_auto_size_combo) {
 								deeps::current_window->arg_size.y = deeps::current_window->size.y = deeps::current_window->max_size.y + gui_settings::window_padding.y - gui_settings::item_spacing;

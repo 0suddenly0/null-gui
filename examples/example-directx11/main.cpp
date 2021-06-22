@@ -339,6 +339,11 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 
 		null_render::directx11::swap_chain->Present(1, 0);
 	}
+
+	null_render::directx11::shutdown();
+	null_render::shutdown();
+	null_gui::shutdown();
+
 	cleanup_device_d3d();
 
 	DestroyWindow(window);

@@ -57,7 +57,7 @@ namespace null_gui {
 			}
 		}
 
-		if (deeps::active_window_name == wnd->name || ((null_input::get_key(null_input::key_id::mouse_left)->clicked() || null_input::get_key(null_input::key_id::mouse_right)->clicked()) && null_input::mouse_in_region(wnd->pos, wnd->pos + wnd->size) && deeps::mouse_in_current_windows())) {
+		if (deeps::active_window_name == wnd->name || ((null_input::get_key(null_input::key_id::mouse_left)->clicked() || null_input::get_key(null_input::key_id::mouse_right)->clicked()) && null_input::mouse_in_region(wnd->pos, wnd->pos + wnd->size) && deeps::mouse_in_current_window())) {
 			deeps::focus_current_window();
 		}
 
@@ -77,7 +77,7 @@ namespace null_gui {
 					deeps::push_var(&wnd->draw_item_pos, wnd->pos + vec2(wnd->size.x - (gui_settings::window_title_size / 2) - (null_font::text_size("x").x / 2), (gui_settings::window_title_size / 2) - (null_font::text_size("x").y / 2))); {
 						deeps::push_var(&wnd->ignore_scroll, true); {
 							deeps::push_var(&gui_settings::items_size_full_window, false); {
-								if (open && clickable_text("x")) {
+								if (open && clickable_text(utils::format("x##%s", wnd->name.c_str()))) {
 									if (deeps::active_window_name == name) deeps::active_window_name = "";
 									*open = false;
 								}

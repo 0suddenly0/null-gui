@@ -3,9 +3,10 @@
 #include <windows.h>
 #include <string>
 #include <functional>
+#include <assert.h>
 
 namespace utils {
-	std::string format(const char* text, ...);
+	std::string format(const std::string text, ...);
 
 	FILE* file_open(const char* filename, const char* mode);
 	static bool file_close(FILE* file) { return fclose(file) == 0; }

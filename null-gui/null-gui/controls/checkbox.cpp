@@ -19,19 +19,18 @@ namespace null_gui {
 		window* wnd = deeps::current_window;
 		if (!wnd) return;
 
-		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
-		std::string draw_text = deeps::format_item(name);
+		std::string draw_text = deeps::format_item(text);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
 		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::checkbox_size + gui_settings::text_spacing + text_size.x, math::max(gui_settings::checkbox_size, text_size.y)));
 		rect box_rect = rect(vec2(item_rect.min.x, item_rect.centre().y - gui_settings::checkbox_size / 2), vec2(item_rect.min.x + gui_settings::checkbox_size, item_rect.centre().y + gui_settings::checkbox_size / 2));
 
-		deeps::add_item(item_rect.size(), name);
+		deeps::add_item(item_rect.size(), text);
 		if (!wnd->can_draw_item(item_rect))
 			return;
 
 		bool hovered, pressed;
-		bool active = deeps::button_behavior(gui_settings::checkbox_hovered_with_text ? item_rect : box_rect, &hovered, &pressed, name);
+		bool active = deeps::button_behavior(gui_settings::checkbox_hovered_with_text ? item_rect : box_rect, &hovered, &pressed, text);
 
 		if (active) *value = !*value;
 
@@ -39,7 +38,7 @@ namespace null_gui {
 		if (*value) {
 			wnd->draw_list->draw_rect_filled(box_rect.min, box_rect.max, gui_settings::main_color, gui_settings::checkbox_rounding);
 			float pad = math::max(1.0f, math::floor(gui_settings::checkbox_size / gui_settings::check_mark_size));
-			draw_check_mark(wnd->draw_list, box_rect.min + vec2(pad, pad), color(1.f, 1.f, 1.f), gui_settings::checkbox_size - pad * 2.f);
+			draw_check_mark(wnd->draw_list.get(), box_rect.min + vec2(pad, pad), color(1.f, 1.f, 1.f), gui_settings::checkbox_size - pad * 2.f);
 		}
 		wnd->draw_list->draw_text(draw_text, vec2(item_rect.min.x + gui_settings::checkbox_size + gui_settings::text_spacing, item_rect.centre().y), gui_settings::text, false, { false , true });
 	}

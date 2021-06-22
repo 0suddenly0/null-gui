@@ -4,15 +4,20 @@
 #include "utils.h"
 
 namespace utils {
-    std::string format(const char* text, ...) {
-        char buf[1024];
-        va_list va;
-
-        va_start(va, text);
-        _vsnprintf_s(buf, 1024, text, va);
-        va_end(va);
-
-        return std::string(buf);
+    std::string format(const std::string text, ...) {
+        int final_n, n = ((int)text.size()) * 2;
+        std::unique_ptr<char[]> formatted;
+        va_list ap;
+        while(true) {
+            formatted.reset(new char[n]);
+            strcpy(&formatted[0], text.c_str());
+            va_start(ap, text);
+            final_n = vsnprintf(&formatted[0], n, text.c_str(), ap);
+            va_end(ap);
+            if (final_n < 0 || final_n >= n) n += abs(final_n - n + 1);
+            else break;
+        }
+        return std::string(formatted.get());
     }
 
     FILE* file_open(const char* filename, const char* mode) {

@@ -63,18 +63,18 @@ namespace null_gui {
 		vec2 last_draw_item_pos;
 		vec2 draw_item_pos;
 
-		bool ignore_scroll;
-		float scroll_offset;
-		float scroll_target;
-		float max_scroll;
-		float scroll_mouse_offset;
+		bool ignore_scroll = false;
+		float scroll_offset = 0.f;
+		float scroll_target = 0.f;
+		float max_scroll = 0.f;
+		float scroll_mouse_offset = 0.f;
 
-		float column_offset;
+		float column_offset = 0.f;
 
 		int idx;
 		bool visible = true;
-		bool close_call;
-		bool dont_add_item;
+		bool close_call = false;
+		bool dont_add_item = false;
 
 		window* parent_window = nullptr;
 		std::vector<window*> child_popup_window;
@@ -82,7 +82,7 @@ namespace null_gui {
 
 		window* hovered_group = nullptr;
 
-		null_render::draw_list* draw_list;
+		std::shared_ptr<null_render::draw_list> draw_list;
 	};
 
 	class abstract_pushed_var {
@@ -175,7 +175,7 @@ namespace null_gui {
 		inline std::string hovered_name;
 		inline std::string active_window_name;
 		inline std::string last_item_name;
-		inline std::vector<window*> windows;
+		inline std::vector<std::shared_ptr<window>> windows;
 		inline std::vector<std::shared_ptr<abstract_pushed_var>> pushed_vars;
 		inline std::vector<text_input_info> text_inputs;
 
@@ -197,7 +197,7 @@ namespace null_gui {
 
 		void set_active_item(std::string item_name);
 		
-		bool mouse_in_current_windows();
+		bool mouse_in_current_window();
 		void focus_current_window();
 		void close_current_window();
 		void window_control();
@@ -268,6 +268,7 @@ namespace null_gui {
 	}
 
 	void initialize(HWND hwnd);
+	void shutdown();
 	void begin_frame();
 
 	bool begin_window(std::string name, vec2 pos, vec2 size, bool* open = nullptr);

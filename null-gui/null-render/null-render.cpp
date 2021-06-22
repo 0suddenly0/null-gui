@@ -2655,6 +2655,7 @@ namespace null_render {
         cmd_buffer.clear();
         idx_buffer.clear();
         vtx_buffer.clear();
+        flags.~flags_list();
         vtx_current_idx = 0;
         vtx_write_ptr = NULL;
         idx_write_ptr = NULL;
@@ -2746,7 +2747,7 @@ namespace null_render {
         foreground_draw_list.push_texture_id(null_font::vars::font_atlas->tex_id);
         foreground_draw_list.push_clip_rect_full_screen();
 
-        for (null_gui::window* wnd : null_gui::deeps::windows) {
+        for (std::shared_ptr<null_gui::window> wnd : null_gui::deeps::windows) {
             wnd->draw_list->reset_for_begin_render();
             wnd->draw_list->push_texture_id(null_font::vars::font_atlas->tex_id);
             wnd->draw_list->push_clip_rect_full_screen();
@@ -2761,8 +2762,8 @@ namespace null_render {
         if (!background_draw_list.vtx_buffer.empty())
             helpers::add_draw_list_to_draw_data(&data_builder.layer, &background_draw_list);
 
-        for (null_gui::window* wnd : null_gui::deeps::windows) {
-            if (!wnd->flags.contains(null_gui::window_flags::group) && !wnd->draw_list->vtx_buffer.empty()) helpers::add_draw_list_to_draw_data(&data_builder.layer, wnd->draw_list);
+        for (std::shared_ptr<null_gui::window> wnd : null_gui::deeps::windows) {
+            if (!wnd->flags.contains(null_gui::window_flags::group) && !wnd->draw_list->vtx_buffer.empty()) helpers::add_draw_list_to_draw_data(&data_builder.layer, wnd->draw_list.get());
         }
 
         if (!foreground_draw_list.vtx_buffer.empty())

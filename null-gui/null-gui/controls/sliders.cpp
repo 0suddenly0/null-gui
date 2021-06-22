@@ -13,10 +13,7 @@ std::string get_formated_value(std::string format, void* value, null_gui::var_ty
 }
 
 bool create_text_input(std::string text_input_name, void* value, null_gui::var_type type, std::string format) {
-	switch (type) {
-		case null_gui::var_type::type_int: return text_input(text_input_name, value, false, type, format);
-		case null_gui::var_type::type_float: return text_input(text_input_name, value, false, type, format);
-	}
+	return text_input(text_input_name, value, false, type, format);
 }
 
 void set(void* value, void* new_value, null_gui::var_type type) {
@@ -40,10 +37,10 @@ namespace null_gui {
 		if (!wnd) return;
 
 		std::string text_text_input = utils::format("%s##text_input", text.c_str());
-		std::string name_text_input = utils::format("%s##%s", text_text_input.c_str(), wnd->name.c_str());
+		//std::string name_text_input = utils::format("%s##%s", text_text_input.c_str(), wnd->name.c_str());
 
-		std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
-		std::string draw_text = deeps::format_item(name);
+		//std::string name = utils::format("%s##%s", text.c_str(), wnd->name.c_str());
+		std::string draw_text = deeps::format_item(text);
 		std::string formated_value = get_formated_value(format, value, type);
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
@@ -56,20 +53,20 @@ namespace null_gui {
 		float new_value = round == 0 ? calced_new_value : floor(calced_new_value * (float)round) / (float)round;
 		float clamped_value = math::clamp(*(float*)value, *(float*)min_value, *(float*)max_value);
 
-		deeps::add_item(item_rect.size(), name);
+		deeps::add_item(item_rect.size(), text);
 		if (!wnd->can_draw_item(item_rect))
 			return;
 
-		local_text_input(value_rect, name_text_input);
+		local_text_input(value_rect, text_text_input);
 
-		if (deeps::active_name == name_text_input) {
+		if (deeps::active_name == text_text_input) {
 			wnd->change_current_item();
 			create_text_input(text_text_input, value, type, format);
 			return;
 		}
 
 		bool hovered, pressed;
-		deeps::slider_behavior(body_rect, &hovered, &pressed, name);
+		deeps::slider_behavior(body_rect, &hovered, &pressed, text);
 
 		if (hovered) {
 			formated_value = get_formated_value(format.c_str(), &new_value, type);

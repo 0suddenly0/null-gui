@@ -328,6 +328,11 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		if (result == D3DERR_DEVICELOST && d3d_device->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
 			reset_device_d3d();
 	}
+
+	null_render::directx9::shutdown();
+	null_render::shutdown();
+	null_gui::shutdown();
+
 	cleanup_device_d3d();
 
 	DestroyWindow(window);
