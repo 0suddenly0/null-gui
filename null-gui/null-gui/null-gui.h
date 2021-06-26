@@ -10,6 +10,78 @@
 #include "../utils/utils.h"
 
 namespace null_gui {
+	class abstract_pushed_var {
+	public:
+		virtual void reset() = 0;
+	};
+
+	template <typename t>
+	class pushed_var : public abstract_pushed_var {
+	public:
+		pushed_var(t* _var, t _new_value) : var(_var), old_value(*_var) { *var = _new_value; }
+		void reset() { *var = old_value; }
+
+		t* var;
+		t old_value;
+	};
+
+	namespace gui_settings {
+		inline color main_color = color(83, 100, 255, 255);
+		inline color window_bg = color(26, 26, 26, 255);
+		inline color window_title_bg = color(40, 40, 40, 255);
+		inline color group_bg = color(31, 31, 31, 255);
+		inline color button_bg = color(44, 44, 44, 255);
+		inline color button_bg_hovered = color(46, 46, 46, 255);
+		inline color button_bg_active = color(48, 48, 48, 255);
+		inline color popup_bg = color(33, 33, 33, 255);
+		inline color text = color(255, 255, 255, 255);
+		inline color text_hovered = color(130, 130, 130, 255);
+		inline color select_text = color(100, 100, 255, 100);
+
+		inline float window_title_size = 20.f;
+		inline float window_title_line_size = 2.f;
+		inline float item_spacing = 5.f;
+		inline float text_spacing = 4.f;
+		inline float checkbox_size = 16.f;
+		inline float check_mark_size = 4.f;
+		inline float checkbox_body_offset = 2.f;
+		inline float combo_size = 16.f;
+		inline float combo_arrow_size = 1.f;
+		inline float combo_window_padding = 0.f;
+		inline int max_auto_size_combo = 5;
+		inline float slider_size = 5.f;
+		inline float selectable_offset = 4.f;
+		inline float selectable_active_offset = 10.f;
+		inline float colorpicker_size = 100.f;
+		inline float colorpicker_thickness = 9.f;
+		inline float scrollbar_thickness = 2.f;
+		inline float text_input_line_size = 2.f;
+		inline float new_line_size = 16.f;
+		inline float window_rounding = 0.f;
+		inline float window_title_rounding = 0.f;
+		inline float slider_rounding = 0.f;
+		inline float checkbox_rounding = 0.f;
+		inline float button_rounding = 0.f;
+		inline float combo_rounding = 0.f;
+		inline float scrollbar_rounding = 0.f;
+		inline float colorpicker_rounding = 0.f;
+		inline float key_bind_rounding = 0.f;
+		inline float text_input_rounding = 0.f;
+
+		inline float show_pos_in_text_cooldown = 0.7f;
+
+		inline vec2 text_input_padding = vec2(3, 0);
+		inline vec2 button_padding = vec2(5, 1);
+		inline vec2 window_padding = vec2(10, 10);
+		inline vec2 scrollbar_padding = vec2(2, 2);
+
+		inline bool items_size_full_window = true;
+		inline bool checkbox_hovered_with_text = false;
+		inline bool clamp_window_on_screen = true;
+		inline bool move_window_on_title_bar = true;
+		inline bool show_scrollbar_background = true;
+	}
+
 	enum class var_type {
 		type_int = 0,
 		type_string,
@@ -25,12 +97,13 @@ namespace null_gui {
 		no_move,
 		set_size,
 		set_pos,
-		auto_size
+		auto_size,
+		no_padding
 	};
 
 	class window {
 	public:
-		window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, std::vector<window_flags> wnd_flags);
+		window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, flags_list<window_flags> wnd_flags);
 		window* in_popup_region();
 		window* get_hovered_group();
 		window* get_main_window();
@@ -40,12 +113,12 @@ namespace null_gui {
 
 		bool can_scroll() { return max_scroll != 0; }
 		float get_scroll_offset() { return ignore_scroll ? 0.f : scroll_offset; }
-		float get_scroll_thickness();	
-		float get_window_size_with_padding();
+		float get_scroll_thickness() { return can_scroll() ? gui_settings::scrollbar_padding.x + gui_settings::scrollbar_thickness : 0.f; }
+		vec2 get_padding() { return flags.contains(window_flags::no_padding) ? vec2(0.f, 0.f) : gui_settings::window_padding; }
+		vec2 get_window_size_with_padding();
 		float get_title_size();
 		bool can_open_tooltip();
 		bool can_draw_item(rect item_rect);
-		rect get_draw_pos(rect value);
 
 		std::string name;
 		vec2 pos;
@@ -69,6 +142,7 @@ namespace null_gui {
 		float max_scroll = 0.f;
 		float scroll_mouse_offset = 0.f;
 
+		bool in_column = false;
 		float column_offset = 0.f;
 
 		int idx;
@@ -83,21 +157,6 @@ namespace null_gui {
 		window* hovered_group = nullptr;
 
 		std::shared_ptr<null_render::draw_list> draw_list;
-	};
-
-	class abstract_pushed_var {
-	public:
-		virtual void reset() = 0;
-	};
-
-	template <typename t>
-	class pushed_var : public abstract_pushed_var {
-	public:
-		pushed_var(t* _var, t _new_value) : var(_var), old_value(*_var) { *var = _new_value; }
-		void reset() { *var = old_value; }
-
-		t* var;
-		t old_value;
 	};
 
 	enum class select_type {
@@ -181,7 +240,7 @@ namespace null_gui {
 
 		bool window_exist(std::string name);
 		window* find_window(std::string name);
-		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags);
+		window* add_window(std::string name, vec2 pos, vec2 size, flags_list<window_flags> flags);
 
 		bool can_use_item(rect item_size, std::string item_name);
 		bool text_input_behavior(rect size, bool* hovered, bool* pressed, std::string name);
@@ -189,17 +248,17 @@ namespace null_gui {
 		bool key_bind_behavior(null_input::bind_key* bind, rect size, bool* hovered, std::string name);
 		bool button_behavior(rect size, bool* hovered, bool* pressed, std::string name);
 		void slider_behavior(rect size, bool* hovered, bool* pressed, std::string name);
-		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags);
-		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar);
+		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, flags_list<window_flags>& flags);
+		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, flags_list<window_flags> flags, bool alpha_bar);
 		bool colorpicker_sliders_behavior(rect size, std::string name);	
 		void add_item(vec2 size, std::string name); 
 		std::string format_item(std::string text);
 
-		void set_active_item(std::string item_name);
+		static void set_active_item(std::string item_name) { active_name = item_name; }
 		
-		bool mouse_in_current_window();
+		static bool mouse_in_current_window() { return hovered_window == (current_window->flags.contains(window_flags::group) ? current_window->get_main_window() : current_window); }
+		static void close_current_window() { current_window->close_call = true; }
 		void focus_current_window();
-		void close_current_window();
 		void window_control();
 		void popups_control();
 
@@ -208,71 +267,12 @@ namespace null_gui {
 		static void pop_var() { pushed_vars.back()->reset(); pushed_vars.pop_back(); }
 	}
 
-	namespace gui_settings {
-		inline color main_color = color(83, 100, 255, 255);
-		inline color window_bg = color(26, 26, 26, 255);
-		inline color window_title_bg = color(40, 40, 40, 255);
-		inline color group_bg = color(31, 31, 31, 255);
-		inline color button_bg = color(44, 44, 44, 255);
-		inline color button_bg_hovered = color(46, 46, 46, 255);
-		inline color button_bg_active = color(48, 48, 48, 255);
-		inline color popup_bg = color(33, 33, 33, 255);
-		inline color text = color(255, 255, 255, 255);
-		inline color text_hovered = color(130, 130, 130, 255);
-		inline color select_text = color(100, 100, 255, 100);
-
-		inline float window_title_size = 20.f;
-		inline float window_title_line_size = 2.f;
-		inline float item_spacing = 5.f;
-		inline float text_spacing = 4.f;
-		inline float checkbox_size = 16.f;
-		inline float check_mark_size = 4.f;
-		inline float checkbox_body_offset = 2.f;
-		inline float combo_size = 16.f;
-		inline float combo_arrow_size = 1.f;
-		inline float combo_window_padding = 0.f;
-		inline int max_auto_size_combo = 5;
-		inline float slider_size = 5.f;
-		inline float selectable_offset = 4.f;
-		inline float selectable_active_offset = 10.f;
-		inline float colorpicker_size = 100.f;
-		inline float colorpicker_thickness = 9.f;
-		inline float scrollbar_thickness = 2.f;
-		inline float text_input_line_size = 2.f;
-		inline float new_line_size = 16.f;
-		inline float window_rounding = 0.f;
-		inline float window_title_rounding = 0.f;
-		inline float slider_rounding = 0.f;
-		inline float checkbox_rounding = 0.f;
-		inline float button_rounding = 0.f;
-		inline float combo_rounding = 0.f;
-		inline float scrollbar_rounding = 0.f;
-		inline float colorpicker_rounding = 0.f;
-		inline float key_bind_rounding = 0.f;
-		inline float text_input_rounding = 0.f;
-
-		inline float double_click_time = 0.30f;
-		inline float double_click_max_dist = 6.f;
-		inline float show_pos_in_text_cooldown = 0.7f;
-
-		inline vec2 text_input_padding = vec2(3, 0);
-		inline vec2 button_padding = vec2(5, 1);
-		inline vec2 window_padding = vec2(10, 10);
-		inline vec2 scrollbar_padding = vec2(2, 2);
-
-		inline bool items_size_full_window = true;
-		inline bool checkbox_hovered_with_text = false;
-		inline bool clamp_window_on_screen = true;
-		inline bool move_window_on_title_bar = true;
-		inline bool show_scrollbar_background = true;
-	}
-
 	void initialize(HWND hwnd);
 	void shutdown();
 	void begin_frame();
 
 	bool begin_window(std::string name, vec2 pos, vec2 size, bool* open = nullptr);
-	bool begin_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags = { window_flags::standart }, bool* open = nullptr);
+	bool begin_window(std::string name, vec2 pos, vec2 size, flags_list<window_flags> flags = { }, bool* open = nullptr);
 	void end_window();
 
 	void begin_scroll();

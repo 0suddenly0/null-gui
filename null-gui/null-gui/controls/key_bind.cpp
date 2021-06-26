@@ -16,9 +16,9 @@ namespace null_gui{
 		vec2 bind_text_size = null_font::text_size(bind_text);
 		vec2 min = vec2(text_size.x + (draw_text.empty() ? 0.f : gui_settings::text_spacing) + bind_text_size.x + gui_settings::button_padding.x * 2, text_size.y + gui_settings::button_padding.y * 2);
 
-		if (draw_text.empty()) draw_pos += vec2(wnd->get_window_size_with_padding() - min.x, 0.f);
+		if (draw_text.empty()) draw_pos += vec2(wnd->get_window_size_with_padding().x - min.x, 0.f);
 		
-		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window && !draw_text.empty() ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window && !draw_text.empty() ? math::max(min.x, wnd->get_window_size_with_padding().x) : min.x, min.y));
 		rect button_rect = rect(vec2(item_rect.max.x - (bind_text_size.x + gui_settings::button_padding.x * 2), item_rect.max.y - (text_size.y + gui_settings::button_padding.y * 2 )), item_rect.max);
 
 		if (!draw_text.empty())

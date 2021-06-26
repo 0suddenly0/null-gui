@@ -1,15 +1,14 @@
 #include "null-gui.h"
 
 namespace null_gui {
-	window::window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, std::vector<window_flags> wnd_flags) {
+	window::window(std::string wnd_name, vec2 wnd_pos, vec2 wnd_size, flags_list<window_flags> wnd_flags) {
 		name = wnd_name;
 		pos = wnd_pos;
 		size = arg_size = wnd_size;
 		flags = wnd_flags;
 
-		if (deeps::current_window && (flags.contains(window_flags::group) || flags.contains(window_flags::popup))) {
+		if (deeps::current_window && (flags.contains(window_flags::group) || flags.contains(window_flags::popup)))
 			parent_window = deeps::current_window;
-		}
 
 		draw_list = flags.contains(window_flags::group) && parent_window ? get_main_window()->draw_list : std::make_shared<null_render::draw_list>(&null_render::shared_data);
 		draw_list->reset_for_begin_render();
@@ -61,12 +60,9 @@ namespace null_gui {
 		}
 	}
 
-	float window::get_scroll_thickness() {
-		return can_scroll() ? gui_settings::scrollbar_padding.x + gui_settings::scrollbar_thickness : 0.f;
-	}
-
-	float window::get_window_size_with_padding() {
-		return size.x - (gui_settings::window_padding.x * 2) - get_scroll_thickness();
+	vec2 window::get_window_size_with_padding() {
+		vec2 offset = draw_item_pos - pos - get_padding();
+		return size - (get_padding() * 2) - (vec2(get_scroll_thickness(), 0.f) + vec2(!in_column ? offset.x : 0.f, offset.y));
 	}
 
 	float window::get_title_size() {
@@ -90,11 +86,6 @@ namespace null_gui {
 		return y_top || y_bottom;
 	}
 
-	rect window::get_draw_pos(rect value) {
-		vec2 clamped_draw_pos(math::clamp(draw_item_pos.x, pos.x, pos.x + size.x), math::clamp(draw_item_pos.y + get_scroll_offset(), pos.y, pos.y + size.y));
-		return rect(vec2(math::clamp(value.min.x, clamped_draw_pos.x, value.max.x), math::clamp(value.min.y, clamped_draw_pos.y, value.max.y)), value.max);
-	}
-
 	namespace deeps {
 		text_input_info* text_input_info::add(text_input_info input) {
 			text_input_info* finded = get_input(input.name);
@@ -103,8 +94,7 @@ namespace null_gui {
 				finded->name = input.name;
 				finded->working_rect = input.working_rect;
 				return finded;
-			} else
-				text_inputs.push_back(input);
+			} else text_inputs.push_back(input);
 
 			return &text_inputs.back();
 		}
@@ -180,7 +170,7 @@ namespace null_gui {
 						active->string_value.insert(active->pos_in_text, null_input::read_clipboard());
 						active->pos_in_text += null_input::read_clipboard().size();
 					}
-				}
+				} break;
 			}
 
 			active->update_value();
@@ -242,15 +232,9 @@ namespace null_gui {
 
 		void text_input_info::set_value(std::string new_value) {
 			switch (type) {
-				case var_type::type_int:
-					*(int*)value = atoi(new_value.c_str());
-					break;
-				case var_type::type_string:
-					*(std::string*)value = new_value;
-					break;
-				case var_type::type_float:
-					*(float*)value = atof(new_value.c_str());
-					break;
+				case var_type::type_int: *(int*)value = atoi(new_value.c_str()); break;
+				case var_type::type_string: *(std::string*)value = new_value; break;
+				case var_type::type_float: *(float*)value = atof(new_value.c_str()); break;
 			}
 		}
 
@@ -385,7 +369,7 @@ namespace null_gui {
 			return nullptr;
 		}
 
-		window* add_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags) {
+		window* add_window(std::string name, vec2 pos, vec2 size, flags_list<window_flags> flags) {
 			std::shared_ptr<window> wnd = std::make_shared<window>(name, pos, size, flags);
 
 			if (wnd->flags.contains(window_flags::popup)) wnd->flags.add(window_flags::no_move);
@@ -553,7 +537,7 @@ namespace null_gui {
 			if (pressed) *pressed = active_name == name;
 		}
 
-		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, std::vector<window_flags>& flags) {
+		bool combo_behavior(rect size, bool* hovered, bool* pressed, std::string name, flags_list<window_flags>& flags) {
 			window* wnd = deeps::current_window;
 			bool _active = false;
 			bool _hovered = false;
@@ -579,7 +563,7 @@ namespace null_gui {
 			return _active;
 		}
 
-		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, std::vector<window_flags> flags, bool alpha_bar) {
+		void colorpicker_behavior(rect size, std::string name_item, std::string name, std::string tooltip, flags_list<window_flags> flags, bool alpha_bar) {
 			window* wnd = deeps::current_window;
 
 			if (can_use_item(size, name)) {
@@ -588,7 +572,7 @@ namespace null_gui {
 				if (null_input::click_mouse_in_region(size)) {
 					if (null_input::get_key(null_input::key_id::mouse_left)->down() || null_input::get_key(null_input::key_id::mouse_right)->down()) active_name = name_item;
 					if (null_input::get_key(null_input::key_id::mouse_left)->pressed() && wnd->can_open_tooltip()) {
-						flags.push_back(window_flags::no_title_line);
+						flags.add(window_flags::no_title_line);
 						deeps::add_window(name, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
 					} else if (null_input::get_key(null_input::key_id::mouse_right)->pressed() && wnd->can_open_tooltip()) {
 						deeps::add_window(tooltip, vec2(size.max.x, size.min.y), vec2(0.f, 0.f), flags);
@@ -656,21 +640,9 @@ namespace null_gui {
 			return ret;
 		}
 
-		void set_active_item(std::string item_name) {
-			active_name = item_name;
-		}
-
-		bool mouse_in_current_window() {
-			return deeps::hovered_window == (deeps::current_window->flags.contains(window_flags::group) ? deeps::current_window->get_main_window() : deeps::current_window);
-		}
-
 		void focus_current_window() {
 			if(current_window->flags.contains(window_flags::group)) current_window->get_main_window()->focus_window();
 			else current_window->focus_window();
-		}
-
-		void close_current_window() {
-			current_window->close_call = true;
 		}
 
 		void window_control() {
@@ -693,7 +665,7 @@ namespace null_gui {
 
 					if (wnd->flags.contains(window_flags::no_move)) continue;
 
-					if (!wnd->dragging && hovered_window == wnd && null_input::mouse_in_region(wnd->pos, wnd->pos + vec2(wnd->size.x, gui_settings::move_window_on_title_bar ? gui_settings::window_title_size : wnd->size.y)) && wnd->visible) {
+					if (!wnd->dragging && hovered_window == wnd && null_input::mouse_in_region(wnd->pos, wnd->pos + vec2(wnd->size.x, gui_settings::move_window_on_title_bar ? wnd->get_title_size() : wnd->size.y)) && wnd->visible) {
 						wnd->drag_offset = null_input::mouse_pos - wnd->pos;
 						wnd->dragging = true;
 						active_window_name = wnd->name;
@@ -756,6 +728,9 @@ namespace null_gui {
 	}
 
 	void new_line() {
+		window* wnd = deeps::current_window;
+		if (!wnd) return;
+
 		deeps::add_item(vec2(0.f, gui_settings::new_line_size), "");
 	}
 

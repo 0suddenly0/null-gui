@@ -249,9 +249,9 @@ namespace null_input {
 			key.update_duration();
 			key.state_double_clicked = false;
 			if (key.state_clicked) {
-				if ((float)(null_gui::deeps::real_time - key.clicked_time) < null_gui::gui_settings::double_click_time) {
+				if ((float)(null_gui::deeps::real_time - key.clicked_time) < settings::double_click_time) {
 					vec2 delta = mouse_pos - mouse_click_pos;
-					if (delta.length() < pow(null_gui::gui_settings::double_click_max_dist, 2)) {
+					if (delta.length() < pow(settings::double_click_max_dist, 2)) {
 						key.state_double_clicked = true;
 
 						if (key.callback && key.callback_state == key_state::double_clicked)

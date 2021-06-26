@@ -152,6 +152,11 @@ namespace null_input {
 		std::array<std::function<void(void)>, 3> callbacks;
 	};
 
+	namespace settings {
+		inline float double_click_time = 0.30f;
+		inline float double_click_max_dist = 6.f;
+	}
+
 	inline int last_symbol;
 	inline int last_press_key;
 	inline std::vector<bind_key*> bind_list;

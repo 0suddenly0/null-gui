@@ -5,7 +5,8 @@ namespace null_gui {
 		window* wnd = deeps::current_window;
 		if (!wnd) return false;
 
-		vec2 group_size = vec2(arg_size.x == 0.f ? wnd->size.x - (gui_settings::window_padding.x * 2) : arg_size.x, arg_size.y == 0.f ? wnd->size.y - (gui_settings::window_padding.y * 2) - gui_settings::window_title_size : arg_size.y);
+		vec2 window_size = wnd->get_window_size_with_padding();
+		vec2 group_size = vec2(arg_size.x == 0.f ? window_size.x : arg_size.x, arg_size.y == 0.f ? window_size.y : arg_size.y);
 		bool result = begin_window(name, wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset()), group_size, { window_flags::set_pos, window_flags::set_size, window_flags::no_move, window_flags::group }, nullptr);
 		return result;
 	}

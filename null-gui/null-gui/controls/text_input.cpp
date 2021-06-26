@@ -9,7 +9,7 @@ namespace null_gui {
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 min = text_size + gui_settings::text_spacing + gui_settings::combo_size + vec2(0.f, gui_settings::text_input_line_size);
-		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding().x) : min.x, min.y));
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.min.y + text_size.y + gui_settings::text_spacing), item_rect.max);
 		rect working_rect = rect(body_rect.min + gui_settings::text_input_padding, body_rect.max - vec2(gui_settings::text_input_padding.x, gui_settings::text_input_padding.y + gui_settings::text_input_line_size));
 		deeps::text_input_info* input = deeps::text_input_info::add(deeps::text_input_info(text, value, working_rect, type, format));

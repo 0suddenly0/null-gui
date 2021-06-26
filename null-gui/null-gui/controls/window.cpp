@@ -3,10 +3,10 @@
 
 namespace null_gui {
 	bool begin_window(std::string name, vec2 pos, vec2 size, bool* open) {
-		return begin_window(name, pos, size, { window_flags::standart }, open);
+		return begin_window(name, pos, size, { }, open);
 	}
 
-	bool begin_window(std::string name, vec2 pos, vec2 size, std::vector<window_flags> flags, bool* open) {
+	bool begin_window(std::string name, vec2 pos, vec2 size, flags_list<window_flags> flags, bool* open) {
 		window* wnd = nullptr;
 		if (deeps::window_exist(name)) wnd = deeps::find_window(name);
 		else wnd = deeps::add_window(name, pos, size, flags);

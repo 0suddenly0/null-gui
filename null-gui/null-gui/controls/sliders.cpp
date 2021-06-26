@@ -46,7 +46,7 @@ namespace null_gui {
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 value_size = null_font::text_size(formated_value);
 		vec2 min = text_size + gui_settings::text_spacing + vec2(null_font::text_size(get_formated_value(format, max_value, type)).x, gui_settings::slider_size);
-		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding().x) : min.x, min.y));
 		rect body_rect = rect(vec2(item_rect.min.x, item_rect.max.y - gui_settings::slider_size), item_rect.max);
 		rect value_rect = rect(vec2(item_rect.max.x - value_size.x, item_rect.min.y), vec2(item_rect.max.x, item_rect.min.y + value_size.y));
 		float calced_new_value = math::clamp(*(float*)min_value + (*(float*)max_value - *(float*)min_value) * (null_input::mouse_pos.x - item_rect.min.x) / item_rect.size().x, *(float*)min_value, *(float*)max_value);

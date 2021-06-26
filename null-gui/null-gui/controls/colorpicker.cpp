@@ -95,9 +95,9 @@ namespace null_gui {
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text.c_str());
 		vec2 min = vec2(text_size.x + gui_settings::text_spacing + gui_settings::checkbox_size * 2, math::max(gui_settings::checkbox_size, text_size.y));
-		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding()) : min.x, min.y));
+		rect item_rect = rect(draw_pos, draw_pos + vec2(gui_settings::items_size_full_window ? math::max(min.x, wnd->get_window_size_with_padding().x) : min.x, min.y));
 		rect button_rect = rect(item_rect.max - vec2(item_rect.size().y * 2, item_rect.size().y), item_rect.max);
-		std::vector<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
+		flags_list<window_flags> flags = { window_flags::no_move, window_flags::no_title_bar, window_flags::popup, window_flags::set_pos, window_flags::auto_size };
 
 		deeps::add_item(item_rect.size(), text);
 		if (!wnd->can_draw_item(item_rect))

@@ -8,7 +8,7 @@ namespace null_gui {
 		vec2 draw_pos = wnd->draw_item_pos + vec2(0.f, wnd->get_scroll_offset());
 		vec2 text_size = null_font::text_size(draw_text);
 		vec2 min = text_size + (gui_settings::button_padding * 2);
-		rect button_rect = rect(draw_pos, draw_pos + math::max(vec2(gui_settings::items_size_full_window ? math::max(min.x + wnd->get_scroll_thickness(), wnd->get_window_size_with_padding()) : min.x + wnd->get_scroll_thickness(), min.y), size_arg));
+		rect button_rect = rect(draw_pos, draw_pos + math::max(vec2(gui_settings::items_size_full_window ? math::max(min.x + wnd->get_scroll_thickness(), wnd->get_window_size_with_padding().x) : min.x + wnd->get_scroll_thickness(), min.y), size_arg));
 
 		deeps::add_item(button_rect.size(), text);
 		if (!wnd->can_draw_item(button_rect))
