@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="source\helpers">
+      <UniqueIdentifier>{9ec2a0a5-85a9-4be9-8429-f8b8f0bef92f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utils">
+      <UniqueIdentifier>{30275730-d26b-41e6-ae8f-451020dd04be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null">
+      <UniqueIdentifier>{817fa2b0-625c-4205-afe1-9e9ddd31f677}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render">
+      <UniqueIdentifier>{31e526c1-f41c-41a1-b61c-19d540180584}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\gui">
+      <UniqueIdentifier>{70195014-4d36-47ee-91e4-8ece9b47d71a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\input">
+      <UniqueIdentifier>{db0d5069-6f51-46a2-98c3-4c99393785bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\gui\controls">
+      <UniqueIdentifier>{7136ef66-d68e-4766-a46c-e4d6141e63f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\stb">
+      <UniqueIdentifier>{aba8ad27-ecc8-423e-8753-cd2327a2a4e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\opengl3">
+      <UniqueIdentifier>{5f35b784-dbb6-4035-9339-6932db49fe52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\opengl3\shaders">
+      <UniqueIdentifier>{dfc21991-cab0-4bbb-b8c1-53b1cc05e56a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\opengl3\shaders\blur">
+      <UniqueIdentifier>{6909b606-6051-472d-a462-26b389386e3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\opengl3\shaders\general">
+      <UniqueIdentifier>{9e3c4ccd-f5f8-4ade-b0f8-b62df325c5a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\null\render\opengl3\gl3w">
+      <UniqueIdentifier>{32b5d164-3659-4c8f-87b4-1a073875f106}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\render.cpp">
+      <Filter>source\null\render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\opengl3\opengl3.cpp">
+      <Filter>source\null\render\opengl3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\opengl3\shaders\shaders.cpp">
+      <Filter>source\null\render\opengl3\shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\opengl3\shaders\blur\blur.cpp">
+      <Filter>source\null\render\opengl3\shaders\blur</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\opengl3\shaders\general\general.cpp">
+      <Filter>source\null\render\opengl3\shaders\general</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\input\input.cpp">
+      <Filter>source\null\input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\gui.cpp">
+      <Filter>source\null\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\button.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\checkbox.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\clickable_text.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\color_picker.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\column.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\combo.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\group.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\key_bind.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\multi_combo.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\scroll.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\selectable.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\sliders.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\text.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\text_input.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\gui\controls\window.cpp">
+      <Filter>source\null\gui\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\helpers\math.cpp">
+      <Filter>source\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\utils\utils.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\null\render\opengl3\gl3w\gl3w.c">
+      <Filter>source\null\render\opengl3\gl3w</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\null-gui\null\render\render.h">
+      <Filter>source\null\render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\stb\rectpack.h">
+      <Filter>source\null\render\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\stb\truetype.h">
+      <Filter>source\null\render\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\opengl3\opengl3.h">
+      <Filter>source\null\render\opengl3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\opengl3\shaders\shaders.h">
+      <Filter>source\null\render\opengl3\shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\input\input.h">
+      <Filter>source\null\input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\gui\gui.h">
+      <Filter>source\null\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\color.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\flags_list.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\math.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\helpers\vectors.h">
+      <Filter>source\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\utils\utils.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\opengl3\gl3w\gl3w.h">
+      <Filter>source\null\render\opengl3\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\null\render\opengl3\gl3w\glcorearb.h">
+      <Filter>source\null\render\opengl3\gl3w</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

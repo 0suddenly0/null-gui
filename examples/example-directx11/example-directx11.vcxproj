@@ -144,29 +144,29 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\null-gui\helpers\math.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\button.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\checkbox.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\clickable_text.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\colorpicker.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\column.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\combo.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\group.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\key_bind.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\multicombo.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\scroll.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\selectable.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\sliders.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\text.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\text_input.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\controls\window.cpp" />
-    <ClCompile Include="..\..\null-gui\null-gui\null-gui.cpp" />
-    <ClCompile Include="..\..\null-gui\null-input\null-input.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\directx11\null-render-dx11.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\directx11\shaders\blur\blur.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\directx11\shaders\pixel\pixel.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\directx11\shaders\shaders.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\directx11\shaders\vertex\vertex.cpp" />
-    <ClCompile Include="..\..\null-gui\null-render\null-render.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\button.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\checkbox.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\clickable_text.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\color_picker.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\column.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\combo.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\group.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\key_bind.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\multi_combo.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\scroll.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\selectable.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\sliders.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\text.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\text_input.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\controls\window.cpp" />
+    <ClCompile Include="..\..\null-gui\null\gui\gui.cpp" />
+    <ClCompile Include="..\..\null-gui\null\input\input.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\directx11\directx11.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\directx11\shaders\blur\blur.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\directx11\shaders\pixel\pixel.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\directx11\shaders\shaders.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\directx11\shaders\vertex\vertex.cpp" />
+    <ClCompile Include="..\..\null-gui\null\render\render.cpp" />
     <ClCompile Include="..\..\null-gui\utils\utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -175,27 +175,19 @@
     <ClInclude Include="..\..\null-gui\helpers\flags_list.h" />
     <ClInclude Include="..\..\null-gui\helpers\math.h" />
     <ClInclude Include="..\..\null-gui\helpers\vectors.h" />
-    <ClInclude Include="..\..\null-gui\null-gui\null-gui.h" />
-    <ClInclude Include="..\..\null-gui\null-input\null-input.h" />
-    <ClInclude Include="..\..\null-gui\null-render\directx11\null-render-dx11.h" />
-    <ClInclude Include="..\..\null-gui\null-render\directx11\shaders\shaders.h" />
-    <ClInclude Include="..\..\null-gui\null-render\null-render.h" />
-    <ClInclude Include="..\..\null-gui\null-render\stb\rectpack.h" />
-    <ClInclude Include="..\..\null-gui\null-render\stb\truetype.h" />
+    <ClInclude Include="..\..\null-gui\null\gui\gui.h" />
+    <ClInclude Include="..\..\null-gui\null\input\input.h" />
+    <ClInclude Include="..\..\null-gui\null\render\directx11\directx11.h" />
+    <ClInclude Include="..\..\null-gui\null\render\directx11\shaders\shaders.h" />
+    <ClInclude Include="..\..\null-gui\null\render\render.h" />
+    <ClInclude Include="..\..\null-gui\null\render\stb\rectpack.h" />
+    <ClInclude Include="..\..\null-gui\null\render\stb\truetype.h" />
     <ClInclude Include="..\..\null-gui\utils\utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\null-gui\null-render\directx11\shaders\blur\hlsl\blur_x.hlsl">
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EnableDebuggingInformation>
+    <FxCompile Include="..\..\null-gui\null\render\directx11\shaders\blur\hlsl\blur_x.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -212,18 +204,16 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\..\null-gui\null-render\directx11\shaders\blur\hlsl\blur_y.hlsl">
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EnableDebuggingInformation>
+    <FxCompile Include="..\..\null-gui\null\render\directx11\shaders\blur\hlsl\blur_y.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -240,18 +230,16 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\..\null-gui\null-render\directx11\shaders\pixel\hlsl\pixel.hlsl">
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EnableDebuggingInformation>
+    <FxCompile Include="..\..\null-gui\null\render\directx11\shaders\pixel\hlsl\pixel.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -268,18 +256,16 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\..\null-gui\null-render\directx11\shaders\vertex\hlsl\vertex.hlsl">
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EnableDebuggingInformation>
+    <FxCompile Include="..\..\null-gui\null\render\directx11\shaders\vertex\hlsl\vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EnableDebuggingInformation>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <VariableName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename)</VariableName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -296,6 +282,12 @@
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)..\compiled\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ObjectFileOutput>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

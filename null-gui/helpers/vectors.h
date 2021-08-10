@@ -6,15 +6,12 @@ class vec2 {
 public:
     vec2() { x = y = 0.f; }
 
-    template <typename T>
-    vec2(T _x, T _y) {
-        x = _x;
-        y = _y;
-    }
+    template <typename t>
+    vec2(t _x, t _y) : x(_x), y(_y) { }
 
     vec2 normalized() {
         vec2 res = *this;
-        float l = res.length_sqrt();
+        float l = sqrt(res.length());
         if (l != 0.0f) {
             res /= l;
         } else {
@@ -29,13 +26,12 @@ public:
         delta.x = x - src.x;
         delta.y = y - src.y;
 
-        return delta.length_sqrt();
+        return sqrt(delta.length());
     }
 
     float dot(const vec2& src) const { return (x * src.x + y * src.y); }
 
     float length() { return (float)(x * x + y * y); }
-    float length_sqrt(void) { return (float)sqrt(x * x + y * y); }
 
     float& operator[](int i) { return ((float*)this)[i];  }
     float operator[](int i) const { return ((float*)this)[i]; }
@@ -83,6 +79,7 @@ public:
     vec2 operator-(float src) { return vec2(x - src, y - src); }
 
     vec2 operator*(const vec2& src) {  return vec2(x * src.x, y * src.y); }
+    vec2 operator*(float src) const { return vec2(x * src, y * src); }
     vec2 operator*(float src) { return vec2(x * src, y * src); }
 
     vec2 operator/(const vec2& src) { return vec2(x / src.x, y / src.y); }
@@ -95,16 +92,9 @@ class rect {
 public:
     rect() { min = max = 0.f; }
 
-    template <typename T>
-    rect(T min_x, T min_y, T max_x, T max_y) {
-        min = vec2(min_x, min_y);
-        max = vec2(max_x, max_y);
-    }
-
-    rect(vec2 _min, vec2 _max) {
-        min = _min;
-        max = _max;
-    }
+    template <typename t>
+    rect(t min_x, t min_y, t max_x, t max_y) { min = vec2(min_x, min_y); max = vec2(max_x, max_y); }
+    rect(vec2 _min, vec2 _max) { min = _min; max = _max; }
 
     vec2 size() { return max - min; }
     vec2 centre() { return min + size() / 2; }
@@ -167,6 +157,7 @@ public:
 
     rect operator*(const rect& src) { return rect(min * src.min, max * src.max); }
     rect operator*(const vec2& src) { return rect(min * src, max * src); }
+    rect operator*(float src) const { return rect(min * src, max * src); }
     rect operator*(float src) { return rect(min * src, max * src); }
 
     rect operator/(const rect& src) { return rect(min / src.min, min / src.max); }

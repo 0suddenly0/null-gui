@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-directx9", "example
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-directx11", "examples\example-directx11\example-directx11.vcxproj", "{DCC5DE53-00B1-469E-8FA6-1976B36852E9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example-opengl3", "examples\example-opengl3\example-opengl3.vcxproj", "{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{DCC5DE53-00B1-469E-8FA6-1976B36852E9}.Release|x64.Build.0 = Release|x64
 		{DCC5DE53-00B1-469E-8FA6-1976B36852E9}.Release|x86.ActiveCfg = Release|Win32
 		{DCC5DE53-00B1-469E-8FA6-1976B36852E9}.Release|x86.Build.0 = Release|Win32
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Debug|x64.ActiveCfg = Debug|x64
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Debug|x64.Build.0 = Debug|x64
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Debug|x86.ActiveCfg = Debug|Win32
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Debug|x86.Build.0 = Debug|Win32
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Release|x64.ActiveCfg = Release|x64
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Release|x64.Build.0 = Release|x64
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Release|x86.ActiveCfg = Release|Win32
+		{11AE4BDF-DD2A-41E6-92B5-C5593D5090C4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
