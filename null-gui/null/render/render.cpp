@@ -1640,7 +1640,7 @@ namespace null {
             prim_rect_uv(pos + glyph->corners.min * scale, pos + glyph->corners.max * scale, glyph->texture_coordinates.min, glyph->texture_coordinates.max, clr);
         }
 
-        void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline, std::array<bool, 2> centered, font::font* font, float size) {
+        void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline, std::array<bool, 2> centered, float alpha, font::font* font, float size) {
             if(font == NULL) font = shared_data->font;
             if(size == 0.f) size = shared_data->font_size;
 
@@ -1659,10 +1659,10 @@ namespace null {
                 draw_text(text, pos - vec2(0.f, 1.f), color(0.f, 0.f, 0.f, 1.f), font, size);
             }
 
-            draw_text_multicolor(text_list, pos, font, size);
+            draw_text_multicolor(text_list, pos, font, size, alpha);
         }
 
-        void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size) {
+        void draw_list::draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size, float alpha) {
             if(font == NULL) font = shared_data->font;
             if(size == 0.0f) size = shared_data->font_size;
 
@@ -1751,6 +1751,7 @@ namespace null {
                     continue;
 
                 color clr = text_list[math::clamp(current_id, 0, (int)text_list.size() - 1)].second;
+                if(alpha != -1.f) clr.a() = alpha;
                 float char_width = glyph->advance_x * scale;
                 if(glyph->visible && clr.a() > 0.f) {
                     rect corners = rect(vec2(x, y), vec2(x, y)) + glyph->corners * scale;

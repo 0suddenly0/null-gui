@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <numeric>
 
 #include "../../helpers/flags_list.h"
 #include "../../helpers/vectors.h"
@@ -392,8 +393,8 @@ namespace null {
             void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f);
             void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments);
             void draw_char(font::font* font, float size, vec2 pos, color clr, unsigned short c);
-            void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, font::font* font = NULL, float size = 0.f);
-            void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size);
+            void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, float alpha = -1.f, font::font* font = NULL, float size = 0.f);
+            void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size, float alpha = -1.f);
             void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, font::font* font = NULL, float size = 0.f);
             void draw_text(std::string text, vec2 pos, color clr, font::font* font, float size);
             void draw_poly_line(std::vector<vec2> points, color clr, bool closed, float thickness);
@@ -477,8 +478,8 @@ namespace null {
         static void draw_ngon(vec2 center, float radius, color clr, int num_segments, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_ngon(center, radius, clr, num_segments, thickness); }
         static void draw_ngon_filled(vec2 center, float radius, color clr, int num_segments, draw_list* list = &background_draw_list) { list->draw_ngon_filled(center, radius, clr, num_segments); }
         static void draw_char(font::font* font, float size, vec2 pos, color clr, unsigned short c, draw_list* list = &background_draw_list) { list->draw_char(font, size, pos, clr, c); }
-        static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, outline, centered); }
-        static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, font, size); }
+        static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, bool outline = true, std::array<bool, 2> centered = { false, false }, float alpha = -1.f, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, outline, centered, alpha); }
+        static void draw_text_multicolor(std::vector<std::pair<std::string, color>> text_list, vec2 pos, font::font* font, float size, float alpha = -1.f, draw_list* list = &background_draw_list) { list->draw_text_multicolor(text_list, pos, font, size, alpha); }
         static void draw_text(std::string text, vec2 pos, color clr, bool outline = true, std::array<bool, 2> centered = { false, false }, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, outline, centered); }
         static void draw_text(std::string text, vec2 pos, color clr, font::font* font, float size, draw_list* list = &background_draw_list) { list->draw_text(text, pos, clr, font, size); }
         static void draw_polyline(std::vector<vec2> points, color clr, bool closed, float thickness, draw_list* list = &background_draw_list) { list->draw_poly_line(points, clr, closed, thickness); }
