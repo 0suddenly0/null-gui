@@ -92,7 +92,7 @@ namespace null {
 					shader_draw_list->add_callback(nullptr, true);
 
 					rect uv = rect(vec2(0.f, 1.f), vec2(0.f, 1.f)) - (region / display_size) * vec2(-1.f, 1.f);
-					shader_draw_list->draw_image_rounded(reinterpret_cast<void*>(u_varialbes["texture"]["first"]), region.min, region.max, uv.min, uv.max, color(1.f, 1.f, 1.f, 1.f), rounding, rounding_corners);
+					shader_draw_list->draw_image_rounded(reinterpret_cast<void*>(u_varialbes["texture"]["first"]), region.min, region.max, uv.min, uv.max, color(1.f, 1.f, 1.f, 1.f), rounding, rounding_corners, false);
 				}
 
 				void shader::create_textures() {

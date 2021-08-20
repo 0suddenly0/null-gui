@@ -238,6 +238,7 @@ namespace null {
         void set_current_font(font* font);
         vec2 text_size_w(std::wstring text);
         vec2 text_size(std::string text);
+        static vec2 text_size(std::vector<std::pair<std::string, color>> text_list) { return text_size(std::accumulate(text_list.begin(), text_list.end(), std::make_pair<std::string, color>("", color(0, 0, 0)), [](std::pair<std::string, color> a, std::pair<std::string, color> b) { return make_pair(a.first + b.first, a.second); }).first); }
         static font* get_default_font() { return main_font ? main_font : font_atlas->fonts[0]; }
 
         void push_font(font* font);
@@ -402,7 +403,7 @@ namespace null {
             void draw_bezier_curve(std::array<vec2, 4> points, color clr, float thickness, int num_segments = 0);
             void draw_image(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min = vec2(0, 0), vec2 uv_max = vec2(1, 1), color clr = color(1.f, 1.f, 1.f, 1.f));
             void draw_image_quad(void* user_texture_id, std::array<vec2, 4> points, std::array<vec2, 4> uvs = { vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 1) }, color clr = color(1.f, 1.f, 1.f, 1.f));
-            void draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
+            void draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), bool clamp = true);
 
             void path_clear() { path.resize(0); }
             void path_line_to(vec2 pos) { path.push_back(pos); }

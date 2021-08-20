@@ -2325,7 +2325,7 @@ namespace null {
                 pop_texture_id();
         }
 
-        void draw_list::draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners) {
+        void draw_list::draw_image_rounded(void* user_texture_id, vec2 min, vec2 max, vec2 uv_min, vec2 uv_max, color clr, float rounding, flags_list<corner_flags> rounding_corners, bool clamp) {
             if(clr.a() == 0.f) return;
 
             if(rounding <= 0.0f || rounding_corners.empty()) {
@@ -2341,7 +2341,7 @@ namespace null {
             path_rect(min, max, rounding, rounding_corners);
             path_fill_convex(clr);
             int vert_end_idx = vtx_buffer.size();
-            detail::shade_verts_linear_uv(this, vert_start_idx, vert_end_idx, min, max, uv_min, uv_max, true);
+            detail::shade_verts_linear_uv(this, vert_start_idx, vert_end_idx, min, max, uv_min, uv_max, clamp);
 
             if(_push_texture_id)
                 pop_texture_id();
