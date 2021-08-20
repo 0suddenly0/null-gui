@@ -29,8 +29,7 @@ namespace null {
 			wnd->draw_list->draw_text(draw_text, item_rect.min, style::text, false);
 			wnd->draw_list->draw_rect_filled(body_rect.min, body_rect.max - vec2(0.f, style::text_input_line_size), style::button_bg, style::text_input_rounding, { render::corner_flags::top });
 
-			wnd->draw_list->push_clip_rect(body_rect.min, body_rect.max, true);
-			{
+			wnd->draw_list->push_clip_rect(body_rect.min, body_rect.max, true); {
 				if(input->is_selecting()) {
 					float min_pos = input->get_text_offset(input->select_min);
 					float max_pos = input->get_text_offset(input->select_max);

@@ -15,18 +15,17 @@ namespace null {
 			detail::push_var(&draw_item_pos_before, wnd->draw_item_pos.y);
 			detail::push_var(&current_offset, wnd->size.x + offset);
 			detail::push_var(&wnd->in_column, true);
+			detail::push_var(&wnd->column_offset, wnd->column_offset);
 		}
 
 		void next_column() {
 			window* wnd = detail::current_window;
 			if(!wnd) return;
 
-			detail::push_var(&wnd->column_offset, current_offset + wnd->get_padding().x);
+			wnd->column_offset = current_offset + wnd->get_padding().x;
 
-			detail::push_var(&wnd->draw_item_pos_prev, vec2(wnd->pos.x + current_offset + wnd->get_padding().x, draw_item_pos_before));
-			{
-				detail::push_var(&style::item_spacing, 0.f);
-				{
+			detail::push_var(&wnd->draw_item_pos_prev, vec2(wnd->pos.x + current_offset + wnd->get_padding().x, draw_item_pos_before)); {
+				detail::push_var(&style::item_spacing, 0.f); {
 					wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(style::item_spacing, 0.f);
 				} detail::pop_var();
 			} detail::pop_var();
