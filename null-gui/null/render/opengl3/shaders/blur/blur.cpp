@@ -1,4 +1,5 @@
 #include "../shaders.h"
+#include "../../../../../helpers/math.h"
 
 namespace null {
 	namespace render {
@@ -92,7 +93,7 @@ namespace null {
 					shader_draw_list->add_callback(nullptr, true);
 
 					rect uv = rect(vec2(0.f, 1.f), vec2(0.f, 1.f)) - (region / display_size) * vec2(-1.f, 1.f);
-					shader_draw_list->draw_image_rounded(reinterpret_cast<void*>(u_varialbes["texture"]["first"]), region.min, region.max, uv.min, uv.max, color(1.f, 1.f, 1.f, 1.f), rounding, rounding_corners, false);
+					shader_draw_list->draw_image_rounded(reinterpret_cast<void*>(u_varialbes["texture"]["first"]), region.min, region.max, uv.min, uv.max, color(1.f, 1.f, 1.f, alpha), rounding, rounding_corners, false);
 				}
 
 				void shader::create_textures() {
@@ -101,7 +102,7 @@ namespace null {
 				}
 
 				std::shared_ptr<shader> create_shader(draw_list* shader_draw_list, rect region, float amount, float alpha, float rounding, flags_list<corner_flags> rounding_corners) {
-					shaders_list.push_back(std::make_shared<shader>(shader_draw_list, region, amount, alpha, rounding, rounding_corners));
+					shaders_list.push_back(std::make_shared<shader>(shader_draw_list, region, math::max(0.3f, amount), alpha, rounding, rounding_corners));
 					return shaders_list.back();
 				}
 
