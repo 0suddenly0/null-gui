@@ -44,15 +44,6 @@ namespace null {
 			window* wnd = detail::current_window;
 			if(!wnd) return;
 
-			if((!wnd->flags.contains(window_flags::auto_size) || wnd->arg_size.y > 1.f) && wnd->max_scroll != 0) {
-				rect size, draw_size;
-				float size_bar, pos;
-				calc_scroll(size, draw_size, size_bar, pos);
-
-				if(style::show_scrollbar_background) wnd->draw_list->draw_rect_filled(size.min, size.max, style::button_bg, style::scrollbar_rounding);
-				wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), style::main_color, style::scrollbar_rounding);
-			}
-
 			bool can_scroll = wnd->max_size.y > wnd->size.y && wnd->flags.contains(window_flags::group) ? wnd->get_main_window()->hovered_group == wnd : detail::hovered_window == wnd;
 			if(!detail::hovered_window) {
 				input::mouse_wheel = 0;
@@ -75,6 +66,15 @@ namespace null {
 				wnd->scroll_offset = math::clamp(wnd->scroll_offset, -wnd->max_scroll, 0.f);
 			} else {
 				wnd->max_scroll = 0.f;
+			}
+
+			if((!wnd->flags.contains(window_flags::auto_size) || wnd->arg_size.y > 1.f) && wnd->max_scroll != 0) {
+				rect size, draw_size;
+				float size_bar, pos;
+				calc_scroll(size, draw_size, size_bar, pos);
+
+				if(style::show_scrollbar_background) wnd->draw_list->draw_rect_filled(size.min, size.max, style::button_bg, style::scrollbar_rounding);
+				wnd->draw_list->draw_rect_filled(vec2(draw_size.min.x, draw_size.min.y + pos - size_bar / 2), vec2(draw_size.max.x, draw_size.min.y + pos + size_bar / 2), style::main_color, style::scrollbar_rounding);
 			}
 		}
 		namespace detail {
