@@ -11,12 +11,12 @@ namespace null {
 			if(!wnd) return;
 
 			float offset = (wnd->draw_item_pos.x - wnd->pos.x - wnd->get_padding().x);
-			if(wnd->in_column) offset = (wnd->column_offset - wnd->get_padding().x) - offset;
+			if(wnd->in_column && wnd->column_offset > 0.f) offset = (wnd->column_offset - wnd->get_padding().x) - offset;
 			detail::push_var(&wnd->size.x, (wnd->size.x - offset) / count);
 			detail::push_var(&wnd->draw_item_pos.x, wnd->draw_item_pos.x);
 			detail::push_var(&draw_item_pos_before, wnd->draw_item_pos.y);
 			detail::push_var(&column_step, wnd->size.x + offset);
-			detail::push_var(&current_offset, column_step + (wnd->in_column ? wnd->column_offset - wnd->get_padding().x : 0.f));
+			detail::push_var(&current_offset, column_step + (wnd->in_column && wnd->column_offset > 0.f ? wnd->column_offset - wnd->get_padding().x : 0.f));
 			detail::push_var(&wnd->in_column, true);
 			detail::push_var(&wnd->column_offset, wnd->column_offset);
 		}
