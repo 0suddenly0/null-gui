@@ -117,11 +117,11 @@ namespace null {
 			vec2 drag_offset;
 			bool dragging;
 
-			vec2 draw_item_pos_same_line;
 			vec2 draw_item_pos_prev;
 			vec2 last_draw_item_pos;
 			vec2 draw_item_pos;
 
+			bool in_same_line = false;
 			bool ignore_scroll = false;
 			float scroll_offset = 0.f;
 			float scroll_target = 0.f;

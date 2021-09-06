@@ -68,18 +68,13 @@ namespace null {
 				wnd->last_draw_item_pos = wnd->draw_item_pos;
 				wnd->draw_item_pos_prev = wnd->draw_item_pos + vec2(size.x, 0.f);
 
-				if(wnd->draw_item_pos_same_line != vec2(0, 0)) {
-					wnd->draw_item_pos.x = wnd->draw_item_pos_same_line.x;
-					wnd->draw_item_pos.y = math::max(wnd->draw_item_pos_same_line.y, wnd->draw_item_pos.y + size.y + style::item_spacing);
-				} else {
-					wnd->draw_item_pos.x = wnd->pos.x + (wnd->column_offset == 0.f ? style::window_padding.x : wnd->column_offset);
-					wnd->draw_item_pos.y += size.y + style::item_spacing;
-				}
+				wnd->draw_item_pos.x = wnd->pos.x + (wnd->column_offset == 0.f ? style::window_padding.x : wnd->column_offset);
+				wnd->draw_item_pos.y += size.y + style::item_spacing;
 
 				if(wnd->max_size.x < wnd->draw_item_pos_prev.x - detail::current_window->pos.x + wnd->get_scroll_thickness()) wnd->max_size.x = wnd->draw_item_pos_prev.x - detail::current_window->pos.x + wnd->get_scroll_thickness();
 				if(wnd->max_size.y < wnd->draw_item_pos.y - detail::current_window->pos.y) wnd->max_size.y = wnd->draw_item_pos.y - detail::current_window->pos.y;
 
-				wnd->draw_item_pos_same_line = vec2(0, 0);
+				wnd->in_same_line = false;
 				if(!name.empty()) last_item_name = name;
 			}
 
@@ -195,6 +190,7 @@ namespace null {
 			if(!wnd) return;
 
 			wnd->draw_item_pos = wnd->draw_item_pos_prev + vec2(style::item_spacing, 0.f);
+			wnd->in_same_line = true;
 		}
 
 		void tooltip(std::string tooltip_text) {

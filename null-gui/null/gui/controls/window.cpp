@@ -171,7 +171,7 @@ namespace null {
 
 		vec2 window::get_window_size_with_padding() {
 			vec2 offset = draw_item_pos - pos - get_padding();
-			return size - (get_padding() * 2) - (vec2(get_scroll_thickness(), 0.f) + vec2(!in_column ? offset.x : 0.f, offset.y));
+			return size - (get_padding() * 2) - (vec2(get_scroll_thickness(), 0.f) + vec2(in_column ? (in_same_line ? offset.x - (column_offset - get_padding().x) : 0.f) : offset.x, offset.y));
 		}
 
 		float window::get_title_size() {
