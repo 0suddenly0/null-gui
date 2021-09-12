@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="source\helpers">
-      <UniqueIdentifier>{9ec2a0a5-85a9-4be9-8429-f8b8f0bef92f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\utils">
       <UniqueIdentifier>{30275730-d26b-41e6-ae8f-451020dd04be}</UniqueIdentifier>
     </Filter>
@@ -43,6 +40,12 @@
     </Filter>
     <Filter Include="source\null\render\opengl3\gl3w">
       <UniqueIdentifier>{32b5d164-3659-4c8f-87b4-1a073875f106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\math">
+      <UniqueIdentifier>{92e43177-8133-4b8d-81e8-8531ed24693f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\datatypes">
+      <UniqueIdentifier>{9ec2a0a5-85a9-4be9-8429-f8b8f0bef92f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -115,14 +118,14 @@
     <ClCompile Include="..\..\null-gui\null\gui\controls\window.cpp">
       <Filter>source\null\gui\controls</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\null-gui\helpers\math.cpp">
-      <Filter>source\helpers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\null-gui\utils\utils.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\null-gui\null\render\opengl3\gl3w\gl3w.c">
       <Filter>source\null\render\opengl3\gl3w</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\null-gui\math\math.cpp">
+      <Filter>source\math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,18 +150,6 @@
     <ClInclude Include="..\..\null-gui\null\gui\gui.h">
       <Filter>source\null\gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\color.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\flags_list.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\math.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\vectors.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\null-gui\utils\utils.h">
       <Filter>source\utils</Filter>
     </ClInclude>
@@ -167,6 +158,21 @@
     </ClInclude>
     <ClInclude Include="..\..\null-gui\null\render\opengl3\gl3w\glcorearb.h">
       <Filter>source\null\render\opengl3\gl3w</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\math\math.h">
+      <Filter>source\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\color.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\flags_list.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\rect.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\vec2.h">
+      <Filter>source\datatypes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

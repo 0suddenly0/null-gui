@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "../../helpers/vectors.h"
+#include "../../datatypes/vec2.h"
+#include "../../datatypes/rect.h"
 
 namespace null {
 	namespace input {

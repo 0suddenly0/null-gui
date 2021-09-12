@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include "../../helpers/math.h"
+#include "../../math/math.h"
 #include "../../utils/utils.h"
 #include "../render/render.h"
 #include "../input/input.h"

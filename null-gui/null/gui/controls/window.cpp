@@ -189,7 +189,7 @@ namespace null {
 		}
 
 		bool window::can_draw_item(rect item_rect) {
-			return (item_rect.min.y > pos.y && item_rect.min.y < pos.y + size.y) || (item_rect.max.y > pos.y && item_rect.max.y < pos.y + size.y);
+			return (item_rect.min.y >= pos.y && item_rect.min.y <= pos.y + size.y) || (item_rect.max.y >= pos.y && item_rect.max.y <= pos.y + size.y);
 		}
 	}
 }

@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="source\helpers">
-      <UniqueIdentifier>{e5b57657-6ac4-4d64-8a2f-64282b51de9c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\utils">
       <UniqueIdentifier>{624e8749-2f46-4726-8b74-ac5d36bd5725}</UniqueIdentifier>
     </Filter>
@@ -44,13 +41,16 @@
     <Filter Include="source\null\render\directx11\shaders\pixel">
       <UniqueIdentifier>{34c2296a-8b3c-4dfa-9abf-77046d202dba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\datatypes">
+      <UniqueIdentifier>{e5b57657-6ac4-4d64-8a2f-64282b51de9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\math">
+      <UniqueIdentifier>{6112d961-c3a4-4096-a753-50ec4360d0e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\null-gui\helpers\math.cpp">
-      <Filter>source\helpers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\null-gui\utils\utils.cpp">
       <Filter>source\utils</Filter>
@@ -124,20 +124,11 @@
     <ClCompile Include="..\..\null-gui\null\gui\controls\window.cpp">
       <Filter>source\null\gui\controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\null-gui\math\math.cpp">
+      <Filter>source\math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\null-gui\helpers\color.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\flags_list.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\math.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\null-gui\helpers\vectors.h">
-      <Filter>source\helpers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\null-gui\utils\utils.h">
       <Filter>source\utils</Filter>
     </ClInclude>
@@ -161,6 +152,21 @@
     </ClInclude>
     <ClInclude Include="..\..\null-gui\null\gui\gui.h">
       <Filter>source\null\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\math\math.h">
+      <Filter>source\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\color.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\flags_list.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\rect.h">
+      <Filter>source\datatypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\null-gui\datatypes\vec2.h">
+      <Filter>source\datatypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

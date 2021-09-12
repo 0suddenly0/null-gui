@@ -3,8 +3,8 @@
 #include <windows.h>
 #include <array>
 
-#include "color.h"
-#include "vectors.h"
+#include "../datatypes/color.h"
+#include "../datatypes/vec2.h"
 
 #define pi 3.14159265358979323846f
 #define NORMALIZE2F_OVER_ZERO(VX,VY) do { float d2 = VX*VX + VY*VY; if (d2 > 0.0f) { float inv_len = 1.0f / sqrtf(d2); VX *= inv_len; VY *= inv_len; } } while (0)

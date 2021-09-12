@@ -72,15 +72,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)build\bin\$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(Configuration)\$(PlatformShortName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)build\bin\$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(Configuration)\$(PlatformShortName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(ProjectDir)build\bin\$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(Configuration)\$(PlatformShortName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)build\bin\$(Configuration)\$(PlatformShortName)\</OutDir>
+    <IntDir>$(ProjectDir)build\obj\$(Configuration)\$(PlatformShortName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -143,7 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\null-gui\helpers\math.cpp" />
+    <ClCompile Include="..\..\null-gui\math\math.cpp" />
     <ClCompile Include="..\..\null-gui\null\gui\controls\button.cpp" />
     <ClCompile Include="..\..\null-gui\null\gui\controls\checkbox.cpp" />
     <ClCompile Include="..\..\null-gui\null\gui\controls\clickable_text.cpp" />
@@ -171,10 +179,11 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\null-gui\helpers\color.h" />
-    <ClInclude Include="..\..\null-gui\helpers\flags_list.h" />
-    <ClInclude Include="..\..\null-gui\helpers\math.h" />
-    <ClInclude Include="..\..\null-gui\helpers\vectors.h" />
+    <ClInclude Include="..\..\null-gui\datatypes\color.h" />
+    <ClInclude Include="..\..\null-gui\datatypes\flags_list.h" />
+    <ClInclude Include="..\..\null-gui\datatypes\rect.h" />
+    <ClInclude Include="..\..\null-gui\datatypes\vec2.h" />
+    <ClInclude Include="..\..\null-gui\math\math.h" />
     <ClInclude Include="..\..\null-gui\null\gui\gui.h" />
     <ClInclude Include="..\..\null-gui\null\input\input.h" />
     <ClInclude Include="..\..\null-gui\null\render\directx11\directx11.h" />

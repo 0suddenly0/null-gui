@@ -19,9 +19,10 @@
 #include <limits.h>
 #include <numeric>
 
-#include "../../helpers/flags_list.h"
-#include "../../helpers/vectors.h"
-#include "../../helpers/color.h"
+#include "../../datatypes/flags_list.h"
+#include "../../datatypes/color.h"
+#include "../../datatypes/vec2.h"
+#include "../../datatypes/rect.h"
 #include "stb/rectpack.h"
 #include "stb/truetype.h"
 

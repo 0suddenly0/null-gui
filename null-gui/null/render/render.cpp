@@ -6,7 +6,7 @@
 #include <numeric>
 
 #include "../../utils/utils.h"
-#include "../../helpers/math.h"
+#include "../../math/math.h"
 #include "render.h"
 #include "../gui/gui.h"
 
