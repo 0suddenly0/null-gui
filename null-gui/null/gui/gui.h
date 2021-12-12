@@ -98,7 +98,7 @@ namespace null {
 			void change_current_item() { draw_item_pos = last_draw_item_pos; }
 
 			bool can_scroll() { return max_scroll != 0; }
-			float get_scroll_offset() { return ignore_scroll ? 0.f : scroll_offset; }
+			float get_scroll_offset() { return !can_scroll() || ignore_scroll ? 0.f : scroll_offset; }
 			float get_scroll_thickness() { return can_scroll() ? style::scrollbar_padding.x + style::scrollbar_thickness : 0.f; }
 			vec2 get_padding() { return flags.contains(window_flags::no_padding) ? vec2(0.f, 0.f) : style::window_padding; }
 			vec2 get_window_size_with_padding();

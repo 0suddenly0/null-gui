@@ -103,9 +103,6 @@
     <ClCompile Include="..\..\null-gui\null\input\input.cpp">
       <Filter>source\null\input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\null-gui\null\render\directx9\shaders\vertex\vertex.cpp">
-      <Filter>source\null\render\directx9\shaders\vertex</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\null-gui\null\render\directx9\shaders\blur\blur.cpp">
       <Filter>source\null\render\directx9\shaders\blur</Filter>
     </ClCompile>
@@ -167,10 +164,7 @@
     <FxCompile Include="..\..\null-gui\null\render\directx9\shaders\vertex\hlsl\vertex.hlsl">
       <Filter>source\null\render\directx9\shaders\vertex</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\null-gui\null\render\directx9\shaders\blur\hlsl\blur_x.hlsl">
-      <Filter>source\null\render\directx9\shaders\blur</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\null-gui\null\render\directx9\shaders\blur\hlsl\blur_y.hlsl">
+    <FxCompile Include="..\..\null-gui\null\render\directx9\shaders\blur\hlsl\blur.hlsl">
       <Filter>source\null\render\directx9\shaders\blur</Filter>
     </FxCompile>
   </ItemGroup>

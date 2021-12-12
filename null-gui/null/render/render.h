@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <numeric>
+#include <map>
 
 #include "../../datatypes/flags_list.h"
 #include "../../datatypes/color.h"
@@ -379,6 +380,7 @@ namespace null {
             vec2 get_clip_rect_max() { return get_clip_rect().max; }
 
             void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
+            void* overlay_blur(void* texture, float amount = 1.f);
             void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f);
             void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f);
             void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all));
@@ -464,6 +466,7 @@ namespace null {
         static void pop_clip_rect(draw_list* list = &background_draw_list) { list->pop_clip_rect(); }
 
         static void draw_blur(vec2 start, vec2 end, float amount = 1.f, float alpha = 1.f, float rounding = 0.f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_blur(start, end, amount, alpha, rounding, rounding_corners); }
+        static void* overlay_blur(void* texture, float amount = 1.f, draw_list* list = &background_draw_list) { return list->overlay_blur(texture, amount); }
         static void draw_line(vec2 start_point, vec2 end_point, color clr, float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_line(start_point, end_point, clr, thickness); }
         static void draw_rect(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), float thickness = 1.0f, draw_list* list = &background_draw_list) { list->draw_rect(min, max, clr, rounding, rounding_corners, thickness); }
         static void draw_rect_filled(vec2 min, vec2 max, color clr, float rounding = 0.0f, flags_list<corner_flags> rounding_corners = flags_list<corner_flags>(corner_flags::all), draw_list* list = &background_draw_list) { list->draw_rect_filled(min, max, clr, rounding, rounding_corners); }

@@ -189,7 +189,8 @@ namespace null {
 		}
 
 		bool window::can_draw_item(rect item_rect) {
-			return (item_rect.min.y >= pos.y && item_rect.min.y <= pos.y + size.y) || (item_rect.max.y >= pos.y && item_rect.max.y <= pos.y + size.y);
+			rect region = rect(pos, pos + size) + vec2(column_offset, 0.f);
+			return (item_rect.min >= region.min && item_rect.min <= region.max) || (item_rect.max >= region.min && item_rect.max <= region.max);
 		}
 	}
 }

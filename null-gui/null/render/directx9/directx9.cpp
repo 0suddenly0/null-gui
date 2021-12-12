@@ -218,6 +218,41 @@ namespace null {
                 if(vertex_declaration) { vertex_declaration->Release(); vertex_declaration = nullptr; }
                 if(font_texture) { font_texture->Release(); font_texture = NULL; font::font_atlas->tex_id = NULL; }
             }
+
+            void copy_texture(IDirect3DTexture9* source, IDirect3DTexture9* dest, rect source_region, rect dest_region) {
+                if (source_region == 0.f) source_region = rect(vec2(0.f, 0.f), get_texture_size(source));
+                if (dest_region == 0.f) dest_region = rect(vec2(0.f, 0.f), get_texture_size(dest));
+
+                IDirect3DSurface9* source_surface = nullptr;
+                source->GetSurfaceLevel(0, &source_surface);
+
+                IDirect3DSurface9* dest_surface = nullptr;
+                dest->GetSurfaceLevel(0, &dest_surface);
+
+                RECT _rect_source = RECT{ (int)source_region.min.x, (int)source_region.min.y, (int)source_region.max.x, (int)source_region.max.y };
+                RECT _rect_dest = RECT{ (int)dest_region.min.x, (int)dest_region.min.y, (int)dest_region.max.x, (int)dest_region.max.y };
+                device->StretchRect(source_surface, &_rect_source, dest_surface, &_rect_dest, D3DTEXF_LINEAR);
+
+                if (source_surface) source_surface->Release(); source_surface = nullptr;
+                if (dest_surface) dest_surface->Release(); dest_surface = nullptr;
+            }
+
+            void backbuffer_to_texture(IDirect3DTexture9* texture, rect backbuffer_region, D3DTEXTUREFILTERTYPE filtering) {
+                if (!texture) return;
+                if (backbuffer_region.size().x == 0.f || backbuffer_region.size().y == 0.f) backbuffer_region = rect(vec2(0.f, 0.f), display_size);
+
+                IDirect3DSurface9* back_buffer = nullptr;
+                IDirect3DSurface9* surface = nullptr;
+                if (device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &back_buffer) == D3D_OK) {
+                    if (texture->GetSurfaceLevel(0, &surface) == D3D_OK) {
+                        RECT backbuffer_rect = RECT{ (LONG)backbuffer_region.min.x, (LONG)backbuffer_region.min.y, (LONG)backbuffer_region.max.x, (LONG)backbuffer_region.max.y };
+                        device->StretchRect(back_buffer, &backbuffer_rect, surface, nullptr, filtering);
+                    }
+                }
+
+                if (back_buffer) { back_buffer->Release(); back_buffer = nullptr; }
+                if (surface) { surface->Release(); surface = nullptr; }
+            }
         }
     }
 }

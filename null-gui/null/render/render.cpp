@@ -2361,6 +2361,7 @@ namespace null {
             }
         }
 
+        // FIXME fix rounding (change arc_fast_vtx size and multiple a_min_of_12 and a_max_of_12)
         void draw_list::path_arc_to_fast(vec2 center, float radius, int a_min_of_12, int a_max_of_12) {
             if(radius == 0.0f || a_min_of_12 > a_max_of_12) {
                 path.push_back(center);

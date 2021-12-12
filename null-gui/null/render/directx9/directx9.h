@@ -28,6 +28,12 @@ namespace null {
 			bool create_fonts_texture();
 			bool create_device_objects();
 			void invalidate_device_objects();
+
+			static void create_texture(IDirect3DTexture9** source, vec2 size, int levels = 1, UINT usage = D3DUSAGE_RENDERTARGET, D3DFORMAT format = D3DFMT_X8R8G8B8, D3DPOOL pool = D3DPOOL_DEFAULT) { device->CreateTexture(size.x, size.y, levels, usage, format, pool, source, nullptr); }
+			static void set_render_target(IDirect3DTexture9* texture) { IDirect3DSurface9* surface = nullptr; if (texture->GetSurfaceLevel(0, &surface) == D3D_OK) device->SetRenderTarget(0, surface); if (surface) { surface->Release(); surface = nullptr; } }
+			static vec2 get_texture_size(IDirect3DTexture9* texture) { D3DSURFACE_DESC desc; texture->GetLevelDesc(0, &desc); return vec2(desc.Width, desc.Height); }
+			void copy_texture(IDirect3DTexture9* source, IDirect3DTexture9* dest, rect source_region = rect(0.f, 0.f, 0.f, 0.f), rect dest_region = rect(0.f, 0.f, 0.f, 0.f));
+			void backbuffer_to_texture(IDirect3DTexture9* texture, rect backbuffer_region, D3DTEXTUREFILTERTYPE filtering = D3DTEXF_LINEAR);
 		}
 	}
 }

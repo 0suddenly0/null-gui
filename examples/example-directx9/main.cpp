@@ -162,8 +162,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		null::render::draw_rect_filled_multicolor(vec2(300, 100), vec2(600, 200), { null::gui::style::main_color, null::gui::style::button_bg }, { null::gui::style::main_color, null::gui::style::button_bg }, null::gui::style::button_rounding);
 		null::render::draw_rect_filled_multicolor(vec2(300, 300), vec2(600, 400), { null::gui::style::main_color, null::gui::style::button_bg }, { null::gui::style::button_bg_active, null::gui::style::button_bg_hovered }, null::gui::style::button_rounding);
 		null::render::draw_rect_filled_multicolor(vec2(300, 500), vec2(600, 600), { null::gui::style::main_color, null::gui::style::button_bg }, { null::gui::style::button_bg_active, null::gui::style::button_bg_hovered }, 0.f);
-
-		null::render::draw_blur(vec2(0, 0), vec2(100, 100), 1.f, 1.f, 40.f);
+		null::render::draw_blur(vec2(0, 0), vec2(100, 100));
 
 		static bool test_bool_bind;
 		static null::input::bind_key bind("test_bind", null::input::key_id::seven, &test_bool_bind, null::input::bind_type::hold_on);
@@ -173,7 +172,6 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 		static bool settings_window = true;
 		static bool debug_window = true;
 
-		static float test_float = 0.f;
 		static int test_int = 0;
 		static color test_color(255, 255, 255, 255);
 		static float size_window = 150.f;
@@ -196,7 +194,7 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 			null::gui::color_picker("color", &null::gui::style::main_color);
 			null::gui::end_window();
 		}
-
+		
 		if (null::gui::begin_window("settings window", vec2(600, 20), vec2(500, 0), { null::gui::window_flags::set_size, null::gui::window_flags::auto_size }, &settings_window)) {
 			null::gui::begin_columns(2); {
 				null::gui::begin_group("floats", vec2(0.f, 200.f)); {
@@ -301,7 +299,6 @@ int main(HINSTANCE instance, HINSTANCE prev_instance, LPWSTR cmd_line, int cmd_s
 
 			null::gui::checkbox("show debug window", &debug_window);
 			null::gui::tooltip("test tooltip");
-			null::gui::text(utils::format("%.6f", test_float));
 			null::gui::text_input("text input", &test_string);
 			null::gui::key_bind("test key bind", &bind);
 			null::gui::new_line();
