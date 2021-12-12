@@ -10,8 +10,7 @@ Warning! The code has a huge amount of shit and other garbage that someday, perh
 
 # Project settings
 Pixel shaders:  
-* blur_x
-* blur_y
+* blur
 * pixel (only in dx11)
 
 Vertex shaders:  
