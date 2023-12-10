@@ -1,4 +1,3 @@
-# Will be moved to nullptr-sources later
 # null-gui
 gui framework
 
